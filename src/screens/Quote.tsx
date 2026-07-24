@@ -45,6 +45,7 @@ import {
   latestMandate,
   pricingInputFor,
 } from './purchase/enroll';
+import { getWizardAgentId } from './wizard/wizardAgent';
 import { WizardBack, WizardStepper } from './wizard/Stepper';
 
 /** Horizontal ladder recap bar (quote mockup): slices to the 3.0% ceiling. */
@@ -81,7 +82,9 @@ export default function Quote() {
   const priceFeed = useStore((s) => s.priceFeed);
   const state = useStore();
 
+  const wizardId = getWizardAgentId();
   const agent =
+    agents.find((a) => a.id === wizardId && a.status !== 'De-enrolled') ??
     agents.find((a) => a.id === WIZARD_AGENT.id && a.status !== 'De-enrolled') ??
     agents[0];
   const mandate = latestMandate(state, agent.id);

@@ -51,27 +51,39 @@ const CHALLENGE_STEPS = [
 export default function ConnectAgent() {
   const navigate = useNavigate();
   const agents = useStore((s) => s.agents);
+  const enrollments = useStore((s) => s.enrollments);
   const registerAgent = useStore((s) => s.registerAgent);
   const markOwnershipVerified = useStore((s) => s.markOwnershipVerified);
   const saveMandate = useStore((s) => s.saveMandate);
   const mandates = useStore((s) => s.mandates);
   const setAgentStatus = useStore((s) => s.setAgentStatus);
 
+  // An agent with a live enrollment is already in the order. Arriving here
+  // then means connecting a fresh agent, so the picker starts over.
+  const taken = (id: string) =>
+    enrollments.some((e) => e.agentId === id && e.terminatedAt === undefined);
+
   const wizardAgent = agents.find((a) => a.id === getWizardAgentId());
-  const [phase, setPhase] = useState<Phase>(
-    wizardAgent?.ownershipVerified
-      ? 'verified'
-      : wizardAgent?.status === 'Quoted'
-        ? 'identity'
-        : 'pick',
-  );
+  const [phase, setPhase] = useState<Phase>(() => {
+    if (!wizardAgent || taken(wizardAgent.id)) return 'pick';
+    if (wizardAgent.ownershipVerified) return 'verified';
+    if (wizardAgent.status === 'Quoted') return 'identity';
+    return 'pick';
+  });
   const [endpointUrl, setEndpointUrl] = useState('');
   const [pendingAgent, setPendingAgent] = useState<Agent | null>(null);
   const [manifestOpen, setManifestOpen] = useState(false);
   const [registeredAt, setRegisteredAt] = useState<number | undefined>(undefined);
   const [signedAt, setSignedAt] = useState<number | undefined>(undefined);
 
-  const sample = agents.find((a) => a.id === WIZARD_AGENT.id);
+  // The offered sample: the default agent while free, then the next
+  // unenrolled seeded agent.
+  const defaultSample = agents.find((a) => a.id === WIZARD_AGENT.id);
+  const sample =
+    defaultSample && !taken(defaultSample.id) && !defaultSample.ownershipVerified
+      ? defaultSample
+      : agents.find((a) => a.status === 'Draft');
+  const template = sample ?? defaultSample ?? agents[0];
   const activeAgent =
     phase === 'pick' ? null : (agents.find((a) => a.id === getWizardAgentId()) ?? null);
 
@@ -98,7 +110,7 @@ export default function ConnectAgent() {
         .toLowerCase() || 'endpoint-agent';
     const id = `endpoint-${slug}`;
     const agent: Agent = {
-      ...(sample as Agent),
+      ...(template as Agent),
       id,
       name: `Agent @ ${url.replace(/^https?:\/\//, '')}`,
       configHash: configHash(`${url}|endpoint-manifest-v1`),
@@ -188,29 +200,33 @@ export default function ConnectAgent() {
                 <p className="mt-1 text-xs text-muted">
                   Start with a pre-configured agent and its tool manifest.
                 </p>
-                <div className="mt-3 rounded-md border border-line bg-canvas px-3 py-2.5">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-ink">
-                    {sample?.name ?? 'Procurement-Bot'}
-                    <span className="rounded bg-line-soft px-1.5 py-px text-2xs font-bold text-muted">
-                      Default
-                    </span>
-                  </div>
-                  <p className="mt-0.5 text-2xs text-muted">
-                    Purchasing agent that pays supplier invoices from an
-                    approved payee list. Suggested cap $50,000.
+                {sample ? (
+                  <>
+                    <div className="mt-3 rounded-md border border-line bg-canvas px-3 py-2.5">
+                      <div className="text-sm font-semibold text-ink">{sample.name}</div>
+                      <p className="mt-0.5 text-2xs text-muted">
+                        Preconfigured sample agent with a standard tool
+                        manifest. Suggested cap $50,000.
+                      </p>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      <button
+                        type="button"
+                        data-testid="connect-sample"
+                        onClick={connectSample}
+                        className="rounded-lg bg-accent px-4 py-1.5 text-sm font-semibold text-ink hover:bg-[#0bd489]"
+                      >
+                        Connect {sample.name}
+                      </button>
+                      <SimulatedBadge />
+                    </div>
+                  </>
+                ) : (
+                  <p className="mt-3 text-xs text-muted">
+                    Every sample agent is already enrolled. Connect a new agent
+                    from an endpoint.
                   </p>
-                </div>
-                <div className="mt-3 flex items-center gap-2">
-                  <button
-                    type="button"
-                    data-testid="connect-sample"
-                    onClick={connectSample}
-                    className="rounded-lg bg-accent px-4 py-1.5 text-sm font-semibold text-ink hover:bg-[#0bd489]"
-                  >
-                    Connect {sample?.name ?? 'Procurement-Bot'}
-                  </button>
-                  <SimulatedBadge />
-                </div>
+                )}
               </div>
             </div>
           </div>

@@ -19,13 +19,14 @@ import { MathValue } from '../components/MathValue';
 import { SimulatedBadge } from '../components/SimulatedBadge';
 import { StatusPill } from '../components/StatusPill';
 import { FLEET_CALLOUT_COMMON_CAUSE, FLEET_CALLOUT_SUM } from '../data/copy';
-import { WIZARD_AGENT, type SeedAgentSpec } from '../data/seed';
+import { type SeedAgentSpec } from '../data/seed';
 import { demoNow } from '../lib/demoClock';
 import { shortHash } from '../lib/hash';
 import { formatN, formatPct, formatUsd, usdToN, type MathBreakdown } from '../lib/money';
 import { deEnrollRefund } from '../lib/pricing';
 import { useStore } from '../store';
 import type { Agent, Enrollment } from '../store/types';
+import { getWizardAgentId } from './wizard/wizardAgent';
 import { WizardBack, WizardStepper } from './wizard/Stepper';
 import {
   capUsdFor,
@@ -129,9 +130,10 @@ export default function Fleet() {
   // enrollment yet, except after an explicit decline or de-enroll.
   useEffect(() => {
     const s = useStore.getState();
-    const wizard = s.agents.find((a) => a.id === WIZARD_AGENT.id);
+    const wid = getWizardAgentId();
+    const wizard = s.agents.find((a) => a.id === wid);
     const enrolled = s.enrollments.some(
-      (e) => e.agentId === WIZARD_AGENT.id && e.terminatedAt === undefined,
+      (e) => e.agentId === wid && e.terminatedAt === undefined,
     );
     if (
       wizard &&
