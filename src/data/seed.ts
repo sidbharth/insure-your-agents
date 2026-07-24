@@ -44,7 +44,7 @@ export const SEED_USD_PER_N = 3.0;
 /** Demo wallet balance in N — must exceed the 1,383 N fleet roll-up. */
 export const SEED_WALLET_BALANCE_N = 2_000;
 
-/** Every Northwind agent's per-transaction cap (Appendix B). */
+/** Every seeded agent's per-transaction cap (Appendix B). */
 export const SEED_CAP_USD = 50_000;
 
 // ---------------------------------------------------------------------------
@@ -63,9 +63,9 @@ export const SEED_PAYEES: WhitelistEntry[] = [
 
 export function createSeedOperator(): Operator {
   return {
-    name: 'Northwind Autonomy Ltd',
-    registrationNumber: 'NW-88231-CV',
-    country: 'United Kingdom',
+    name: 'NEAR Foundation',
+    registrationNumber: 'CHE-329.999.911',
+    country: 'Switzerland',
     beneficialOwners: [
       { name: 'Maya Okafor', sharePct: 41 },
       { name: 'Daniel Voss', sharePct: 33 },
@@ -98,9 +98,9 @@ export function createSeedPriceFeed(): PriceFeedState {
 // Programme book (Appendix B): total external caps $5,500,000
 // ---------------------------------------------------------------------------
 
-export const HELIOS = 'Helios v2.3';
-export const ATLAS = 'Atlas v1';
-export const BEACON = 'Beacon v4';
+export const HELIOS = 'IronClaw v2.3';
+export const ATLAS = 'Hermes v1';
+export const BEACON = 'Eliza v4';
 export const CUSTOM = 'Assorted custom harnesses';
 
 export function createSeedBook(): ProgrammeBook {
@@ -132,16 +132,16 @@ function openHistory<K extends string>(
 }
 
 const HARNESSES: Record<string, Harness> = {
-  [HELIOS]: { name: 'Helios', version: 'v2.3', audited: true },
-  [ATLAS]: { name: 'Atlas', version: 'v1', audited: true },
-  [BEACON]: { name: 'Beacon', version: 'v4', audited: true },
+  [HELIOS]: { name: 'IronClaw', version: 'v2.3', audited: true },
+  [ATLAS]: { name: 'Hermes', version: 'v1', audited: true },
+  [BEACON]: { name: 'Eliza', version: 'v4', audited: true },
 };
 
 const BASE_MANIFEST: ToolManifestEntry[] = [
-  { name: 'payments.send', publisher: 'Helios Labs', version: '3.1.0', permissions: ['transfer:whitelisted'] },
+  { name: 'payments.send', publisher: 'NEAR AI', version: '3.1.0', permissions: ['transfer:whitelisted'] },
   { name: 'invoices.read', publisher: 'Ledgerworks', version: '2.4.2', permissions: ['read:invoices'] },
   { name: 'vendors.lookup', publisher: 'Meridian Data', version: '1.9.0', permissions: ['read:registry'] },
-  { name: 'alerts.notify', publisher: 'Northwind', version: '1.2.1', permissions: ['notify:ops-channel'] },
+  { name: 'alerts.notify', publisher: 'NEAR Foundation', version: '1.2.1', permissions: ['notify:ops-channel'] },
 ];
 
 export interface SeedAgentSpec {
@@ -171,7 +171,7 @@ export const WIZARD_AGENT: SeedAgentSpec = {
 
 /**
  * Fixed CSV-import order (plan §7 / Appendix B): Legacy-Bot, Relay-Bot, then
- * the nine Helios agents. Vendor-Bot's prospective share lands at exactly
+ * the nine IronClaw agents. Vendor-Bot's prospective share lands at exactly
  * 40.0000%; Settle-Bot crosses at 40.5085% and carries the loading, as do
  * the four after it.
  */

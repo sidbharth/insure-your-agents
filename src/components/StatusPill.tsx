@@ -40,7 +40,7 @@ export function StatusPill({ status, reason, className = '' }: StatusPillProps) 
       <span className={`h-1.5 w-1.5 rounded-full ${DOTS[status]}`} />
       {status}
       {status === 'Suspended' && reason ? (
-        <span className="font-normal">· {reason}</span>
+        <span className="font-normal">({reason})</span>
       ) : null}
     </span>
   );

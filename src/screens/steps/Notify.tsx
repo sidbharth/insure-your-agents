@@ -44,11 +44,11 @@ export default function Notify({ claim, incident, onNext }: NotifyProps) {
     <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]" data-testid="claim-step-notify">
       <div className="rounded-card border border-line bg-panel p-5 shadow-card">
         <h2 className="text-md font-bold text-ink">What happened?</h2>
-        <p className="mt-3 rounded-lg border border-line bg-[#fafbfd] p-4 text-sm text-body">
+        <p className="mt-3 rounded-lg border border-line bg-[#fafbfa] p-4 text-sm text-body">
           {incident.narrative}
         </p>
         <span className="mt-2 inline-flex items-center rounded-md border border-accent-line bg-accent-soft px-2 py-0.5 text-2xs font-semibold text-accent-ink">
-          Narrative pre-filled from injected incident {incident.scenarioId}
+          Pre-filled from incident record {incident.scenarioId}
         </span>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -56,26 +56,26 @@ export default function Notify({ claim, incident, onNext }: NotifyProps) {
             <div className="text-2xs font-bold uppercase tracking-wider text-faint">
               Discovery timestamp
             </div>
-            <div className="num mt-1 rounded-lg border border-line bg-[#fafbfd] px-3 py-2 font-mono text-sm text-ink">
+            <div className="num mt-1 rounded-lg border border-line bg-[#fafbfa] px-3 py-2 font-mono text-sm text-ink">
               {fmtUtcDateTime(incident.discoveredAt)}
             </div>
             <p className="mt-1.5 text-2xs text-faint">
-              Set from the first anomaly alert — discovery counts from when anyone
-              responsible knew, or should have known from an alert.
+              Set from the first anomaly alert. Discovery is measured from when
+              any responsible party knew, or should have known from an alert.
             </p>
           </div>
           <div>
             <div className="text-2xs font-bold uppercase tracking-wider text-faint">
               First loss transaction
             </div>
-            <div className="num mt-1 rounded-lg border border-line bg-[#fafbfd] px-3 py-2 font-mono text-sm text-ink">
+            <div className="num mt-1 rounded-lg border border-line bg-[#fafbfa] px-3 py-2 font-mono text-sm text-ink">
               {incident.lossTxRefs.length > 0
-                ? `${incident.lossTxRefs[0]} · ${fmtUtcTime(incident.eventAt)}`
-                : 'none — no value moved'}
+                ? `${incident.lossTxRefs[0]} at ${fmtUtcTime(incident.eventAt)}`
+                : 'none (no value moved)'}
             </div>
             <p className="mt-1.5 text-2xs text-faint">
               {incident.lossTxRefs.length > 0
-                ? 'Auto-linked from your action log — sets the 4-hour valuation window.'
+                ? 'Auto-linked from your action log. Sets the 4-hour valuation window.'
                 : `Near-miss: the blocked attempt cost ${formatUsd(incident.investigationCostUsd ?? 0)} to investigate.`}
             </p>
           </div>
@@ -92,7 +92,7 @@ export default function Notify({ claim, incident, onNext }: NotifyProps) {
             type="button"
             data-testid="notify-programme"
             onClick={notify}
-            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white"
+            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-ink"
           >
             {notified ? 'Continue →' : 'Notify the programme →'}
           </button>
@@ -119,8 +119,8 @@ export default function Notify({ claim, incident, onNext }: NotifyProps) {
           </div>
         </div>
         <Callout title="Why the clock starts at discovery">
-          Discovery counts from when anyone responsible knew — or should have known
-          from an alert. Fast notice is what makes fast adjustment possible.
+          Discovery is measured from when any responsible party knew, or should
+          have known from an alert. Fast notice makes fast adjustment possible.
         </Callout>
       </div>
     </div>

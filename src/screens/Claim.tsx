@@ -30,7 +30,7 @@ const PROCESS_MAP: { label: string; note: string }[] = [
   { label: 'Contain', note: 'immediate and unconditional' },
   { label: 'Evidence', note: '12-item package, mostly auto' },
   { label: 'Clocks & decision', note: 'published deadlines' },
-  { label: 'Outcome', note: 'payment — or a reasoned denial' },
+  { label: 'Outcome', note: 'payment or a reasoned denial' },
 ];
 
 function EmptyState() {
@@ -38,14 +38,14 @@ function EmptyState() {
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Claim">
       <h1 className="text-lg font-bold tracking-tight text-ink">File a claim</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted">
-        A claim is decided on the attested record, on published clocks. This is the
-        route a loss would take:
+        Claims are decided on the attested record, on published clocks. A
+        claim follows this route:
       </p>
-      <div className="mt-6 flex overflow-hidden rounded-card border border-line bg-panel shadow-card">
+      <div className="mt-6 flex flex-col overflow-hidden rounded-card border border-line bg-panel shadow-card sm:flex-row">
         {PROCESS_MAP.map((step, i) => (
           <div
             key={step.label}
-            className="flex flex-1 items-center gap-2.5 border-r border-line px-4 py-4 last:border-r-0"
+            className="flex flex-1 items-center gap-2.5 border-b border-line px-4 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:py-4 sm:last:border-r-0"
           >
             <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full border border-line text-2xs font-bold text-faint">
               {i + 1}
@@ -97,8 +97,9 @@ function IncidentInbox({ incidents }: { incidents: Incident[] }) {
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Claim">
       <h1 className="text-lg font-bold tracking-tight text-ink">File a claim</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted">
-        Incidents on your fleet. Each one carries its own injected record — logs, chain
-        data, attestation records — so the evidence package mostly attaches itself.
+        Incidents on your fleet. Each incident arrives with its own records
+        (logs, chain data, attestations), so most of the evidence package
+        attaches automatically.
       </p>
       <div className="mt-5 flex flex-col gap-2.5" data-testid="incident-inbox">
         {incidents.map((incident) => {
@@ -115,14 +116,12 @@ function IncidentInbox({ incidents }: { incidents: Incident[] }) {
               </span>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold text-ink">
-                  {meta.title} · {agent?.name ?? incident.agentId}
+                  {meta.title} ({agent?.name ?? incident.agentId})
                 </div>
                 <div className="text-xs text-muted">
                   {incident.lossGrossUsd > 0
                     ? `Gross loss ${formatUsd(incident.lossGrossUsd)}`
-                    : `Near-miss — investigation cost ${formatUsd(incident.investigationCostUsd ?? 0)}`}
-                  {' · '}
-                  {meta.presenterLine}
+                    : `Near-miss with ${formatUsd(incident.investigationCostUsd ?? 0)} in investigation costs`}
                 </div>
               </div>
               <button
@@ -132,7 +131,7 @@ function IncidentInbox({ incidents }: { incidents: Incident[] }) {
                 className={`flex-none rounded-lg px-3.5 py-2 text-sm font-semibold ${
                   claim !== undefined
                     ? 'border border-line text-ink'
-                    : 'bg-accent text-white'
+                    : 'bg-accent text-ink'
                 }`}
               >
                 {claim !== undefined ? `Open claim ${claimRef(claim.id)}` : 'File a claim →'}
@@ -163,19 +162,19 @@ function ClaimFlow({ claim, incident }: { claim: ClaimType; incident: Incident }
   const agent = agents.find((a) => a.id === incident.agentId);
   const meta = SCENARIOS[incident.scenarioId];
 
-  const crumb = `Claim ${claimRef(claim.id)} · ${agent?.name ?? incident.agentId} · Incident ${incident.scenarioId} — ${meta.title.toLowerCase()}`;
+  const crumb = `${agent?.name ?? incident.agentId}, incident ${incident.scenarioId} (${meta.title.toLowerCase()})`;
   const subtitles: Record<number, string> = {
     1: 'A claim is decided on the attested record, on published clocks. First: what happened, and when did you discover it?',
-    2: 'Containment is immediate and unconditional — confirm the four duties before evidence.',
-    3: 'The twelve-item evidence package — a compliant stack already possesses most of it.',
-    4: 'Published clocks, running as real state — the presenter can fast-forward them.',
+    2: 'Containment is immediate and unconditional. Confirm the four duties before evidence.',
+    3: 'The twelve-item evidence package. A compliant stack already holds most of it.',
+    4: 'Published clocks, tracked as live state. Every deadline is visible while it runs.',
     5: claim.adjudication?.eligibility.covered === false
-      ? 'Determination: not covered. A denial here is a first-class decision — reasoned, referenced, and delivered on the same clocks as a payment.'
-      : 'Determination: covered. The payout is recomputed from this incident\u2019s own parameters — every line opens under \u201cShow the math.\u201d',
+      ? 'Determination: not covered. A denial is a reasoned, referenced decision, delivered on the same clocks as a payment.'
+      : 'Determination: covered. The payout is recomputed from this incident\u2019s own parameters. Every line opens under \u201cShow the math.\u201d',
   };
 
   return (
-    <ClaimChrome crumb={crumb} subtitle={subtitles[step] ?? ''} step={step}>
+    <ClaimChrome crumbRef={claimRef(claim.id)} crumb={crumb} subtitle={subtitles[step] ?? ''} step={step}>
       {step === 1 && (
         <Notify claim={claim} incident={incident} onNext={() => setStep(2)} />
       )}

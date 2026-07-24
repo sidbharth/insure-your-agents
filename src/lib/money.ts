@@ -59,7 +59,7 @@ export function formatUsd(usd: number, opts: FormatOptions = {}): string {
   return `${sign}$${abs}`;
 }
 
-/** "1,383 N" / "≈ 12.3 N". */
+/** "1,383 $NEAR" / "≈ 12.3 $NEAR". */
 export function formatN(n: number, opts: FormatOptions = {}): string {
   const { maxFractionDigits = Number.isInteger(n) ? 0 : 1, signed = false } = opts;
   const abs = Math.abs(n).toLocaleString('en-US', {
@@ -67,7 +67,7 @@ export function formatN(n: number, opts: FormatOptions = {}): string {
     maximumFractionDigits: maxFractionDigits,
   });
   const sign = n < 0 ? '−' : signed ? '+' : '';
-  return `${sign}${abs} N`;
+  return `${sign}${abs} $NEAR`;
 }
 
 /** "0.6%" / "+0.1%" — rate points formatting with tabular styling upstream. */
@@ -77,9 +77,9 @@ export function formatPct(points: number, opts: FormatOptions = {}): string {
   return `${sign}${Math.abs(points).toFixed(1)}%`;
 }
 
-/** "1 N = $3.00" style rate rendering. */
+/** "1 $NEAR = $3.00" style rate rendering. */
 export function formatRate(usdPerN: number): string {
-  return `1 N = $${usdPerN.toFixed(2)}`;
+  return `1 $NEAR = $${usdPerN.toFixed(2)}`;
 }
 
 /** "14:31:07" clock text for price-chip timestamps. */

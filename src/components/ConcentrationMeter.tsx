@@ -29,7 +29,7 @@ export function ConcentrationMeter({
       <div className="mb-1 flex items-baseline justify-between text-xs">
         <span className="font-semibold text-ink">
           {component}{' '}
-          <span className="font-normal text-faint">· {CONCENTRATION_METER_LABEL}</span>
+          <span className="font-normal text-faint">({CONCENTRATION_METER_LABEL})</span>
         </span>
         <b className={`num ${over ? 'text-warn' : 'text-ink'}`} data-testid="share-readout">
           {(share * 100).toFixed(1)}%
@@ -47,12 +47,12 @@ export function ConcentrationMeter({
         />
       </div>
       <div className="num mt-0.5 text-2xs text-faint">
-        {(threshold * 100).toFixed(0)}% threshold — enrollments past this carry a
-        +0.1% loading
+        {(threshold * 100).toFixed(0)}% threshold. Enrollments beyond this carry
+        a +0.1% loading.
       </div>
       {over && (
         <div className="mt-1 text-2xs font-semibold text-warn" data-testid="over-threshold">
-          Above threshold — new {component} enrollments carry the +0.1% loading
+          Above threshold: new {component} enrollments carry the +0.1% loading
         </div>
       )}
     </div>

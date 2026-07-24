@@ -1,7 +1,7 @@
 /**
  * Tailwind theme tokens derived from the frozen design contract at
  * /code/.plans/designs/ (design-plan.json + wizard-*.html / postpurchase-*.html):
- * navy header ink, slate canvas, a single accent blue, green/amber/red
+ * NEAR-branded: near-black header ink, neutral canvas, NEAR green accent,
  * semantic encoding, tabular numerals for money, monospace hashes,
  * light theme, >=1280px layout.
  */
@@ -12,21 +12,22 @@ export default {
     extend: {
       colors: {
         // core surfaces
-        ink: '#0e1b2c', // navy header / darkest text
-        'ink-2': '#243447',
-        body: '#33414f', // default text
-        muted: '#5f6f80',
-        faint: '#8a97a6',
-        canvas: '#f2f4f8', // slate page background
+        ink: '#161615', // near-black header / darkest text (NEAR brand neutral)
+        'ink-2': '#2e2f2d',
+        body: '#383d3a', // default text
+        muted: '#626a66',
+        faint: '#8d948f',
+        canvas: '#f4f5f3', // neutral page background
         panel: '#ffffff',
-        line: '#dbe2ea',
-        'line-soft': '#e9eef4',
+        line: '#dfe3df',
+        'line-soft': '#ecefec',
         // single accent
+        // single accent: NEAR green (brand #00EC97); dark text on green surfaces
         accent: {
-          DEFAULT: '#1e56d6',
-          ink: '#16409f',
-          soft: '#e9effc',
-          line: '#c4d4f5',
+          DEFAULT: '#00EC97',
+          ink: '#0b7a52',
+          soft: '#e4fbf1',
+          line: '#b2f0d6',
         },
         // semantic: green = on/verified, amber = priced consequence, red = declined/excluded
         good: {
@@ -78,7 +79,7 @@ export default {
         '2xl': ['40px', '1.15'],
       },
       boxShadow: {
-        card: '0 1px 2px rgba(14,27,44,.06), 0 4px 14px rgba(14,27,44,.04)',
+        card: '0 1px 2px rgba(22,22,21,.06), 0 4px 14px rgba(22,22,21,.04)',
       },
       maxWidth: {
         shell: '1160px',

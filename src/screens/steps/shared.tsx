@@ -48,7 +48,7 @@ export function fmtUtcTimeSec(ts: Timestamp): string {
 /** "21 Jul · 11:03 UTC" */
 export function fmtUtcDayTime(ts: Timestamp): string {
   const d = new Date(ts);
-  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} · ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())} UTC`;
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}, ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())} UTC`;
 }
 
 
@@ -85,7 +85,7 @@ export function ClaimStepper({ current }: StepperProps) {
   return (
     <div
       data-testid="claim-stepper"
-      className="mb-6 flex overflow-hidden rounded-card border border-line bg-panel shadow-card"
+      className="mb-6 flex overflow-x-auto rounded-card border border-line bg-panel shadow-card"
     >
       {STEP_LABELS.map((label, i) => {
         const n = i + 1;
@@ -96,7 +96,7 @@ export function ClaimStepper({ current }: StepperProps) {
             data-step-state={state}
             className={`flex flex-1 items-center gap-2.5 border-r border-line px-4 py-3 text-xs last:border-r-0 ${
               state === 'cur'
-                ? 'bg-[#fbfdfc] font-semibold text-ink shadow-[inset_0_-2px_0_#1e56d6]'
+                ? 'bg-[#fbfdfc] font-semibold text-ink shadow-[inset_0_-2px_0_#00c988]'
                 : state === 'done'
                   ? 'text-muted'
                   : 'text-faint'
@@ -107,7 +107,7 @@ export function ClaimStepper({ current }: StepperProps) {
                 state === 'done'
                   ? 'border-good-line bg-good-bg text-good'
                   : state === 'cur'
-                    ? 'border-accent bg-accent text-white'
+                    ? 'border-accent bg-accent text-ink'
                     : 'border-line text-faint'
               }`}
             >
@@ -122,26 +122,27 @@ export function ClaimStepper({ current }: StepperProps) {
 }
 
 export interface ClaimChromeProps {
+  crumbRef: string;
   crumb: string;
   subtitle: string;
   step: number;
   children: ReactNode;
 }
 
-/** Page head (crumb + presenter chip) + stepper + step body. */
-export function ClaimChrome({ crumb, subtitle, step, children }: ClaimChromeProps) {
+/** Page head + stepper + step body. */
+export function ClaimChrome({ crumbRef, crumb, subtitle, step, children }: ClaimChromeProps) {
   return (
     <div className="mx-auto max-w-shell px-6 py-7" data-testid="screen-Claim">
-      <div className="mb-4 flex items-start justify-between gap-5">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-5">
         <div>
-          <div className="mb-1 text-xs text-faint">
-            Claims · <b className="font-semibold text-muted">{crumb}</b>
-          </div>
-          <h1 className="text-lg font-bold tracking-tight text-ink">File a claim</h1>
+          <h1 className="text-lg font-bold tracking-tight text-ink">
+            Claim {crumbRef}
+          </h1>
+          <p className="mt-0.5 text-sm text-muted">{crumb}</p>
           <p className="mt-1 max-w-2xl text-sm text-muted">{subtitle}</p>
         </div>
-        <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-[#f7f9fb] px-2 py-0.5 text-2xs font-semibold text-faint">
-          Incident injected by presenter · <SimulatedBadge />
+        <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-[#f6f8f7] px-2 py-0.5 text-2xs font-semibold text-faint">
+          Incident record <SimulatedBadge />
         </span>
       </div>
       <ClaimStepper current={step} />
@@ -153,7 +154,7 @@ export function ClaimChrome({ crumb, subtitle, step, children }: ClaimChromeProp
 /** Teaching callout ("? Why …"). */
 export function Callout({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="rounded-card border border-line bg-[#fbfcfe] px-4 py-3.5">
+    <div className="rounded-card border border-line bg-[#fbfcfb] px-4 py-3.5">
       <h4 className="mb-1 flex items-center gap-2 text-xs font-bold text-ink">
         <span className="flex h-4 w-4 flex-none items-center justify-center rounded-full bg-ink text-[10px] font-bold text-white">
           ?

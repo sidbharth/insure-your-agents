@@ -17,12 +17,12 @@ import { isOperatorVerifiedNow } from '../components/UnverifiedBanner';
 import { SEED_EPOCH } from '../data/seed';
 import { useStore } from '../store';
 import { formatUtcStamp } from './wizard/format';
-import { WizardStepper } from './wizard/Stepper';
+import { WizardBack, WizardStepper } from './wizard/Stepper';
 
 type Phase = 'form' | 'verifying' | 'verified' | 'skip-confirm';
 
 const VERIFY_STEPS = [
-  { label: 'Checking company registry · Companies House' },
+  { label: 'Checking the Swiss Commercial Register (Zefix)' },
   { label: 'Matching beneficial owners over 25%' },
   { label: 'Screening sanctions and watchlists' },
   { label: 'Issuing verification record' },
@@ -73,15 +73,24 @@ export default function VerifyCompany() {
 
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-VerifyCompany">
-      <WizardStepper current="company" className="mb-6" />
+      <WizardStepper current="company" className="mb-3" />
+      <WizardBack
+        to="/"
+        note="Going back keeps everything you've entered."
+        warn={
+          phase === 'verifying'
+            ? 'Verification is still running. Going back cancels it and you will need to restart it. Go back anyway?'
+            : undefined
+        }
+        className="mb-5"
+      />
 
       <div className="mx-auto max-w-[720px]">
         <h1 className="text-xl font-bold text-ink">Verify your company</h1>
         <p className="mt-2 text-sm text-muted">
-          Insurance is a promise between named parties. If we don't know who
-          you are, we can't chase stolen funds on your behalf, and we can't
-          stand behind you at claim time. Verification takes about a minute
-          here — it's simulated.
+          Verification ties the policy to a named legal entity. It enables
+          the programme to pursue recovery on your behalf and stand behind
+          claims. This takes about a minute.
         </p>
 
         {/* Company details (pre-filled) */}
@@ -136,8 +145,8 @@ export default function VerifyCompany() {
             </div>
           </div>
           <p className="mt-3 text-2xs text-faint">
-            Pre-filled with seeded demo data — edit freely; the verification
-            result is deterministic.
+            Pre-filled from your registration details. Review and edit before
+            verifying.
           </p>
         </div>
 
@@ -148,7 +157,7 @@ export default function VerifyCompany() {
               type="button"
               data-testid="verify-company"
               onClick={startVerify}
-              className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-white hover:bg-accent-ink"
+              className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489]"
             >
               Verify company
             </button>
@@ -195,7 +204,7 @@ export default function VerifyCompany() {
                 type="button"
                 data-testid="kyb-continue"
                 onClick={() => navigate('/connect')}
-                className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-white hover:bg-accent-ink"
+                className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489]"
               >
                 Continue
               </button>
@@ -228,7 +237,7 @@ export default function VerifyCompany() {
                 verification isn't current.
               </p>
               <p className="text-xs">
-                Verifying later protects future events only — it is never
+                Verifying later protects future events only. It is not
                 retroactive.
               </p>
             </div>
@@ -237,7 +246,7 @@ export default function VerifyCompany() {
                 type="button"
                 data-testid="verify-instead"
                 onClick={startVerify}
-                className="rounded-lg bg-accent px-4 py-1.5 text-sm font-semibold text-white hover:bg-accent-ink"
+                className="rounded-lg bg-accent px-4 py-1.5 text-sm font-semibold text-ink hover:bg-[#0bd489]"
               >
                 Verify instead
               </button>
@@ -254,10 +263,10 @@ export default function VerifyCompany() {
         )}
 
         {phase !== 'skip-confirm' && phase !== 'verified' && (
-          <p className="mt-6 text-2xs text-faint">
+          <p className="mt-6 text-xs text-muted">
             Verification can also be completed later from My Policies.
-            Verifying later removes the +0.4% surcharge pro rata — but
-            protects future events only.
+            Verifying later removes the 0.4% surcharge pro rata and protects
+            future events only.
           </p>
         )}
       </div>

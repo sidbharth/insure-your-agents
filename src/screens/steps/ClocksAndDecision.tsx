@@ -93,7 +93,7 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
 
   const nodes: TimelineNode[] = [
     { label: 'Notified', sub: 'within 48h of discovery', at: anchors.notifiedAt },
-    { label: 'Acknowledged', sub: 'insurer · 2 business days', at: anchors.acknowledgedAt },
+    { label: 'Acknowledged', sub: 'insurer, 2 business days', at: anchors.acknowledgedAt },
     {
       label: 'Package check',
       sub: 'incomplete? told within 5 business days',
@@ -119,9 +119,9 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
             ✓
           </span>
           <span className="text-good">
-            <b>Conditions precedent — passed as of event time ({fmtUtcTime(incident.eventAt)}):</b>{' '}
-            tier-1 gates operative · mandate v{mandateVersion} in force · premium current ·
-            KYB verification current
+            <b>Conditions precedent passed as of event time ({fmtUtcTime(incident.eventAt)}):</b>{' '}
+            tier-1 gates operative, mandate v{mandateVersion} in force, premium
+            current, and KYB verification current
           </span>
         </div>
       ) : (
@@ -133,7 +133,7 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
             ✕
           </span>
           <span className="text-bad">
-            <b>Conditions precedent — failed as of event time ({fmtUtcTime(incident.eventAt)}):</b>{' '}
+            <b>Conditions precedent failed as of event time ({fmtUtcTime(incident.eventAt)}):</b>{' '}
             {result.conditionsPrecedent.failedCondition}. No claim is payable for this event.
           </span>
         </div>
@@ -141,9 +141,9 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
 
       <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]">
         <div className="rounded-card border border-line bg-panel p-5 shadow-card">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-md font-bold text-ink">
-              Status timeline · Claim {claimRef(claim.id)}
+              Status timeline for claim {claimRef(claim.id)}
             </h2>
             <div className="flex items-center gap-2">
               {conditionsPass &&
@@ -151,10 +151,10 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
                 !determined && (
                   <span
                     data-testid="interim-payment-chip"
-                    className="rounded-md border border-[#c6d9f5] bg-[#eaf1fc] px-2 py-0.5 text-2xs font-semibold text-[#1d5bbf]"
+                    className="rounded-md border border-[#b2f0d6] bg-[#e4fbf1] px-2 py-0.5 text-2xs font-semibold text-[#0b7a52]"
                   >
-                    Interim payment available — up to 50%, repayable if the claim
-                    ultimately fails
+                    Interim payment available: up to 50%, repayable if the
+                    claim ultimately fails
                   </span>
                 )}
               {conditionsPass && (
@@ -162,9 +162,9 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
                   type="button"
                   data-testid="fast-forward"
                   onClick={fastForward}
-                  className="whitespace-nowrap rounded-lg border border-line bg-[#fafbfd] px-3 py-1.5 font-mono text-xs font-semibold text-ink"
+                  className="whitespace-nowrap rounded-lg border border-line bg-[#fafbfa] px-3 py-1.5 font-mono text-xs font-semibold text-ink"
                 >
-                  ▶▶ Fast-forward <span className="text-faint">presenter</span>
+                  ▶▶ Fast-forward <span className="text-faint">to next deadline</span>
                 </button>
               )}
             </div>
@@ -172,7 +172,7 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
 
           {conditionsPass ? (
             <>
-              <div className="mt-6 flex items-start">
+              <div className="mt-6 flex items-start overflow-x-auto">
                 {nodes.map((node, i) => {
                   const met = node.at !== undefined;
                   const current = i === currentIdx;
@@ -189,7 +189,7 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
                             met
                               ? 'border-good bg-good-bg text-good'
                               : current
-                                ? 'border-accent bg-panel text-accent ring-2 ring-accent-line'
+                                ? 'border-accent bg-panel text-accent-ink ring-2 ring-accent-line'
                                 : 'border-line bg-panel text-faint'
                           }`}
                         >
@@ -256,7 +256,7 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
                 data-testid="clocks-continue"
                 disabled={!determined}
                 onClick={continueToOutcome}
-                className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {determined ? 'View outcome →' : 'Awaiting determination…'}
               </button>
@@ -265,7 +265,7 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
                 type="button"
                 data-testid="clocks-continue"
                 onClick={continueToDenial}
-                className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white"
+                className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-ink"
               >
                 Continue to determination →
               </button>
@@ -275,9 +275,9 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
 
         <div className="flex flex-col gap-3.5">
           <Callout title="Why publish clocks at all?">
-            Published deadlines are a loss-adjustment cost story as much as a
-            customer-experience story: evidence-first claims are fast — and cheap to
-            adjust.
+            Published deadlines serve loss-adjustment economics as much as
+            customer experience: evidence-first claims are fast and inexpensive
+            to adjust.
           </Callout>
           <Callout title="What happens next">
             {conditionsPass

@@ -81,22 +81,19 @@ export default function Coverage() {
 
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Coverage">
-      <div className="mb-1 text-xs text-faint">
-        Coverage ·{' '}
-        <b className="text-muted">
-          {postPurchase && agent
-            ? `Policy schedule · ${agent.name}`
-            : 'Quote-stage preview'}
-        </b>
-      </div>
-      <div className="mb-4 flex items-start justify-between gap-5">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-5">
         <div>
-          <h1 className="text-lg">Current policy coverage</h1>
+          <h1 className="text-lg">
+            Policy coverage
+            {postPurchase && agent && (
+              <span className="font-normal text-muted"> for {agent.name}</span>
+            )}
+          </h1>
           <p className="mt-1 max-w-xl text-sm text-muted">
-            Six coverage families, bound to{' '}
+            Six coverage families apply to{' '}
             {postPurchase ? 'this agent’s' : 'the quoted'}{' '}
-            <b className="num text-ink">{formatUsd(capUsd)}</b> cap. Coverage isn’t a
-            menu here — it’s the shadow your controls cast.
+            <b className="num text-ink">{formatUsd(capUsd)}</b> cap. Coverage is
+            determined by the controls in place, not selected from a menu.
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
@@ -112,13 +109,13 @@ export default function Coverage() {
               data-testid="coverage-quote-stage"
               className="rounded-md border border-line bg-canvas px-2.5 py-1 text-2xs font-semibold text-muted"
             >
-              Quote stage — no enrollment yet · numbers shown at the quoted cap
+              Quote stage: amounts shown at the quoted cap
             </span>
           )}
           <Link
             to="/coverage?view=scenarios"
             data-testid="test-a-scenario"
-            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white"
+            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-ink"
           >
             Test a scenario
           </Link>
@@ -133,16 +130,16 @@ export default function Coverage() {
         <div className="text-2xs font-bold uppercase tracking-widest text-faint">
           Limits picture
         </div>
-        <div className="mt-2 grid grid-cols-3 gap-3">
+        <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {(['A', 'E', 'F'] as CoverageRoute[]).map((route) => (
             <div key={route} className="text-sm text-body">
               <span className="text-muted">
-                {route === 'A' ? 'A–D per event' : `${route} per event`} ·{' '}
-                {LIMIT_LABEL[route]}
+                {route === 'A' ? 'A–D per event' : `${route} per event`}{' '}
+                ({LIMIT_LABEL[route]})
               </span>{' '}
               <MathValue
                 breakdown={{
-                  title: `Per-event limit — route ${route === 'A' ? 'A–D' : route}`,
+                  title: `Per-event limit, route ${route === 'A' ? 'A–D' : route}`,
                   inputs: [
                     { label: 'Per-agent cap', amount: formatUsd(capUsd) },
                     { label: 'Limit fraction', amount: LIMIT_LABEL[route] },
@@ -158,11 +155,12 @@ export default function Coverage() {
           ))}
         </div>
         <p className="mt-2 border-t border-line-soft pt-2 text-2xs text-faint">
-          Sublimits sit inside the per-event limit, not on top · recovery/bounty costs
-          inside F capped at 10% of cap ({formatUsd(0.1 * capUsd)}) · one aggregate ·
-          one incident pays once. Retention per event:{' '}
-          <b className="num text-muted">greater of 500 N or 2% of the loss</b> — borne
-          per event, never prepaid.
+          Sublimits sit inside the per-event limit, not on top of it. Recovery
+          and bounty costs inside Coverage F are capped at 10% of the cap
+          ({formatUsd(0.1 * capUsd)}). One aggregate applies, and a single
+          incident pays once. The retention per event is the{' '}
+          <b className="num text-muted">greater of 500 $NEAR or 2% of the loss</b>,
+          and it is never prepaid.
         </p>
       </div>
 
@@ -186,7 +184,7 @@ export default function Coverage() {
                 className="flex items-center justify-between gap-4 py-1.5 text-sm"
               >
                 <span className="text-muted">
-                  <b className="text-ink">{route}</b> · {card?.title}
+                  <b className="text-ink">Coverage {route}</b>: {card?.title}
                 </span>
                 <MathValue
                   breakdown={{

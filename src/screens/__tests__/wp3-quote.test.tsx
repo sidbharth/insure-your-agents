@@ -38,7 +38,7 @@ describe('7.6 — the price', () => {
     expect(screen.getByTestId('quote-rate')).toHaveTextContent('0.6%');
     const premium = screen.getByTestId('quote-premium');
     expect(premium).toHaveTextContent('$300');
-    expect(premium).toHaveTextContent('≈ 100 N');
+    expect(premium).toHaveTextContent('≈ 100 $NEAR');
     // live source line at the reference price
     expect(screen.getByTestId('quote-price-source')).toHaveTextContent('$3.00');
   });
@@ -47,13 +47,13 @@ describe('7.6 — the price', () => {
     renderQuote();
     const quarterly = screen.getByTestId('quote-quarterly');
     expect(quarterly).toHaveTextContent('4 × $75');
-    expect(screen.getByText(/more than 15 days overdue suspends cover/i)).toBeInTheDocument();
+    expect(screen.getByText(/suspended if an installment is more than 15 days overdue/i)).toBeInTheDocument();
   });
 
   it('renders the ladder recap with the 3.0% ceiling label', () => {
     renderQuote();
     expect(screen.getByTestId('ladder-recap')).toBeInTheDocument();
-    expect(screen.getByText(/3\.0% ceiling — never more than this/)).toBeInTheDocument();
+    expect(screen.getAllByText(/3\.0% ceiling/).length).toBeGreaterThan(0);
   });
 
   it('the advanced disclosure is STATIC copy — both schedule items, never computed', () => {
@@ -61,7 +61,7 @@ describe('7.6 — the price', () => {
     const advanced = screen.getByTestId('quote-advanced');
     for (const item of ADVANCED_PRICING_COPY) {
       expect(advanced).toHaveTextContent(item.slice(0, 60));
-      expect(item).toContain('Not applied in this demo quote');
+      expect(item).toMatch(/to this quote\.$/);
     }
   });
 });
@@ -99,16 +99,16 @@ describe('7.6 — exclusion wall, limits, retention, scenario link', () => {
   it('limits picture: A–D 100%, E 50%, F 15% of the $50,000 cap', () => {
     renderQuote();
     const limits = screen.getByTestId('quote-limits');
-    expect(limits).toHaveTextContent('100% of cap · $50,000');
-    expect(limits).toHaveTextContent('50% of cap · $25,000');
-    expect(limits).toHaveTextContent('15% of cap · $7,500');
+    expect(limits).toHaveTextContent('100% of cap ($50,000)');
+    expect(limits).toHaveTextContent('50% of cap ($25,000)');
+    expect(limits).toHaveTextContent('15% of cap ($7,500)');
     expect(limits).toHaveTextContent(/pays once/);
   });
 
   it('retention preview: $30k → $1,500 (500 N floor), $200k → $4,000 (2%), not collected today', () => {
     renderQuote();
     const retention = screen.getByTestId('retention-preview');
-    expect(retention).toHaveTextContent('not collected today');
+    expect(retention).toHaveTextContent(/not collected today/i);
     expect(retention).toHaveTextContent('$30,000 loss → you bear $1,500');
     expect(retention).toHaveTextContent('$200,000 loss → you bear $4,000');
   });
@@ -126,7 +126,7 @@ describe('7.6 — declined branch (GT-1)', () => {
     const declined = screen.getByTestId('quote-declined');
     expect(declined).toHaveTextContent('DECLINED');
     expect(declined).toHaveTextContent(/transfer caps/);
-    expect(declined).toHaveTextContent(/a surcharge — it.s the gate/);
+    expect(declined).toHaveTextContent(/an eligibility requirement, not a priced option/);
     expect(screen.queryByTestId('quote-rate')).not.toBeInTheDocument();
   });
 });

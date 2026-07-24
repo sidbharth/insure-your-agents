@@ -158,7 +158,7 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
             ✓
           </span>
           <h2 className="text-md font-bold text-good" data-testid="outcome-verdict">
-            Covered — payment approved
+            Covered: payment approved
           </h2>
           <span className="ml-auto">
             <SimulatedBadge />
@@ -169,10 +169,10 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
           <div className="flex items-baseline justify-between gap-4 text-sm">
             <span className="text-muted">
               {incident.scenarioId === 'S-17'
-                ? 'Investigation and response costs — Coverage F'
+                ? 'Investigation and response costs (Coverage F)'
                 : incident.scenarioId === 'S-03'
-                  ? 'Covered quantum — the excess over the mandate cap (Coverage D)'
-                  : `Loss — net assets out (${result.eligibility.clause})`}
+                  ? 'Covered quantum: the excess over the mandate cap (Coverage D)'
+                  : `Loss: net assets out (${result.eligibility.clause})`}
             </span>
             <span className="num font-mono font-semibold text-ink" data-testid="outcome-loss">
               {formatUsd(math.coveredQuantumUsd, { maxFractionDigits: 2 })}
@@ -186,13 +186,13 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
           </div>
           <div className="flex items-baseline justify-between gap-4 text-sm">
             <span className="text-muted">
-              − Retention — subtracted after coinsurance (5.3)
+              − Retention (after coinsurance, 5.3)
               {math.retentionWaived && (
                 <span className="ml-2 rounded-md border border-good-line bg-good-bg px-1.5 py-0.5 text-2xs font-semibold text-good">
                   waived
                   {incident.scenarioId === 'S-03'
-                    ? ' — the guardrail passed its latest scheduled verification'
-                    : ' — near-miss, no net asset loss'}
+                    ? ': the guardrail passed its latest scheduled verification'
+                    : ': near-miss, no net asset loss'}
                 </span>
               )}
             </span>
@@ -212,9 +212,9 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
             </div>
             <div className="num mt-1 text-right font-mono text-xs text-accent-ink" data-testid="outcome-payout-n">
               ≈ {formatN(math.payoutN, { maxFractionDigits: 0 })} at the day-of-payment
-              rate · 1 N = ${math.rateUsed.toFixed(2)} ·{' '}
-              {feedMode === 'stale' ? 'last known' : feedMode} ·{' '}
-              {formatClockTime(priceFeed.fetchedAt)}
+              rate of 1 $NEAR = ${math.rateUsed.toFixed(2)} (
+              {feedMode === 'stale' ? 'last known' : feedMode},{' '}
+              {formatClockTime(priceFeed.fetchedAt)})
             </div>
           </div>
 
@@ -233,22 +233,22 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
             </div>
             <p className="mt-1.5 text-xs text-muted">{RECOVERY_WATERFALL_COPY}</p>
             <ul className="mt-3 space-y-2 text-xs">
-              <li className="flex items-center justify-between rounded-lg border border-line bg-[#fafbfd] px-3 py-2">
+              <li className="flex items-center justify-between rounded-lg border border-line bg-[#fafbfa] px-3 py-2">
                 <span>
-                  <b>1 · Insurer</b>{' '}
+                  <b>1. Insurer</b>{' '}
                   <span className="text-muted">
-                    — until its {formatUsd(math.payoutUsd)} is restored
+                    until its {formatUsd(math.payoutUsd)} is restored
                   </span>
                 </span>
                 <span className="num font-mono font-semibold text-good">
-                  {formatUsd(waterfall.toInsurerUsd)} → here
+                  {formatUsd(waterfall.toInsurerUsd)}
                 </span>
               </li>
-              <li className="flex items-center justify-between rounded-lg border border-line bg-[#fafbfd] px-3 py-2">
+              <li className="flex items-center justify-between rounded-lg border border-line bg-[#fafbfa] px-3 py-2">
                 <span>
-                  <b>2 · You</b>{' '}
+                  <b>2. You</b>{' '}
                   <span className="text-muted">
-                    — retained {formatUsd(retainedUsd)} (coinsurance + retention)
+                    retained {formatUsd(retainedUsd)} (coinsurance + retention)
                   </span>
                 </span>
                 <span className="num font-mono text-muted">
@@ -257,9 +257,9 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
                     : 'next in line'}
                 </span>
               </li>
-              <li className="flex items-center justify-between rounded-lg border border-line bg-[#fafbfd] px-3 py-2">
+              <li className="flex items-center justify-between rounded-lg border border-line bg-[#fafbfa] px-3 py-2">
                 <span>
-                  <b>3 · Loss beyond the limits</b>
+                  <b>3. Loss beyond the limits</b>
                 </span>
                 <span className="num font-mono text-muted">
                   {waterfall.toUninsuredUsd > 0 ? formatUsd(waterfall.toUninsuredUsd) : '—'}
@@ -271,9 +271,9 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
 
         <Callout title="Why the payout is what it is">
           The retention is the deductible every event bears
-          {math.retentionWaived ? ' (waived here)' : ''}. Coinsurance exists only where a
-          skipped tier-2 control governs the loss: you saved on the control, so you share
-          the pain the control would have prevented (5.5).
+          {math.retentionWaived ? ' (waived here)' : ''}. Coinsurance applies only where a
+          skipped tier-2 control governs the loss: the control was skipped, so the
+          insured shares the loss it would have prevented (5.5).
         </Callout>
 
         {paid ? (
@@ -281,8 +281,8 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
             data-testid="payment-accepted"
             className="rounded-lg border border-good-line bg-good-bg px-3 py-2.5 text-center text-sm font-semibold text-good"
           >
-            ✓ Payment accepted — {formatN(math.payoutN, { maxFractionDigits: 0 })} credited
-            to your wallet
+            ✓ Payment accepted. {formatN(math.payoutN, { maxFractionDigits: 0 })} credited
+            to your wallet.
           </div>
         ) : (
           <button
@@ -294,7 +294,7 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
           >
             {paying
               ? 'Fetching the day-of-payment rate…'
-              : `Accept payment — ${formatN(math.payoutN, { maxFractionDigits: 0 })}`}
+              : `Accept payment of ${formatN(math.payoutN, { maxFractionDigits: 0 })}`}
           </button>
         )}
 
@@ -332,15 +332,15 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
   const modelConduct = incident.scenarioId === 'S-24' && !conditionDenial;
   const bExcluded = !conditionDenial && !modelConduct; // S-09 without attestation
   const verdictLabel = conditionDenial
-    ? 'Not payable — condition precedent'
+    ? 'Not payable: condition precedent'
     : modelConduct
-      ? 'Not covered — model conduct'
-      : 'Not covered — Coverage B excluded';
+      ? 'Not covered: model conduct'
+      : 'Not covered: Coverage B excluded';
   const clauseLabel = conditionDenial
-    ? `${DENIAL_CONDITION_PRECEDENT.clause} · Condition precedent`
+    ? `${DENIAL_CONDITION_PRECEDENT.clause} (condition precedent)`
     : modelConduct
-      ? '4.9 · Model conduct exclusion'
-      : 'D3.5 · Coverage B exclusion';
+      ? '4.9 (model conduct exclusion)'
+      : 'D3.5 (Coverage B exclusion)';
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[1fr_380px]" data-testid="claim-step-outcome">
@@ -352,12 +352,12 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
         <div className="flex items-start justify-between border-b border-line pb-4">
           <div className="flex items-center gap-2.5">
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-ink text-xs font-extrabold text-white">
-              IA
+              AC
             </span>
-            <span className="text-sm font-bold text-ink">Agent Insurance Programme</span>
+            <span className="text-sm font-bold text-ink">AgentConnect Insurance</span>
           </div>
           <div className="text-right text-2xs text-faint">
-            <div>Claim {claimRef(claim.id)} · Policy P-2026-0147</div>
+            <div>Claim {claimRef(claim.id)}, Policy P-2026-0147</div>
             <div>Determination date: {fmtUtcDateLong(determinedAt)}</div>
           </div>
         </div>
@@ -383,16 +383,16 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
               </p>
               <div
                 data-testid="condition-forward-action"
-                className="rounded-lg border border-[#c6d9f5] bg-[#eaf1fc] px-4 py-3 text-xs text-[#1d5bbf]"
+                className="rounded-lg border border-[#b2f0d6] bg-[#e4fbf1] px-4 py-3 text-xs text-[#0b7a52]"
               >
-                <b>The forward-looking fix:</b> conditions precedent are evaluated at each
-                event&rsquo;s own time — restoring the condition now protects every future
-                event from this moment on.
+                <b>The forward-looking fix:</b> conditions precedent are evaluated at
+                each event&rsquo;s own time. Restoring the condition now protects every
+                future event.
                 <div className="mt-2">
                   <Link
                     to="/verify"
                     data-testid="complete-verification-action"
-                    className="inline-block rounded-lg bg-[#1d5bbf] px-3 py-1.5 font-semibold text-white"
+                    className="inline-block rounded-lg bg-[#0b7a52] px-3 py-1.5 font-semibold text-white"
                   >
                     {DENIAL_CONDITION_PRECEDENT.forwardAction}
                   </Link>
@@ -418,9 +418,9 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
               <div
                 data-component-id="coverage-b-counterfactual"
                 data-testid="coverage-b-counterfactual"
-                className="rounded-lg border border-[#c6d9f5] bg-[#eaf1fc] px-4 py-3 text-xs text-[#1d5bbf]"
+                className="rounded-lg border border-[#b2f0d6] bg-[#e4fbf1] px-4 py-3 text-xs text-[#0b7a52]"
               >
-                <b>For the boundary&rsquo;s sake, the counterfactual:</b>{' '}
+                <b>The counterfactual:</b>{' '}
                 {DENIAL_MODEL_CONDUCT.counterfactual} Fooled by an attacker is covered and
                 provable; simply wrong is not this policy.
               </div>
@@ -446,16 +446,17 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
                 &ldquo;we believe it was tricked&rdquo; cannot be distinguished from the
                 excluded case of the model simply being wrong.
               </p>
-              <div className="rounded-lg border border-[#c6d9f5] bg-[#eaf1fc] px-4 py-3 text-xs text-[#1d5bbf]">
-                <b>The forward-looking fix:</b> enabling TEE attestation restores Coverage
-                B for future events — the control is what makes manipulation provable.
+              <div className="rounded-lg border border-[#b2f0d6] bg-[#e4fbf1] px-4 py-3 text-xs text-[#0b7a52]">
+                <b>The forward-looking fix:</b> enabling TEE attestation restores
+                Coverage B for future events. Attestation is what makes manipulation
+                provable.
               </div>
             </>
           )}
           <p>
             Respectfully,
             <br />
-            <b className="text-ink">Claims Determination · Agent Insurance Programme</b>
+            <b className="text-ink">Claims Determination, AgentConnect Insurance</b>
           </p>
           <p className="border-t border-line pt-3 text-2xs text-faint">
             You may request fast-track review of this determination within 30 days.
@@ -488,13 +489,13 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted">Amount payable</dt>
-              <dd className="num font-mono font-semibold">$0 · 0 N</dd>
+              <dd className="num font-mono font-semibold">$0 (0 $NEAR)</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted">Evidence package</dt>
               <dd className="num font-mono">
                 {claim.evidence.filter((e) => e.status === 'auto' || e.status === 'uploaded').length}{' '}
-                of {claim.evidence.filter((e) => e.status !== 'notApplicable').length} · complete
+                of {claim.evidence.filter((e) => e.status !== 'notApplicable').length} (complete)
               </dd>
             </div>
             <div className="flex justify-between gap-4">
@@ -504,10 +505,10 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
           </dl>
         </div>
 
-        <Callout title="Why denials look this polished">
-          Disciplined refusal is half of what makes an insurance programme credible. The
-          boundary is published, reasoned, and delivered with the same care as a payment —
-          never an error state.
+        <Callout title="Why a denial gets a full letter">
+          Disciplined refusal is half of what makes an insurance programme
+          credible. The boundary is published, reasoned, and delivered with the
+          same care as a payment.
         </Callout>
 
         <button

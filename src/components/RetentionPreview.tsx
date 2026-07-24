@@ -36,10 +36,10 @@ export function RetentionPreview({
         Retention preview
       </div>
       <p className="mt-1 text-sm text-body">
-        Per event you'd bear the greater of <b className="num">500 N</b> (
+        Per event you bear the greater of <b className="num">500 $NEAR</b> (
         <span className="num">{formatUsd(retentionFloorUsd)}</span> at today's
-        price) or <b className="num">2%</b> of the loss —{' '}
-        <b>not collected today</b>, borne per event.
+        price) or <b className="num">2%</b> of the loss. It is{' '}
+        <b>not collected today</b> and applies per event.
       </p>
       <ul className="mt-2 space-y-1 text-sm">
         {examples.map(({ loss, borneUsd, isFloor }) => (

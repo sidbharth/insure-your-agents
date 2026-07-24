@@ -35,13 +35,14 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /**
  * Run the staged sub-steps, invoking `onProgress` as each step starts and
- * resolving after the last completes. Total defaults to 1–2 s (1,600 ms)
- * split across steps unless steps carry explicit durations.
+ * resolving after the last completes. Total defaults to 6.4 s split across
+ * steps unless steps carry explicit durations — slow enough that each
+ * sub-step label can actually be read.
  */
 export async function runLatencyTheater(
   steps: LatencyStep[],
   onProgress?: (p: LatencyProgress) => void,
-  totalMs = 1600,
+  totalMs = 6400,
 ): Promise<void> {
   if (steps.length === 0) return;
   const explicit = steps.reduce((s, st) => s + (st.durationMs ?? 0), 0);

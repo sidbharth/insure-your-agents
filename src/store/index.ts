@@ -9,6 +9,7 @@
 import { create } from 'zustand';
 import { resetIncidentCounter } from '../data/incidents';
 import { createSeedState } from '../data/seed';
+import { clearSavedSession } from '../lib/sessionSave';
 import { demoNow, registerOffsetProvider } from '../lib/demoClock';
 import { registerPaymentPorts } from '../lib/payments';
 import { resetWizardAgentId } from '../screens/wizard/wizardAgent';
@@ -34,6 +35,7 @@ export const useStore = create<RootState>()((set, get, api) => ({
   resetGeneration: 0,
 
   reset: () => {
+    clearSavedSession(); // a reset invalidates any saved snapshot too
     resetClaimCounter();
     resetIncidentCounter(); // presenter incident ids restart with the world (AC-16)
     resetWizardAgentId(); // wizard-local module state resets with the world (AC-16)

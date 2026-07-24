@@ -96,7 +96,7 @@ describe('S-09 prompt injection (Coverage B)', () => {
     expect(r.conditionsPrecedent.pass).toBe(true); // conditions hold; coverage doesn't
     expect(r.eligibility.covered).toBe(false);
     expect(r.eligibility.clause).toBe('D3.5');
-    expect(r.eligibility.reason).toMatch(/unprovable without attested I\/O/);
+    expect(r.eligibility.reason).toMatch(/unprovable without attested input and output records/);
     expect(r.math).toBeUndefined();
   });
 
@@ -217,7 +217,7 @@ describe('conditions precedent gate the pipeline (step 1 before everything)', ()
     const r = adjudicate(input);
     expect(r.conditionsPrecedent.pass).toBe(false);
     expect(r.eligibility.covered).toBe(false);
-    expect(r.eligibility.reason).toMatch(/condition precedent/);
+    expect(r.eligibility.reason).toMatch(/condition precedent/i);
     expect(r.math).toBeUndefined();
   });
 });

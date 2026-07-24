@@ -77,6 +77,10 @@ export const createClaimsSlice: StateCreator<RootState, [], [], ClaimsSlice> = (
 });
 
 /** Test/reset hook so claim ids stay deterministic from seed. */
+export function bumpClaimCounterTo(n: number): void {
+  claimCounter = Math.max(claimCounter, n);
+}
+
 export function resetClaimCounter(): void {
   claimCounter = 0;
 }

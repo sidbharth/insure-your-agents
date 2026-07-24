@@ -204,7 +204,7 @@ describe('clocks and outcome — happy path S-03', () => {
 
     // Step 4: conditions pass at event time.
     expect(screen.getByTestId('conditions-banner')).toHaveTextContent(
-      'Conditions precedent — passed as of event time',
+      'Conditions precedent passed as of event time',
     );
     expect(screen.getByTestId('clocks-continue')).toBeDisabled();
 
@@ -222,11 +222,11 @@ describe('clocks and outcome — happy path S-03', () => {
 
     // Outcome: quantum = $60,000 − $50,000 cap; retention + coinsurance waived.
     expect(screen.getByTestId('outcome-verdict')).toHaveTextContent(
-      'Covered — payment approved',
+      'Covered: payment approved',
     );
     expect(screen.getByTestId('outcome-loss')).toHaveTextContent('$10,000');
     expect(screen.getByTestId('outcome-payout')).toHaveTextContent('$10,000');
-    expect(screen.getByTestId('outcome-payout-n')).toHaveTextContent('1 N = $3.00');
+    expect(screen.getByTestId('outcome-payout-n')).toHaveTextContent('1 $NEAR = $3.00');
 
     const walletBefore = useStore.getState().operator.walletBalance;
     fireEvent.click(screen.getByTestId('accept-payment'));
@@ -261,7 +261,7 @@ describe('S-18 recovery waterfall', () => {
     expect(screen.getByTestId('outcome-payout')).toHaveTextContent('$33,500');
     const waterfall = screen.getByTestId('recovery-waterfall');
     expect(waterfall).toHaveTextContent('$10,000 recovered by tracing');
-    expect(waterfall).toHaveTextContent('$10,000 → here');
+    expect(waterfall).toHaveTextContent('$10,000');
 
     fireEvent.click(screen.getByTestId('accept-payment'));
     await waitFor(() =>
@@ -287,9 +287,9 @@ describe('S-24 model-conduct denial (AC-10)', () => {
     );
     expect(counterfactual).toHaveTextContent(DENIAL_MODEL_CONDUCT.counterfactual);
     expect(screen.getByTestId('determination-summary')).toHaveTextContent(
-      '4.9 · Model conduct exclusion',
+      '4.9 (model conduct exclusion)',
     );
-    expect(screen.getByTestId('determination-summary')).toHaveTextContent('$0 · 0 N');
+    expect(screen.getByTestId('determination-summary')).toHaveTextContent('$0 (0 $NEAR)');
   });
 });
 
@@ -336,7 +336,7 @@ describe('condition-precedent denial and restore (AC-13)', () => {
 
     renderAt(`/claim/${coveredClaim}`);
     expect(screen.getByTestId('outcome-verdict')).toHaveTextContent(
-      'Covered — payment approved',
+      'Covered: payment approved',
     );
     cleanup();
 

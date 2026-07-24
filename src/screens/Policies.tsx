@@ -44,9 +44,9 @@ import {
 
 /** Deterministic near-miss templates for the "Report a near-miss" action. */
 const NEAR_MISS_TEMPLATES: Array<Pick<NearMiss, 'type' | 'description'>> = [
-  { type: 'timelock-hold', description: 'Timelock held a $62,000 transfer — reversed' },
+  { type: 'timelock-hold', description: 'Timelock held a $62,000 transfer; reversed' },
   { type: 'kill-switch', description: 'Kill switch drill passed' },
-  { type: 'blocked-injection', description: 'Injection attempt blocked — reported' },
+  { type: 'blocked-injection', description: 'Injection attempt blocked and reported' },
   { type: 'hitl-rejection', description: 'HITL approver rejected an over-threshold transfer' },
 ];
 
@@ -218,18 +218,18 @@ export default function Policies() {
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Policies">
       {/* -- page head ------------------------------------------------------ */}
-      <div className="mb-4 flex items-start justify-between gap-5">
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-5">
         <div>
           <h1 className="text-lg">My policies</h1>
           <div className="mt-1 text-sm text-muted">
-            {operator.name} ·{' '}
+            {operator.name}{' '}
             {verified ? (
               <span className="inline-flex items-center gap-1 rounded-md border border-good-line bg-good-bg px-2 py-px text-2xs font-semibold text-good">
-                Verified · KYB current
+                Verified, KYB current
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 rounded-md border border-warn-line bg-warn-bg px-2 py-px text-2xs font-semibold text-warn">
-                Unverified operator · +0.4% on every quote
+                Unverified operator (0.4% surcharge on every quote)
               </span>
             )}
           </div>
@@ -243,7 +243,7 @@ export default function Policies() {
           </Link>
           <Link
             to="/claim"
-            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white"
+            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-ink"
           >
             File a claim
           </Link>
@@ -260,9 +260,8 @@ export default function Policies() {
             !
           </span>
           <span>
-            <b>Events occurring now cannot be claimed</b> — complete verification to
-            cover future events. Verifying later protects future events only; it is
-            not retroactive (T3.4).
+            <b>Events occurring now cannot be claimed.</b> Complete verification
+            to cover future events. Verification is not retroactive (T3.4).
           </span>
           <button
             data-testid="dashboard-complete-verification"
@@ -286,8 +285,8 @@ export default function Policies() {
           data-testid="verification-refund"
           className="mb-4 rounded-card border border-good-line bg-good-bg px-4 py-3 text-sm text-good"
         >
-          <b>Verification complete.</b> The +0.4% unverified surcharge refunds pro
-          rata from the verification date — not retroactively:{' '}
+          <b>Verification complete.</b> The 0.4% unverified surcharge is refunded
+          pro rata from the verification date:{' '}
           <MathValue
             breakdown={{
               title: 'Pro-rata verification refund',
@@ -301,24 +300,24 @@ export default function Policies() {
             }}
           >
             {formatUsd(verifyRefundUsd)} ≈ {formatN(usdToN(verifyRefundUsd, usdPerN), { maxFractionDigits: 1 })}
-          </MathValue>{' '}
-          — events from this timestamp forward become claimable.
+          </MathValue>
+          . Events from this timestamp forward are claimable.
         </div>
       )}
 
-      <div className="grid grid-cols-[1fr_320px] items-start gap-4">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_320px]">
         {/* -- policy rows -------------------------------------------------- */}
         <div>
           {rows.length === 0 ? (
             <div className="rounded-card border border-line bg-panel p-8 text-center shadow-card">
               <div className="text-md font-semibold text-ink">No policies yet</div>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted">
-                Enroll an agent through the wizard — connect it, set the mandate and
-                controls, and pay in N — and it appears here as a live policy row.
+                Connect an agent, set its mandate and controls, and pay in $NEAR.
+                It appears here as a live policy.
               </p>
               <Link
                 to="/connect"
-                className="mt-4 inline-block rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white"
+                className="mt-4 inline-block rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink"
               >
                 Connect an agent
               </Link>
@@ -357,7 +356,7 @@ export default function Policies() {
           <div
             className="mt-3.5 rounded-card border border-line bg-panel px-4 py-3 shadow-card"
             data-testid="renewal-preview-callout"
-            title="Demo-defined renewal rule: clamp(current ladder rate − 0.05% clean-year − 0.01% per reported near-miss, floor 0.45%, movement bounded to ±0.15% when nothing about the setup changed)."
+            title="Renewal rule: clamp(current ladder rate − 0.05% clean-year − 0.01% per reported near-miss, floor 0.45%, movement bounded to ±0.15% when nothing about the setup changed)."
           >
             <div className="flex items-center gap-2 text-xs font-bold text-ink">
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-ink text-[9px] font-bold text-white">
@@ -415,7 +414,7 @@ export default function Policies() {
             </div>
             <div className="num mt-1 text-right font-mono text-2xs text-accent-ink">
               ≈ {formatN(usdToN(totalPremiumUsd, usdPerN), { maxFractionDigits: 1 })} at
-              1 N = ${usdPerN.toFixed(2)}
+              1 $NEAR = ${usdPerN.toFixed(2)}
             </div>
           </div>
 
@@ -431,15 +430,15 @@ export default function Policies() {
               <button
                 data-testid="report-near-miss"
                 onClick={reportNearMiss}
-                className="text-2xs font-semibold text-accent"
+                className="text-2xs font-semibold text-accent-ink"
               >
                 Report a near-miss
               </button>
             </div>
             {nearMisses.length === 0 ? (
               <p className="mt-2 text-xs text-muted">
-                Nothing reported yet. Near-misses with no loss still matter — each
-                report earns a renewal credit.
+                Nothing reported yet. Each reported near-miss earns a renewal
+                credit.
               </p>
             ) : (
               <ul>
@@ -465,8 +464,8 @@ export default function Policies() {
               </ul>
             )}
             <p className="mt-2 border-t border-line-soft pt-2 text-2xs text-faint">
-              Reportable within 7 days of discovery. Near-misses are the data this
-              market is priced on.
+              Near-misses are reportable within 7 days of discovery and inform
+              programme pricing.
             </p>
           </div>
         </div>
@@ -536,7 +535,7 @@ function PolicyRowCard({
       data-testid={`policy-row-${agent.id}`}
       className="rounded-card border border-line bg-panel px-4 py-3.5 shadow-card"
     >
-      <div className="grid grid-cols-[150px_minmax(85px,1fr)_95px_82px_95px_100px_85px] items-center gap-2">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-[150px_minmax(85px,1fr)_95px_82px_95px_100px_85px] md:items-center">
         <div>
           <div className="text-sm font-semibold text-ink">{agent.name}</div>
           <span className="rounded border border-line bg-canvas px-1.5 font-mono text-2xs text-muted">
@@ -567,7 +566,7 @@ function PolicyRowCard({
             Guardrails verified {fmtDayMonth(enrollment.effectiveAt)}
             {row.loadingsPct > 0 && (
               <>
-                {' '}·{' '}
+                {', '}
                 <span className="font-semibold text-warn">
                   +{row.loadingsPct}% loading
                 </span>
@@ -575,7 +574,7 @@ function PolicyRowCard({
             )}
             {agent.controls.tier2.attestation === false && (
               <>
-                {' '}·{' '}
+                {', '}
                 <span className="font-semibold text-bad">Coverage B excluded</span>
               </>
             )}
@@ -626,9 +625,9 @@ function PolicyRowCard({
           data-testid="pending-edit-label"
           className="mt-2 rounded-md border border-accent-line bg-accent-soft px-3 py-1.5 text-2xs font-semibold text-accent-ink"
         >
-          Pending mandate change — {formatUsd(pendingEdit.deltaUsd, { signed: true })} (≈{' '}
+          Pending mandate change: {formatUsd(pendingEdit.deltaUsd, { signed: true })} (≈{' '}
           {formatN(pendingEdit.deltaN, { maxFractionDigits: 1 })}) due. The change takes
-          effect only after payment; until then the old mandate governs your cover (T5.2).
+          effect after payment. Until then the current mandate governs cover (T5.2).
         </div>
       )}
 
@@ -639,7 +638,7 @@ function PolicyRowCard({
           className="mt-2 flex items-center gap-3 rounded-md border border-warn-line bg-warn-bg px-3 py-2 text-2xs text-warn"
         >
           <span>
-            <b data-testid="suspension-cause">Cause: {suspension.reason}</b> ·{' '}
+            <b data-testid="suspension-cause">Cause: {suspension.reason}.</b>{' '}
             {SUSPENSION_COPY}
           </span>
           <button
@@ -647,7 +646,7 @@ function PolicyRowCard({
             onClick={onCure}
             className="ml-auto flex-none rounded-md bg-warn-deep px-2.5 py-1 text-2xs font-semibold text-white"
           >
-            Cure — restore cover
+            Cure and restore cover
           </button>
         </div>
       )}
@@ -659,19 +658,19 @@ function PolicyRowCard({
           {deEnrollNote &&
             (deEnrollNote.zeroReason ? (
               <>
-                {' '}· refund <b className="num">$0</b> — {deEnrollNote.zeroReason} (D7
+                . Refund <b className="num">$0</b>: {deEnrollNote.zeroReason} (D7
                 exception)
               </>
             ) : (
               <>
-                {' '}· refunded{' '}
+                . Refunded{' '}
                 <b className="num">
                   {formatUsd(deEnrollNote.refundUsd)} ≈{' '}
                   {formatN(usdToN(deEnrollNote.refundUsd, usdPerN), { maxFractionDigits: 1 })}
                 </b>
               </>
             ))}
-          {' '}· past events remain claimable.
+          . Past events remain claimable.
         </div>
       ) : (
         <div className="mt-2 flex items-center gap-3 border-t border-line-soft pt-2">
@@ -679,7 +678,7 @@ function PolicyRowCard({
             Renewal preview{' '}
             <b className="text-ink">{preview.renewalRatePct.toFixed(2)}%</b>
             {nearMissCount > 0 && (
-              <span className="text-accent-ink"> · incl. −0.01% × {nearMissCount} near-miss credit</span>
+              <span className="text-accent-ink"> (includes −0.01% × {nearMissCount} near-miss credit)</span>
             )}
           </span>
           <span className="ml-auto flex items-center gap-1">
@@ -733,8 +732,9 @@ function PolicyRowCard({
           data-testid="adopt-refund"
           className="mt-2 rounded-md border border-good-line bg-good-bg px-3 py-2 text-2xs text-good"
         >
-          <b>{TIER2_LABELS[adoptRefund.control]} adopted.</b> Surcharge refunded pro
-          rata from the date verification completes — not from installation:{' '}
+          <b>{TIER2_LABELS[adoptRefund.control]} adopted.</b> The surcharge is
+          refunded pro rata from the date verification completes, not from
+          installation:{' '}
           <MathValue
             breakdown={
               proRataRefund(
@@ -796,15 +796,15 @@ function DeEnrollConfirm({
       className="mt-2 rounded-md border border-bad-line bg-bad-bg px-3 py-2.5 text-2xs text-body"
     >
       <b className="text-bad">De-enroll this agent?</b> Cover for new events ends
-      now; past events remain claimable.{' '}
+      now. Past events remain claimable.{' '}
       {blocked ? (
         <span data-testid="de-enroll-zero-refund">
-          Refund: <b className="num">$0</b> — a claim has been paid or noticed on this
-          agent (D7 exception).
+          Refund: <b className="num">$0</b>. A claim has been paid or noticed on
+          this agent (D7 exception).
         </span>
       ) : (
         <span>
-          Unused premium returns pro rata:{' '}
+          Unused premium is returned pro rata:{' '}
           <b className="num">
             {formatUsd(refundUsd)} ≈{' '}
             {formatN(usdToN(refundUsd, usdPerN), { maxFractionDigits: 1 })}

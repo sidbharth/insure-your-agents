@@ -17,21 +17,21 @@ export function PriceChip({ className = '' }: PriceChipProps) {
   const mode = priceFeedMode(feed);
   const dotClass =
     mode === 'live'
-      ? 'bg-[#35c56d] shadow-[0_0_0_3px_rgba(53,197,109,.18)]'
+      ? 'bg-[#00EC97] shadow-[0_0_0_3px_rgba(53,197,109,.18)]'
       : mode === 'stale'
         ? 'bg-[#e8a13c] shadow-[0_0_0_3px_rgba(232,161,60,.18)]'
-        : 'bg-[#9db1cc] shadow-[0_0_0_3px_rgba(157,177,204,.18)]';
+        : 'bg-[#a3adaa] shadow-[0_0_0_3px_rgba(157,177,204,.18)]';
 
   return (
     <span
       data-testid="price-chip"
       data-mode={mode}
-      className={`num inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-xs text-[#dfe7f1] ${className}`}
+      className={`num inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-xs text-[#e2e6e3] ${className}`}
     >
       <span className={`h-[7px] w-[7px] flex-none rounded-full ${dotClass}`} />
       <b className="font-semibold text-white">{formatRate(feed.usdPerN)}</b>
-      <span className="text-[#93a5bc]">
-        {feed.source === 'CoinGecko' ? 'CoinGecko' : 'seed'} · {mode} ·{' '}
+      <span className="text-[#9aa39f]">
+        {mode} via {feed.source === 'CoinGecko' ? 'CoinGecko' : 'seed'},{' '}
         {formatClockTime(feed.fetchedAt)}
       </span>
       {mode === 'stale' && (
@@ -40,7 +40,7 @@ export function PriceChip({ className = '' }: PriceChipProps) {
         </span>
       )}
       {mode === 'pinned' && (
-        <span className="rounded-sm bg-[#9db1cc] px-1 py-px text-[9px] font-extrabold tracking-widest text-ink">
+        <span className="rounded-sm bg-[#a3adaa] px-1 py-px text-[9px] font-extrabold tracking-widest text-ink">
           PINNED
         </span>
       )}

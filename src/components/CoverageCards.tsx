@@ -28,7 +28,7 @@ export function CoverageCards({ states, compact = false, className = '' }: Cover
 
   return (
     <div className={className} data-testid="coverage-cards" title={COVERAGE_PANEL_TOOLTIP}>
-      <div className={compact ? 'grid grid-cols-3 gap-1.5' : 'grid grid-cols-2 gap-3'}>
+      <div className={compact ? 'grid grid-cols-3 gap-1.5' : 'grid grid-cols-1 gap-3 sm:grid-cols-2'}>
         {COVERAGE_CARDS.map((card) => {
           const state = byRoute.get(card.route) ?? { route: card.route, active: true };
           return (
@@ -37,13 +37,13 @@ export function CoverageCards({ states, compact = false, className = '' }: Cover
               data-testid={`coverage-card-${card.route}`}
               data-active={state.active}
               title={state.active ? card.oneLiner : state.greyReason}
-              className={`rounded-card border p-3 shadow-card transition-opacity ${
+              className={`rounded-card border shadow-card transition-opacity ${
                 state.active
                   ? 'border-line bg-panel'
                   : 'border-line-soft bg-canvas opacity-55'
-              } ${compact ? 'p-2' : ''}`}
+              } ${compact ? 'p-2' : 'p-3'}`}
             >
-              <div className="flex items-center gap-1.5">
+              <div className={compact ? 'flex min-w-0 flex-col items-start gap-1' : 'flex min-w-0 items-center gap-1.5'}>
                 <span
                   className={`flex h-5 w-5 flex-none items-center justify-center rounded text-2xs font-bold ${
                     state.active ? 'bg-accent-soft text-accent-ink' : 'bg-line-soft text-faint'
@@ -52,9 +52,9 @@ export function CoverageCards({ states, compact = false, className = '' }: Cover
                   {card.route}
                 </span>
                 <span
-                  className={`text-2xs font-semibold ${state.active ? 'text-ink' : 'text-faint'}`}
+                  className={`min-w-0 break-words text-2xs font-semibold leading-snug ${state.active ? 'text-ink' : 'text-faint'}`}
                 >
-                  {card.title}
+                  {compact ? card.shortTitle : card.title}
                 </span>
               </div>
               {!compact && (

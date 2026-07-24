@@ -114,7 +114,7 @@ export function adjudicate(input: AdjudicationInput): AdjudicationResult {
       conditionsPrecedent,
       eligibility: {
         covered: false,
-        reason: `Not payable — condition precedent: ${conditionsPrecedent.failedCondition}`,
+        reason: `Not payable. Condition precedent: ${conditionsPrecedent.failedCondition}`,
         clause: 'T3.1–T3.4',
       },
     };
@@ -128,7 +128,7 @@ export function adjudicate(input: AdjudicationInput): AdjudicationResult {
     case 'S-03':
       route = 'D';
       eligibilityReason =
-        'Covered under D — a deterministic guardrail (the cap module) failed to fire.';
+        'Covered under D: a deterministic guardrail (the cap module) failed to fire.';
       eligibilityClause = 'Coverage D';
       break;
     case 'S-09':
@@ -138,26 +138,26 @@ export function adjudicate(input: AdjudicationInput): AdjudicationResult {
           eligibility: {
             covered: false,
             route: 'B',
-            reason: 'unprovable without attested I/O — Coverage B excluded',
+            reason: 'unprovable without attested input and output records, so Coverage B is excluded',
             clause: 'D3.5',
           },
         };
       }
       route = 'B';
       eligibilityReason =
-        'Covered under B — attested input/output records prove the injected content.';
+        'Covered under B: attested input/output records prove the injected content.';
       eligibilityClause = 'Coverage B';
       break;
     case 'S-17':
       route = 'F';
       eligibilityReason =
-        'Covered under F — near-miss investigation and response costs.';
+        'Covered under F: near-miss investigation and response costs.';
       eligibilityClause = 'Coverage F';
       break;
     case 'S-18':
       route = 'C';
       eligibilityReason =
-        'Covered under C — signing credentials inside the disclosed setup were stolen.';
+        'Covered under C: signing credentials inside the disclosed setup were stolen.';
       eligibilityClause = 'Coverage C';
       break;
     case 'S-24':
@@ -166,7 +166,7 @@ export function adjudicate(input: AdjudicationInput): AdjudicationResult {
         eligibility: {
           covered: false,
           reason:
-            'Not covered — model conduct. No adversarial content in the attested inputs: the model was simply wrong. Had the attested inputs shown crafted adversarial content, this would have been Coverage B.',
+            'Not covered: model conduct. No adversarial content in the attested inputs: the model was simply wrong. Had the attested inputs shown crafted adversarial content, this would have been Coverage B.',
           clause: '4.9',
         },
       };
@@ -216,7 +216,7 @@ export function adjudicate(input: AdjudicationInput): AdjudicationResult {
     const slice = 0.2 * (incident.recoverableUsd ?? 0);
     coinsuranceUsd += slice;
     coinsuranceLines.push({
-      label: 'Coinsurance — 20% of the recovery-recoverable slice (no recovery mechanism)',
+      label: 'Coinsurance: 20% of the recovery-recoverable slice (no recovery mechanism)',
       amount: formatUsd(slice),
       clause: '5.5',
     });
@@ -227,7 +227,7 @@ export function adjudicate(input: AdjudicationInput): AdjudicationResult {
       const slice = 0.15 * governed;
       coinsuranceUsd += slice;
       coinsuranceLines.push({
-        label: 'Coinsurance — 15% of the above-HITL-threshold slice (no human approval gate)',
+        label: 'Coinsurance: 15% of the above-HITL-threshold slice (no human approval gate)',
         amount: formatUsd(slice),
         clause: '5.5',
       });
@@ -237,7 +237,7 @@ export function adjudicate(input: AdjudicationInput): AdjudicationResult {
     const slice = 0.15 * (incident.postFirstAlertLossUsd ?? 0);
     coinsuranceUsd += slice;
     coinsuranceLines.push({
-      label: 'Coinsurance — 15% of the post-first-alert slice (no kill switch + monitoring)',
+      label: 'Coinsurance: 15% of the post-first-alert slice (no kill switch + monitoring)',
       amount: formatUsd(slice),
       clause: '5.5',
     });
@@ -246,9 +246,9 @@ export function adjudicate(input: AdjudicationInput): AdjudicationResult {
     const slice = 0.2 * quantumAfterLimitUsd;
     coinsuranceUsd += slice;
     coinsuranceLines.push({
-      label: 'Coinsurance — 20% Coverage-D coinsurance (unaudited harness, until first audit)',
+      label: 'Coinsurance: 20% Coverage-D coinsurance (unaudited harness, until first audit)',
       amount: formatUsd(slice),
-      clause: '5.5 · D3.2',
+      clause: '5.5, D3.2',
     });
   }
   coinsuranceUsd = round2(coinsuranceUsd);
@@ -289,7 +289,7 @@ export function adjudicate(input: AdjudicationInput): AdjudicationResult {
         inputs: [
           { label: 'Gross loss', amount: formatUsd(grossLossUsd) },
           { label: 'Per-agent cap', amount: formatUsd(capUsd) },
-          { label: 'Rate used (day of payment)', amount: `1 N = $${usdPerN.toFixed(2)}` },
+          { label: 'Rate used (day of payment)', amount: `1 $NEAR = $${usdPerN.toFixed(2)}` },
         ],
         formula: `max(0, ${formatUsd(quantumAfterLimitUsd)} − ${formatUsd(coinsuranceUsd)} − ${formatUsd(retentionUsd)}) = ${formatUsd(payoutUsd)}`,
         clause: '5.6',
@@ -309,13 +309,13 @@ export function adjudicate(input: AdjudicationInput): AdjudicationResult {
             clause: '5.3',
             note: retentionWaived
               ? isNearMiss
-                ? 'near-miss — no net asset loss to retain against'
-                : 'waived — the guardrail passed its latest scheduled verification'
-              : `greater of 500 N (${formatUsd(round2(RETENTION_FLOOR_N * usdPerN))}) or 2% of the loss (${formatUsd(round2(RETENTION_LOSS_PCT * grossLossUsd))})`,
+                ? 'near-miss (no net asset loss to retain against)'
+                : 'waived (the guardrail passed its latest scheduled verification)'
+              : `greater of 500 $NEAR (${formatUsd(round2(RETENTION_FLOOR_N * usdPerN))}) or 2% of the loss (${formatUsd(round2(RETENTION_LOSS_PCT * grossLossUsd))})`,
           },
           {
             label: 'Payout',
-            amount: `${formatUsd(payoutUsd)} ≈ ${payoutN.toFixed(1)} N at the day-of-payment rate`,
+            amount: `${formatUsd(payoutUsd)} ≈ ${payoutN.toFixed(1)} $NEAR at the day-of-payment rate`,
             clause: '5.6',
           },
         ],

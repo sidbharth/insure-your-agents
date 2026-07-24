@@ -8,14 +8,14 @@
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DEMO_SMALL_PRINT, POSITIONING_LINE } from '../data/copy';
+import { POSITIONING_LINE } from '../data/copy';
 import { useStore } from '../store';
 
 const STEPS = [
   {
     n: 1,
     title: 'Prove your company',
-    body: 'Verify your legal identity so the programme can stand behind you — and chase stolen funds on your behalf.',
+    body: 'Verify your legal entity so the programme can pursue recovery on your behalf and stand behind claims.',
   },
   {
     n: 2,
@@ -25,27 +25,27 @@ const STEPS = [
   {
     n: 3,
     title: 'Get covered',
-    body: 'See the price and the coverage it buys, pay the premium in N at the live rate, and cover attaches instantly.',
+    body: 'See the price and the coverage it buys, pay the premium in $NEAR at the live rate, and cover attaches instantly.',
   },
 ];
 
 /** The four end-user questions (PRD §2) — the 60-second explainer. */
 const HOW_IT_WORKS = [
   {
-    q: 'Who can get covered — and who cannot?',
-    a: 'Four controls are non-negotiable gates: a registered agent identity, transfer caps, whitelist enforcement, and action logging. Miss one and the answer is declined — never merely more expensive.',
+    q: 'Who is eligible for coverage?',
+    a: 'Coverage requires four baseline controls: a registered agent identity, enforced transfer caps, an enforced payee whitelist, and action logging. An agent that lacks any of these is declined rather than charged a higher premium.',
   },
   {
-    q: 'What decides the price?',
-    a: "A base rate of 0.6% of the agent's spending cap, a published surcharge for every optional control you skip, and a hard ceiling at 3.0%. Every number on screen opens up to show its full arithmetic.",
+    q: 'How is the premium calculated?',
+    a: "The premium starts at a base rate of 0.6% of the agent's per-transaction cap. A published surcharge is added for each optional control that is not in place, and the total rate never exceeds 3.0%. The full calculation behind any figure is available through the Show the math toggle.",
   },
   {
-    q: 'What does the policy pay for — and never pay for?',
-    a: "Six coverages, A through F, from a mandate breach to cleanup costs. It never pays for the model simply being wrong: the policy insures the delegation and the machinery, not the model's brain.",
+    q: 'What does the policy cover?',
+    a: "The policy provides six coverages, labeled A through F, ranging from mandate breaches to cleanup and recovery costs. It does not cover losses caused by an incorrect model decision alone. The policy insures the delegation and the systems that enforce it, not the model's judgment.",
   },
   {
-    q: 'What happens when something goes wrong?',
-    a: 'Notify within 48 hours, contain immediately, and your own records auto-fill most of a twelve-item evidence package. Published clocks: acknowledged in 2 business days, decided in 30 days, paid in 10.',
+    q: 'What happens when a loss occurs?',
+    a: 'You notify the programme within 48 hours of discovery and contain the incident immediately. Most of the twelve-item evidence package is assembled automatically from your own records. Claims are acknowledged within 2 business days, decided within 30 days of a complete package, and paid within 10 days of the decision.',
   },
 ];
 
@@ -68,7 +68,7 @@ export default function GetStarted() {
     <div className="mx-auto max-w-shell px-6 py-10" data-testid="screen-GetStarted">
       <div className="mx-auto max-w-[860px]">
         {/* Seeded company — accept or rename (PRD 7.1 system behavior) */}
-        <div className="mb-6 flex items-center gap-2 text-sm text-muted">
+        <div className="mb-6 flex flex-wrap items-center gap-2 text-sm text-muted">
           {editingName ? (
             <input
               autoFocus
@@ -90,11 +90,11 @@ export default function GetStarted() {
               <b className="text-ink" data-testid="company-name">
                 {operatorName}
               </b>
-              <span>· Agentic insurance programme</span>
+
               <button
                 type="button"
                 data-testid="rename-company"
-                className="text-xs text-accent underline decoration-dotted"
+                className="text-xs text-accent-ink underline decoration-dotted"
                 onClick={() => {
                   setDraftName(operatorName);
                   setEditingName(true);
@@ -110,9 +110,9 @@ export default function GetStarted() {
           {POSITIONING_LINE}.
         </h1>
         <p className="mt-3 max-w-[640px] text-md text-muted">
-          Prove who you are, register an agent, write its rulebook, and watch
-          the price respond to every control you switch on or off. Six
-          minutes, end to end.
+          Verify your company, register an agent, and set its mandate.
+          Pricing responds to each safety control you enable. Setup takes
+          about six minutes.
         </p>
 
         <div className="mt-6 flex items-center gap-4">
@@ -120,7 +120,7 @@ export default function GetStarted() {
             type="button"
             data-testid="get-started"
             onClick={() => navigate('/verify')}
-            className="rounded-lg bg-accent px-6 py-2.5 text-md font-semibold text-white shadow-card hover:bg-accent-ink"
+            className="rounded-lg bg-accent px-6 py-2.5 text-md font-semibold text-ink shadow-card hover:bg-[#0bd489]"
           >
             Get started
           </button>
@@ -129,9 +129,9 @@ export default function GetStarted() {
             data-testid="how-it-works-toggle"
             aria-expanded={showHow}
             onClick={() => setShowHow((v) => !v)}
-            className="text-sm font-semibold text-accent"
+            className="text-sm font-semibold text-accent-ink"
           >
-            How it works · 60 sec
+            How it works
           </button>
         </div>
 
@@ -162,14 +162,11 @@ export default function GetStarted() {
           ))}
         </div>
 
-        <p className="mt-8 text-xs text-faint" data-testid="demo-small-print">
-          {DEMO_SMALL_PRINT}
-        </p>
         {/* single-role footnote (REQ-7.1.1) */}
         <p className="mt-2 max-w-[640px] text-xs text-faint" data-testid="operator-footnote">
-          You walk through this demo as the <b className="text-muted">Operator</b> — the
-          company that runs the agents. The Principal, whose money the agents
-          spend, appears once: at the mandate signature step.
+          You're signed in as the <b className="text-muted">Operator</b>, the
+          company that runs the agents. The Principal, whose funds the agents
+          spend, appears once: to countersign the mandate.
         </p>
       </div>
     </div>

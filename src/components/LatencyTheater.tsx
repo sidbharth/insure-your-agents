@@ -63,7 +63,7 @@ export function LatencyTheater({
                   state === 'done'
                     ? 'bg-good-bg text-good'
                     : state === 'active'
-                      ? 'animate-pulse bg-accent text-white'
+                      ? 'animate-pulse bg-accent text-ink'
                       : 'bg-line-soft text-faint'
                 }`}
               >

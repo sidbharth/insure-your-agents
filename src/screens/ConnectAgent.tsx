@@ -25,7 +25,7 @@ import {
   signingKeyLabel,
 } from './wizard/format';
 import { getWizardAgentId, setWizardAgentId } from './wizard/wizardAgent';
-import { WizardStepper } from './wizard/Stepper';
+import { WizardBack, WizardStepper } from './wizard/Stepper';
 
 type Phase = 'pick' | 'registering' | 'identity' | 'challenging' | 'verified';
 
@@ -34,8 +34,8 @@ const OFF_LIST_TOOLTIP =
 
 function registrationSteps(name: string, toolCount: number) {
   return [
-    { label: `Fetching tool manifest · ${toolCount} tools declared` },
-    { label: `Reading harness and model info · ${name}` },
+    { label: `Fetching tool manifest (${toolCount} tools declared)` },
+    { label: `Reading harness and model info (${name})` },
     { label: 'Computing configuration hash…' },
     { label: 'Anchoring hash to registry' },
   ];
@@ -134,13 +134,23 @@ export default function ConnectAgent() {
 
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-ConnectAgent">
-      <WizardStepper current="agent" className="mb-6" />
+      <WizardStepper current="agent" className="mb-3" />
+      <WizardBack
+        to="/verify"
+        note="Going back keeps your verification and any registered agent."
+        warn={
+          phase === 'registering' || phase === 'challenging'
+            ? 'A step is still in progress. Going back cancels it and it will need to be rerun. Go back anyway?'
+            : undefined
+        }
+        className="mb-5"
+      />
 
       <div className="mx-auto max-w-[760px]">
         <h1 className="text-xl font-bold text-ink">Connect your agent</h1>
         <p className="mt-2 text-sm text-muted">
-          Connecting an agent means two things: telling us exactly what it is
-          (its fingerprint), and proving it answers to you.
+          Connecting an agent involves two steps: registering its
+          configuration fingerprint and verifying that you control it.
         </p>
 
         {phase === 'pick' && (
@@ -176,7 +186,7 @@ export default function ConnectAgent() {
                   </span>
                 </div>
                 <p className="mt-1 text-xs text-muted">
-                  Seeded agents with believable manifests.
+                  Start with a pre-configured agent and its tool manifest.
                 </p>
                 <div className="mt-3 rounded-md border border-line bg-canvas px-3 py-2.5">
                   <div className="flex items-center gap-2 text-sm font-semibold text-ink">
@@ -186,8 +196,8 @@ export default function ConnectAgent() {
                     </span>
                   </div>
                   <p className="mt-0.5 text-2xs text-muted">
-                    Purchasing agent · pays supplier invoices from an approved
-                    payee list · suggested cap $50,000
+                    Purchasing agent that pays supplier invoices from an
+                    approved payee list. Suggested cap $50,000.
                   </p>
                 </div>
                 <div className="mt-3 flex items-center gap-2">
@@ -195,7 +205,7 @@ export default function ConnectAgent() {
                     type="button"
                     data-testid="connect-sample"
                     onClick={connectSample}
-                    className="rounded-lg bg-accent px-4 py-1.5 text-sm font-semibold text-white hover:bg-accent-ink"
+                    className="rounded-lg bg-accent px-4 py-1.5 text-sm font-semibold text-ink hover:bg-[#0bd489]"
                   >
                     Connect {sample?.name ?? 'Procurement-Bot'}
                   </button>
@@ -218,11 +228,11 @@ export default function ConnectAgent() {
               )}
               onDone={finishRegistration}
             />
-            <p className="mt-3 text-2xs text-faint">
+            <p className="mt-3 text-xs text-muted">
               The fingerprint covers the harness code, the system prompt, the
-              tool manifest, and the model endpoint. If any of those change,
-              the fingerprint changes — and the policy insures the
-              fingerprinted agent.
+              tool manifest, and the model endpoint. If any of these change,
+              the fingerprint changes. The policy insures the fingerprinted
+              agent.
             </p>
           </div>
         )}
@@ -262,8 +272,8 @@ export default function ConnectAgent() {
                       {shortHash(activeAgent.configHash)}
                     </div>
                     <div className="text-2xs text-faint" data-testid="fingerprint-covers">
-                      covers harness code · system prompt · tool manifest ·
-                      model endpoint
+                      Covers the harness code, system prompt, tool manifest,
+                      and model endpoint.
                     </div>
                   </div>
                   <div>
@@ -306,11 +316,11 @@ export default function ConnectAgent() {
                   data-testid="manifest-toggle"
                   aria-expanded={manifestOpen}
                   onClick={() => setManifestOpen((v) => !v)}
-                  className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-accent"
+                  className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-accent-ink"
                 >
                   <span>{manifestOpen ? '▲' : '▼'}</span>
-                  Tool manifest · {activeAgent.toolManifest.length} tools,
-                  frozen into the record
+                  Tool manifest ({activeAgent.toolManifest.length} tools,
+                  frozen into the record)
                 </button>
                 {manifestOpen && (
                   <div className="mt-2 overflow-hidden rounded-md border border-line" data-testid="tool-manifest">
@@ -328,7 +338,7 @@ export default function ConnectAgent() {
                             <td className="px-3 py-1.5 font-mono">{tool.name}</td>
                             <td className="px-3 py-1.5">{tool.publisher}</td>
                             <td className="px-3 py-1.5 text-muted">
-                              {tool.permissions.join(' · ')}
+                              {tool.permissions.join(', ')}
                             </td>
                           </tr>
                         ))}
@@ -355,20 +365,20 @@ export default function ConnectAgent() {
                   className="rounded-card border border-line bg-panel p-5 shadow-card"
                 >
                   <div className="flex items-center gap-2 text-sm font-semibold text-ink">
-                    Prove it answers to you <SimulatedBadge />
+                    Verify control <SimulatedBadge />
                   </div>
                   <p className="mt-2 text-sm text-muted" data-testid="challenge-explainer">
-                    We'll ask your agent to sign a random one-time code with
-                    its key. If the signature matches its registered identity,
-                    it's yours. Control of an agent is control of its signing —
-                    that's why signature-over-code is the honest proof.
+                    Your agent signs a random one-time code with its key. If
+                    the signature matches its registered identity, control is
+                    confirmed. Whoever controls the signing key controls the
+                    agent.
                   </p>
                   <div className="mt-3 flex items-center gap-3">
                     <button
                       type="button"
                       data-testid="send-challenge"
                       onClick={() => setPhase('challenging')}
-                      className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-white hover:bg-accent-ink"
+                      className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489]"
                     >
                       Send challenge
                     </button>
@@ -394,19 +404,19 @@ export default function ConnectAgent() {
                     <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-good text-xs font-bold text-white">
                       ✓
                     </span>
-                    Signature verified — control of this agent confirmed
+                    Signature verified. Control of this agent confirmed.
                     <SimulatedBadge className="ml-auto" />
                   </div>
                   <p className="num mt-2 font-mono text-xs text-good">
-                    Challenge {nonce} signed by key {signingKeyLabel(activeAgent.id)} ·
-                    matches registered identity {shortHash(activeAgent.configHash)}
-                    {signedAt !== undefined && <> · {formatUtcStamp(signedAt)}</>}
+                    Challenge {nonce} signed by key {signingKeyLabel(activeAgent.id)},
+                    matching registered identity {shortHash(activeAgent.configHash)}
+                    {signedAt !== undefined && <>, {formatUtcStamp(signedAt)}</>}
                   </p>
                   <button
                     type="button"
                     data-testid="connect-continue"
                     onClick={() => navigate('/mandate')}
-                    className="mt-4 rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-white hover:bg-accent-ink"
+                    className="mt-4 rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489]"
                   >
                     Continue to mandate
                   </button>

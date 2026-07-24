@@ -263,7 +263,7 @@ export interface BookComponent {
 export interface ProgrammeBook {
   components: BookComponent[];
   /**
-   * Enrolled Northwind caps by component (USD), committed atomically at
+   * Enrolled operator caps by component (USD), committed atomically at
    * enrollment time (plan §4b).
    */
   enrolledCapsUsd: Record<string, number>;

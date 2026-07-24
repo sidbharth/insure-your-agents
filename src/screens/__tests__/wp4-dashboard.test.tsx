@@ -91,7 +91,7 @@ describe('AC-12 — suspension and cure', () => {
     );
     // the strip carries the reassurance copy
     expect(within(row).getByTestId('suspension-strip').textContent).toMatch(
-      /events from before remain claimable/i,
+      /prior events remain claimable/i,
     );
     // the other agent's row is unaffected
     const other = screen.getByTestId('policy-row-relay-bot');
@@ -128,7 +128,7 @@ describe('AC-11 — near-miss reporting and renewal preview', () => {
     expect(tag.textContent).toMatch(/\+ data credit at renewal/);
     expect(tag).toHaveAttribute(
       'title',
-      expect.stringMatching(/within 7 days earns credit/i),
+      expect.stringMatching(/within 7 days earns a renewal credit/i),
     );
   });
 
@@ -160,7 +160,7 @@ describe('AC-8 (read side) — pending mandate edit label', () => {
     const label = screen.getByTestId('pending-edit-label');
     expect(label.textContent).toMatch(/\+\$120/);
     expect(label.textContent).toMatch(/40/);
-    expect(label.textContent).toMatch(/old mandate governs your cover \(T5\.2\)/i);
+    expect(label.textContent).toMatch(/current mandate governs cover \(T5\.2\)/i);
   });
 
   it('clearing the pending edit removes the label', () => {
@@ -188,7 +188,7 @@ describe('REQ-7.2.2 — verification nudge with pro-rata refund', () => {
       expect(screen.getByTestId('verification-refund')).toBeInTheDocument(),
     );
     expect(screen.getByTestId('verification-refund').textContent).toMatch(
-      /not retroactively/i,
+      /pro rata from the verification date/i,
     );
     expect(screen.queryByTestId('dashboard-verify-strip')).not.toBeInTheDocument();
     const history = useStore.getState().operator.verificationHistory;

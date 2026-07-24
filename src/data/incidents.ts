@@ -215,7 +215,7 @@ function narrativeFor(scenarioId: ScenarioId, agent: Agent, lossUsd: number): st
   const loss = formatUsd(lossUsd);
   switch (scenarioId) {
     case 'S-03':
-      return `${agent.name} initiated a ${loss} transfer against the $50,000 per-transaction cap. The deterministic cap module — a scheduled guardrail that passed its latest quarterly verification — failed to fire on stale configuration, and the excess left before any hold could attach. The kill switch was activated on the first anomaly alert.`;
+      return `${agent.name} initiated a ${loss} transfer against the $50,000 per-transaction cap. The deterministic cap module (a scheduled guardrail that passed its latest quarterly verification) failed to fire on stale configuration, and the excess left before any hold could attach. The kill switch was activated on the first anomaly alert.`;
     case 'S-09':
       return `${agent.name} paid ${loss} to an unfamiliar address after processing a supplier catalogue page. The payee was on the whitelist via a spoofed resolvable name; the transfer was under cap and in-mandate. Anomaly monitoring flagged the pattern within minutes; the kill switch was fired immediately after.`;
     case 'S-17':
@@ -223,7 +223,7 @@ function narrativeFor(scenarioId: ScenarioId, agent: Agent, lossUsd: number): st
     case 'S-18':
       return `Session signing credentials for ${agent.name} were exfiltrated from the disclosed key map and used to move ${loss} without the agent or the Principal initiating anything. The kill switch was fired on the first alert, the affected whitelist entries frozen, and every implicated credential rotated. Tracing is under way.`;
     case 'S-24':
-      return `${agent.name} paid a ${loss} invoice for goods that were never ordered and do not exist. The attested inputs show no adversarial content, no compromised tool, and no spoofed instruction channel — the payee is real and whitelisted, the amount under cap. The invoice was a fabrication of the model itself.`;
+      return `${agent.name} paid a ${loss} invoice for goods that were never ordered and do not exist. The attested inputs show no adversarial content, no compromised tool, and no spoofed instruction channel. The payee is real and whitelisted, the amount under cap. The invoice was a fabrication of the model itself.`;
   }
 }
 
@@ -351,6 +351,11 @@ let incidentCounter = 0;
 /** Test hook: deterministic incident ids from a fresh module state. */
 export function resetIncidentCounter(): void {
   incidentCounter = 0;
+}
+
+/** Restore hook: advance the counter past ids present in a saved session. */
+export function bumpIncidentCounterTo(n: number): void {
+  incidentCounter = Math.max(incidentCounter, n);
 }
 
 /**

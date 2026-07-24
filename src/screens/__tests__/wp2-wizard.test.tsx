@@ -48,11 +48,10 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('7.1 Get started', () => {
-  it('renders the positioning line, step strip, and small print — no signup', () => {
+  it('renders the positioning line, step strip, and footnote — no signup', () => {
     renderAt('/');
     expect(screen.getByTestId('screen-GetStarted')).toBeInTheDocument();
     expect(screen.getByTestId('step-strip')).toBeInTheDocument();
-    expect(screen.getByTestId('demo-small-print')).toBeInTheDocument();
     expect(screen.getByTestId('operator-footnote')).toBeInTheDocument();
     expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
   });
@@ -159,7 +158,7 @@ describe('7.4 Mandate', () => {
     renderAt('/mandate');
     expect(screen.getByTestId('mandate-continue')).toBeDisabled();
     expect(screen.getByTestId('continue-gate-reason').textContent).toContain(
-      'No countersignature, no cover (framework T3.2)',
+      "Cover requires the Principal's countersignature (framework T3.2)",
     );
     expect(screen.getByTestId('s31-note')).toBeInTheDocument();
 

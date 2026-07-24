@@ -28,55 +28,60 @@ export function MathValue({ children, breakdown, className }: MathValueProps) {
       {showMath && (
         <span
           data-testid="math-expansion"
-          className="mt-1.5 block rounded-md border border-accent-line bg-accent-soft px-3 py-2 text-xs text-ink-2"
+          className="mt-2 block max-w-[440px] overflow-hidden whitespace-normal rounded-lg border border-line bg-panel text-left text-xs font-normal shadow-card"
         >
-          {breakdown.title && (
-            <span className="mb-1 block text-2xs font-bold uppercase tracking-wider text-accent-ink">
-              {breakdown.title}
+          <span className="flex items-baseline justify-between gap-4 border-b border-line-soft bg-canvas px-3.5 py-2">
+            <span className="text-2xs font-bold uppercase tracking-wider text-muted">
+              {breakdown.title ?? 'Calculation'}
             </span>
-          )}
-          {breakdown.inputs.length > 0 && (
-            <span className="block space-y-0.5">
-              {breakdown.inputs.map((line, i) => (
-                <span key={i} className="flex justify-between gap-4">
-                  <span className="text-muted">{line.label}</span>
-                  <span className="num font-mono">
-                    {line.amount}
-                    {line.clause && (
-                      <span className="ml-1.5 text-faint">· {line.clause}</span>
-                    )}
-                  </span>
-                </span>
-              ))}
-            </span>
-          )}
-          {breakdown.lines && breakdown.lines.length > 0 && (
-            <span className="mt-1 block space-y-0.5 border-t border-accent-line pt-1">
-              {breakdown.lines.map((line, i) => (
-                <span key={i} className="flex justify-between gap-4">
-                  <span className="text-muted">{line.label}</span>
-                  <span className="num font-mono">
-                    {line.amount}
-                    {line.clause && (
-                      <span className="ml-1.5 text-faint">· {line.clause}</span>
-                    )}
-                  </span>
-                </span>
-              ))}
-            </span>
-          )}
-          <span className="mt-1 block border-t border-accent-line pt-1 font-mono text-xs">
-            {breakdown.formula}
             {breakdown.clause && (
-              <span className="ml-1.5 text-faint">· clause {breakdown.clause}</span>
+              <span className="num whitespace-nowrap text-2xs text-faint">
+                {breakdown.clause}
+              </span>
             )}
           </span>
+          {(breakdown.inputs.length > 0 ||
+            (breakdown.lines && breakdown.lines.length > 0)) && (
+            <span className="block px-3.5 py-2">
+              {breakdown.inputs.map((line, i) => (
+                <span key={i} className="flex items-baseline justify-between gap-6 py-0.5">
+                  <span className="text-muted">{line.label}</span>
+                  <span className="num whitespace-nowrap text-right font-medium text-ink">
+                    {line.amount}
+                    {line.clause && (
+                      <span className="ml-1.5 font-normal text-faint">{line.clause}</span>
+                    )}
+                  </span>
+                </span>
+              ))}
+              {breakdown.lines?.map((line, i) => (
+                <span
+                  key={`l-${i}`}
+                  className="flex items-baseline justify-between gap-6 py-0.5"
+                >
+                  <span className="text-muted">{line.label}</span>
+                  <span className="num whitespace-nowrap text-right font-medium text-ink">
+                    {line.amount}
+                    {line.clause && (
+                      <span className="ml-1.5 font-normal text-faint">{line.clause}</span>
+                    )}
+                  </span>
+                </span>
+              ))}
+            </span>
+          )}
+          <span className="block border-t border-line-soft bg-canvas px-3.5 py-2 font-mono text-2xs leading-relaxed text-muted">
+            {breakdown.formula}
+          </span>
           {breakdown.resultUsd !== undefined && (
-            <span className="num mt-0.5 block font-semibold">
-              {formatUsd(breakdown.resultUsd)} ≈{' '}
-              {formatN(usdToN(breakdown.resultUsd, rate), { maxFractionDigits: 1 })}{' '}
-              <span className="font-normal text-muted">
-                at 1 N = ${rate.toFixed(2)}
+            <span className="flex items-baseline justify-between gap-4 border-t border-line px-3.5 py-2">
+              <span className="text-2xs font-semibold uppercase tracking-wider text-muted">
+                Result
+              </span>
+              <span className="num text-right font-semibold text-ink">
+                {formatUsd(breakdown.resultUsd)} ≈{' '}
+                {formatN(usdToN(breakdown.resultUsd, rate), { maxFractionDigits: 1 })}{' '}
+                <span className="font-normal text-faint">at 1 $NEAR = ${rate.toFixed(2)}</span>
               </span>
             </span>
           )}

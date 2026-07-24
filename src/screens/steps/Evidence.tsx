@@ -39,7 +39,7 @@ function statusChip(item: EvidenceItem) {
     case 'uploaded':
       return (
         <span className="inline-flex whitespace-nowrap rounded-md border border-good-line bg-good-bg px-2 py-0.5 text-2xs font-semibold text-good">
-          uploaded · simulated
+          uploaded (simulated)
         </span>
       );
     default:
@@ -98,7 +98,7 @@ export default function Evidence({ claim, onBack, onNext }: EvidenceProps) {
     <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]" data-testid="claim-step-evidence">
       <div className="rounded-card border border-line bg-panel p-5 shadow-card">
         <div className="flex items-center justify-between">
-          <h2 className="text-md font-bold text-ink">Evidence package · Appendix 2</h2>
+          <h2 className="text-md font-bold text-ink">Evidence package (Appendix 2)</h2>
           <span
             data-testid="evidence-auto-count"
             className="rounded-md border border-accent-line bg-accent-soft px-2 py-0.5 text-2xs font-semibold text-accent-ink"
@@ -150,7 +150,7 @@ export default function Evidence({ claim, onBack, onNext }: EvidenceProps) {
                         { label: 'Uploading (simulated)…' },
                         { label: 'Stamping into the package…' },
                       ]}
-                      totalMs={1200}
+                      totalMs={4800}
                       onDone={() => finishUpload(item.id)}
                     />
                   ) : (
@@ -183,7 +183,7 @@ export default function Evidence({ claim, onBack, onNext }: EvidenceProps) {
             type="button"
             data-testid="evidence-submit"
             onClick={submit}
-            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white"
+            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-ink"
           >
             {submitted ? 'Continue →' : 'Submit package →'}
           </button>
@@ -195,7 +195,7 @@ export default function Evidence({ claim, onBack, onNext }: EvidenceProps) {
           <div
             className="mx-auto flex h-28 w-28 items-center justify-center rounded-full"
             style={{
-              background: `conic-gradient(#1e56d6 ${ringPct * 360}deg, #e9eef4 0deg)`,
+              background: `conic-gradient(#00EC97 ${ringPct * 360}deg, #ecefec 0deg)`,
             }}
           >
             <div className="flex h-[88px] w-[88px] flex-col items-center justify-center rounded-full bg-panel">
@@ -211,14 +211,15 @@ export default function Evidence({ claim, onBack, onNext }: EvidenceProps) {
           <p className="mt-3 text-xs text-muted" data-testid="evidence-ring-caption">
             <b className="text-ink">
               {attached.length} of {applicable.length} attached
-            </b>{' '}
-            — {EVIDENCE_RING_COPY}
+            </b>
+            . {EVIDENCE_RING_COPY}
           </p>
         </div>
         <Callout title="Why so much attached itself">
-          You ran the required tier-1 logging, so your own systems already produced the
-          mandate version, hash chain, action-log extract, containment record, and
-          valuation inputs. Compliant stacks make claims fast — and cheap to adjust.
+          You run the required tier-1 logging, so your systems already produced
+          the mandate version, hash chain, action-log extract, containment
+          record, and valuation inputs. Compliant stacks make claims fast and
+          inexpensive to adjust.
         </Callout>
       </div>
     </div>

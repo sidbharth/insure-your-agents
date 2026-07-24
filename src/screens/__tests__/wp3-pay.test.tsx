@@ -54,9 +54,9 @@ describe('7.8 — summary phase', () => {
     expect(row).toHaveTextContent('$300');
     expect(row).toHaveTextContent('Ready to bind');
     expect(screen.getByTestId('pay-total')).toHaveTextContent('$300');
-    expect(screen.getByTestId('pay-total')).toHaveTextContent('≈ 100 N');
+    expect(screen.getByTestId('pay-total')).toHaveTextContent('≈ 100 $NEAR');
     const settlement = screen.getByTestId('settlement-line');
-    expect(settlement).toHaveTextContent('100 N');
+    expect(settlement).toHaveTextContent('100 $NEAR');
     expect(settlement).toHaveTextContent(/re-fetched immediately before payment/);
   });
 
@@ -64,11 +64,11 @@ describe('7.8 — summary phase', () => {
     enrollWizard();
     renderPay();
     const quarterly = screen.getByTestId('plan-quarterly');
-    expect(quarterly).toHaveTextContent('4 × 25 N');
+    expect(quarterly).toHaveTextContent('4 × 25 $NEAR');
     fireEvent.click(quarterly);
     expect(quarterly).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId('overdue-note')).toHaveTextContent(
-      /more than 15 days overdue suspends cover/,
+      /more than 15 days overdue/,
     );
   });
 
@@ -76,7 +76,7 @@ describe('7.8 — summary phase', () => {
     enrollWizard();
     renderPay();
     const retention = screen.getByTestId('retention-preview');
-    expect(retention).toHaveTextContent('not collected today');
+    expect(retention).toHaveTextContent(/not collected today/i);
     expect(retention).toHaveTextContent('$30,000 loss → you bear $1,500'); // 500 N floor at $3.00
     expect(retention).toHaveTextContent('$200,000 loss → you bear $4,000'); // 2%
   });
@@ -85,8 +85,8 @@ describe('7.8 — summary phase', () => {
     enrollWizard();
     renderPay();
     const method = screen.getByTestId('payment-method');
-    expect(method).toHaveTextContent('Demo wallet');
-    expect(method).toHaveTextContent('northwind.demo.near');
+    expect(method).toHaveTextContent('Operator wallet');
+    expect(method).toHaveTextContent('near-foundation.near');
     expect(within(method).getByTestId('simulated-badge')).toBeInTheDocument();
   });
 });
@@ -192,10 +192,10 @@ describe('7.8 — pay and activate (REQ-7.8.2, AC-7)', () => {
     expect(schedule).toHaveTextContent('Procurement-Bot');
     expect(schedule).toHaveTextContent('0.6%');
     expect(schedule).toHaveTextContent('$300');
-    expect(schedule).toHaveTextContent('1 N = $3.25'); // conversion rate at payment
+    expect(schedule).toHaveTextContent('1 $NEAR = $3.25'); // conversion rate at payment
     expect(schedule).toHaveTextContent('countersigned by Aria Chen');
     expect(within(schedule).getByTestId('schedule-caption')).toHaveTextContent(
-      /this record is the policy schedule\. No paper\./,
+      /This enrollment record constitutes the policy schedule\./,
     );
     fireEvent.click(screen.getByTestId('close-schedule'));
     expect(screen.queryByTestId('policy-schedule')).not.toBeInTheDocument();

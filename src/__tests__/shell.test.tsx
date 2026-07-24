@@ -31,7 +31,7 @@ afterEach(() => {
 describe('app shell', () => {
   it('renders the header, nav, ShowMath toggle and price chip', () => {
     renderAt('/');
-    expect(screen.getByText('Insure Your Agents')).toBeInTheDocument();
+    expect(screen.getByText('AgentConnect Insurance')).toBeInTheDocument();
     expect(screen.getByTestId('main-nav')).toBeInTheDocument();
     expect(screen.getByText('My policies')).toBeInTheDocument();
     expect(screen.getByText('Fleet')).toBeInTheDocument();
@@ -79,7 +79,7 @@ describe('app shell', () => {
     useStore.getState().renameOperator('Mutated Corp');
     renderAt('/');
     fireEvent.click(screen.getByTestId('presenter-reset'));
-    expect(useStore.getState().operator.name).toBe('Northwind Autonomy Ltd');
+    expect(useStore.getState().operator.name).toBe('NEAR Foundation');
     expect(useStore.getState().presenter.panelOpen).toBe(false);
   });
 });

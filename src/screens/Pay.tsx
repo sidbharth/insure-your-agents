@@ -48,6 +48,7 @@ import { useStore } from '../store';
 import type { Agent, Enrollment, RootState } from '../store/types';
 import { TIER1_GATES } from '../store/types';
 import { formatUtcStamp } from './wizard/format';
+import { WizardBack, WizardStepper } from './wizard/Stepper';
 import {
   activeEnrollments,
   capUsdFor,
@@ -95,13 +96,13 @@ function PolicySchedule({
   const state = useStore();
   const mandate = latestMandate(state, agent.id);
   const rows: [string, React.ReactNode][] = [
-    ['Agent', `${agent.name} · ${shortHash(agent.configHash)}`],
-    ['Mandate version', `v${enrollment.mandateVersion} — countersigned by ${mandate?.countersigned?.by ?? '—'}`],
+    ['Agent', `${agent.name} (${shortHash(agent.configHash)})`],
+    ['Mandate version', `v${enrollment.mandateVersion}, countersigned by ${mandate?.countersigned?.by ?? '—'}`],
     [
       'Quote',
       [...enrollment.rateBreakdown, ...enrollment.loadings]
         .map((l) => `${l.label} ${formatPct(l.points, { signed: l.points !== 0.6 })} (${l.clause})`)
-        .join(' · '),
+        .join(', '),
     ],
     ['Rate', formatPct(enrollmentRatePct(enrollment))],
     [
@@ -111,15 +112,15 @@ function PolicySchedule({
         { maxFractionDigits: 1 },
       )}`,
     ],
-    ['Conversion rate at payment', `1 N = $${(enrollment.conversionRateAtPayment || 0).toFixed(2)}`],
+    ['Conversion rate at payment', `1 $NEAR = $${(enrollment.conversionRateAtPayment || 0).toFixed(2)}`],
     [
       'Control attestations',
-      `Tier-1 gates operative · ${agent.controls.tier2.attestation ? 'TEE attestation live' : 'no attestation — Coverage B excluded'}`,
+      `Tier-1 gates operative, ${agent.controls.tier2.attestation ? 'TEE attestation live' : 'no attestation (Coverage B excluded)'}`,
     ],
     [
       'Signatures',
       <span key="sig">
-        Ownership challenge signed · mandate countersigned{' '}
+        Ownership challenge signed, mandate countersigned{' '}
         {mandate?.countersigned ? formatUtcStamp(mandate.countersigned.at) : ''} <SimulatedBadge />
       </span>,
     ],
@@ -133,11 +134,11 @@ function PolicySchedule({
       onClick={onClose}
     >
       <div
-        className="max-h-full w-[620px] overflow-auto rounded-card border border-line bg-panel p-6 shadow-card"
+        className="max-h-full w-full max-w-[620px] overflow-auto rounded-card border border-line bg-panel p-6 shadow-card"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-md">Policy schedule — enrollment record</h2>
+          <h2 className="text-md">Policy schedule (enrollment record)</h2>
           <button className="text-sm text-muted" onClick={onClose} data-testid="close-schedule">
             Close
           </button>
@@ -196,8 +197,8 @@ export default function Pay() {
         ? [{ label: 'Quarterly plan', amount: `first of 4 installments = ${formatUsd(dueTodayUsd)}` }]
         : []),
       {
-        label: 'N reference price',
-        amount: `1 N = $${usdPerN.toFixed(2)} (${priceFeedMode(feed)} · ${formatClockTime(feed.fetchedAt)})`,
+        label: '$NEAR reference price',
+        amount: `1 $NEAR = $${usdPerN.toFixed(2)} (${priceFeedMode(feed)}, ${formatClockTime(feed.fetchedAt)})`,
       },
     ],
     formula: `${formatUsd(dueTodayUsd)} ÷ $${usdPerN.toFixed(2)} = ${formatN(dueTodayN, { maxFractionDigits: 2 })} due today`,
@@ -265,7 +266,7 @@ export default function Pay() {
           <p className="num mt-2 text-sm text-ink-2" data-testid="premium-recorded-line">
             Premium recorded:{' '}
             <b>{formatN(receipt.amountN, { maxFractionDigits: 0 })}</b> (≈{' '}
-            {formatUsd(receipt.amountUsd)} at 1 N = ${receipt.rateUsed.toFixed(2)} ·{' '}
+            {formatUsd(receipt.amountUsd)} at 1 $NEAR = ${receipt.rateUsed.toFixed(2)},{' '}
             {formatClockTime(receipt.paidAt)}) <SimulatedBadge />
           </p>
           <p className="mt-2 max-w-2xl text-sm text-body" data-testid="three-records-line">
@@ -274,7 +275,7 @@ export default function Pay() {
           <div className="mt-4 flex gap-3">
             <button
               data-testid="view-policy-schedule"
-              className="rounded-md bg-accent px-4 py-2 text-xs font-semibold text-white"
+              className="rounded-md bg-accent px-4 py-2 text-xs font-semibold text-ink"
               onClick={() => setScheduleFor(paidAgentIds[0])}
             >
               View your policy schedule
@@ -290,7 +291,7 @@ export default function Pay() {
         </div>
 
         {/* ceremony: each card flips Active with its effective timestamp */}
-        <div className="mt-5 grid grid-cols-3 gap-3" data-testid="activation-cards">
+        <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="activation-cards">
           {activatedRows.map(({ agent, enrollment }) => (
             <div
               key={agent.id}
@@ -308,7 +309,7 @@ export default function Pay() {
                 effective {formatUtcStamp(enrollment.effectiveAt)}
               </div>
               <button
-                className="mt-2 text-2xs font-semibold text-accent"
+                className="mt-2 text-2xs font-semibold text-accent-ink"
                 onClick={() => setScheduleFor(agent.id)}
                 data-testid={`schedule-link-${agent.id}`}
               >
@@ -335,10 +336,10 @@ export default function Pay() {
   if (phase === 'paying') {
     return (
       <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Pay">
-        <h1 className="text-lg">Recording your premium</h1>
+        <h1 className="text-lg">Processing payment</h1>
         <LatencyTheater
           className="mt-4 max-w-md"
-          title="Paying in N — simulated"
+          title="Paying in $NEAR"
           steps={[
             { label: 'Re-fetching the reference price…' },
             { label: 'Recording premium at today\u2019s reference rate…' },
@@ -352,10 +353,15 @@ export default function Pay() {
 
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Pay">
+      <WizardStepper current="pay" className="mb-3" />
+      <WizardBack
+        to="/fleet"
+        note="Going back keeps your order. Nothing is charged until you pay."
+        className="mb-5"
+      />
       <div className="mb-5">
         <h1 className="text-lg">
-          Deposit requirement now{' '}
-          <span className="text-sm font-normal text-faint">— pay and activate</span>
+          Pay and activate
         </h1>
         <p className="mt-1.5 max-w-2xl text-sm text-muted" data-testid="pay-framing">
           {PAY_FRAMING}
@@ -367,11 +373,12 @@ export default function Pay() {
         <div className="flex items-center gap-2.5 border-b border-line-soft px-6 py-3.5">
           <h2 className="text-md">Order summary</h2>
           <span className="num text-xs text-muted">
-            {rows.length} agent{rows.length === 1 ? '' : 's'} · total insured caps{' '}
-            {formatUsd(totalCaps)} · the fleet premium is the plain sum — no volume discount
+            {rows.length} agent{rows.length === 1 ? '' : 's'}, total insured caps{' '}
+            {formatUsd(totalCaps)}, no volume discount
           </span>
         </div>
-        <table className="w-full border-collapse text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[720px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-line-soft text-left text-2xs font-bold uppercase tracking-wider text-muted">
               <th className="px-6 py-2">Agent</th>
@@ -421,6 +428,7 @@ export default function Pay() {
             ))}
           </tbody>
         </table>
+        </div>
         <div className="flex items-baseline justify-between border-t border-line px-6 py-3">
           <span className="text-sm font-semibold text-ink">Total annual premium</span>
           <span className="num text-md font-bold text-ink" data-testid="pay-total">
@@ -432,7 +440,7 @@ export default function Pay() {
         </div>
       </section>
 
-      <div className="mt-4 grid grid-cols-[1fr_340px] items-start gap-4">
+      <div className="mt-4 grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_340px]">
         <div>
           {/* settlement line at the live price */}
           <div className="rounded-card border border-line bg-panel p-5 shadow-card" data-testid="settlement-line">
@@ -442,7 +450,7 @@ export default function Pay() {
                 {formatN(dueTodayN, { maxFractionDigits: 0 })}{' '}
                 <span className="text-md font-semibold text-muted">
                   (≈ {formatUsd(dueTodayUsd)} at <PriceChipInline />)
-                  {plan === 'quarterly' && ' — first of 4 installments'}
+                  {plan === 'quarterly' && ' (first of 4 installments)'}
                 </span>
               </MathValue>
             </div>
@@ -463,7 +471,7 @@ export default function Pay() {
                 }`}
                 onClick={() => setPlan('annual')}
               >
-                Annual · pay once
+                Annual (pay once)
               </button>
               <button
                 data-testid="plan-quarterly"
@@ -475,7 +483,7 @@ export default function Pay() {
                 }`}
                 onClick={() => setPlan('quarterly')}
               >
-                Quarterly · 4 × {formatN(dueN / 4, { maxFractionDigits: 2 })}
+                Quarterly (4 × {formatN(dueN / 4, { maxFractionDigits: 2 })})
               </button>
             </div>
             <div className="mt-1.5 text-2xs text-muted" data-testid="overdue-note">
@@ -495,9 +503,9 @@ export default function Pay() {
                 checked={methodSelected}
                 onChange={(e) => setMethodSelected(e.target.checked)}
               />
-              <b>Demo wallet</b>
+              <b>Operator wallet</b>
               <span className="num text-xs text-muted">
-                northwind.demo.near · balance {formatN(state.operator.walletBalance, { maxFractionDigits: 0 })}
+                near-foundation.near (balance {formatN(state.operator.walletBalance, { maxFractionDigits: 0 })})
               </span>
               <SimulatedBadge />
             </label>
@@ -510,7 +518,7 @@ export default function Pay() {
               data-testid="pay-blockers"
             >
               <div className="text-sm font-semibold text-bad">
-                Activation blocked — every leg of GT-2 must exist first
+                Activation blocked. Resolve the following:
               </div>
               <ul className="mt-1.5 list-inside list-disc space-y-1 text-xs text-bad">
                 {blockers.map((b) => (
@@ -525,14 +533,15 @@ export default function Pay() {
           <button
             data-testid="pay-button"
             disabled={rows.length === 0}
-            className="mt-4 w-full rounded-md bg-accent px-5 py-3 text-md font-semibold text-white disabled:bg-[#c7d0db]"
+            className="mt-4 w-full rounded-md bg-accent px-5 py-3 text-md font-semibold text-ink disabled:bg-[#c7d0db]"
             onClick={onPay}
           >
-            Pay in N and activate
+            Pay in $NEAR and activate
           </button>
           <p className="mt-1.5 text-center text-2xs text-muted">
-            Cover attaches the moment payment is recorded — the third of the three
-            records. It is {formatClockTime(demoNowDate().getTime())} now.
+            Cover attaches when payment is recorded, completing the three
+            required records. Current time:{' '}
+            {formatClockTime(demoNowDate().getTime())}.
           </p>
         </div>
 

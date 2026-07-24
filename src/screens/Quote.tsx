@@ -45,21 +45,22 @@ import {
   latestMandate,
   pricingInputFor,
 } from './purchase/enroll';
+import { WizardBack, WizardStepper } from './wizard/Stepper';
 
 /** Horizontal ladder recap bar (quote mockup): slices to the 3.0% ceiling. */
 function LadderRecap({ ladder }: { ladder: RateLine[] }) {
   return (
     <div data-testid="ladder-recap">
-      <div className="relative flex h-[26px] overflow-hidden rounded-md border border-line-soft bg-[#eef2f7]">
+      <div className="relative flex h-[26px] overflow-hidden rounded-md border border-line-soft bg-[#edf0ee]">
         {ladder.map((line, i) => (
           <div
             key={line.label}
             data-testid="recap-slice"
-            title={`${line.label} · ${formatPct(line.points, { signed: i > 0 })} · ${line.clause}`}
-            className="num flex h-full items-center justify-center text-[10.5px] font-bold text-white"
+            title={`${line.label}: ${formatPct(line.points, { signed: i > 0 })} (${line.clause})`}
+            className={`num flex h-full items-center justify-center text-[10.5px] font-bold ${i === 0 ? 'text-[#0b3b28]' : 'text-white'}`}
             style={{
               width: `${(line.points / LADDER_CEILING_PCT) * 100}%`,
-              background: i === 0 ? '#1e56d6' : ['#d98a1f', '#c07314', '#a75f0d', '#8a4e08'][Math.min(i - 1, 3)],
+              background: i === 0 ? '#00EC97' : ['#d98a1f', '#c07314', '#a75f0d', '#8a4e08'][Math.min(i - 1, 3)],
             }}
           >
             {formatPct(line.points, { signed: i > 0 })}
@@ -68,7 +69,7 @@ function LadderRecap({ ladder }: { ladder: RateLine[] }) {
       </div>
       <div className="num mt-1 flex justify-between text-[10.5px] text-faint">
         <span>0%</span>
-        <span className="font-bold text-bad">3.0% ceiling — never more than this</span>
+        <span className="font-bold text-bad">3.0% ceiling</span>
       </div>
     </div>
   );
@@ -125,10 +126,10 @@ export default function Quote() {
     inputs: [
       { label: 'Rate (ladder + loadings)', amount: formatPct(priced.totalRatePct), clause: 'Appendix 3' },
       { label: 'Per-transaction cap', amount: formatUsd(capUsd) },
-      { label: 'N reference price', amount: `1 N = $${usdPerN.toFixed(2)}` },
+      { label: '$NEAR reference price', amount: `1 $NEAR = $${usdPerN.toFixed(2)}` },
     ],
-    formula: `${formatPct(priced.totalRatePct)} × ${formatUsd(capUsd)} = ${formatUsd(premiumUsd)} / year · ${formatUsd(premiumUsd)} ÷ $${usdPerN.toFixed(2)} = ${formatN(premiumNVal, { maxFractionDigits: 0 })}`,
-    clause: 'Appendix 3 · T5.1',
+    formula: `${formatPct(priced.totalRatePct)} × ${formatUsd(capUsd)} = ${formatUsd(premiumUsd)} per year. ${formatUsd(premiumUsd)} ÷ $${usdPerN.toFixed(2)} = ${formatN(premiumNVal, { maxFractionDigits: 0 })}.`,
+    clause: 'Appendix 3, T5.1',
     resultUsd: premiumUsd,
     rateUsed: usdPerN,
   };
@@ -150,15 +151,19 @@ export default function Quote() {
 
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Quote">
+      <WizardStepper current="quote" className="mb-3" />
+      <WizardBack
+        to="/controls"
+        note="Going back keeps your mandate and controls. The quote re-derives from them."
+        className="mb-5"
+      />
       <div className="mb-5">
         <h1 className="text-lg">
-          Your quote{' '}
-          <span className="text-sm font-normal text-faint">
-            — current policy coverage, pre-purchase
-          </span>
+          Your quote
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">
-          The price, what it buys, and — unprompted — what it never buys.
+          Review the premium, coverage terms, and exclusions for this agent
+          before continuing.
         </p>
       </div>
 
@@ -167,7 +172,7 @@ export default function Quote() {
         <div className="flex items-center gap-2.5 border-b border-line-soft px-6 py-3.5">
           <h2 className="text-md">The price</h2>
           <span className="text-xs text-muted">
-            {agent.name} · mandate v{mandate?.version ?? '1.0'}
+            {agent.name}, mandate v{mandate?.version ?? '1.0'}
           </span>
         </div>
         <div className="px-6 py-5">
@@ -176,13 +181,14 @@ export default function Quote() {
           {loadingLines.length > 0 && (
             <div className="mt-3 space-y-1 border-t border-line-soft pt-2" data-testid="quote-loading-lines">
               <div className="text-2xs font-bold uppercase tracking-wider text-faint">
-                Loadings — applied after the ceiling
+                Loadings (applied after the ceiling)
               </div>
               {loadingLines.map((line) => (
+
                 <div key={line.label} className="flex items-center gap-1.5 text-xs">
                   <span className="h-2 w-2 flex-none rounded-sm border border-warn-line bg-warn-bg" />
                   <span className="flex-1 text-muted">
-                    {line.label} <span className="text-faint">· {line.clause}</span>
+                    {line.label} <span className="text-faint">({line.clause})</span>
                   </span>
                   <b className="num text-warn">{formatPct(line.points, { signed: true })}</b>
                 </div>
@@ -190,19 +196,19 @@ export default function Quote() {
             </div>
           )}
 
-          <div className="mt-5 flex items-end gap-10">
-            <div>
+          <div className="mt-5 grid grid-cols-1 divide-y divide-line-soft rounded-lg border border-line bg-canvas sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+            <div className="px-4 py-3">
               <div className="text-2xs font-bold uppercase tracking-widest text-faint">Rate</div>
-              <div className="num text-xl font-bold text-ink" data-testid="quote-rate">
+              <div className="num mt-1 text-xl font-bold text-ink" data-testid="quote-rate">
                 {formatPct(priced.totalRatePct)}
               </div>
-              <div className="text-2xs text-muted">of the {formatUsd(capUsd)} cap</div>
+              <div className="mt-0.5 text-2xs text-muted">of the {formatUsd(capUsd)} cap</div>
             </div>
-            <div>
+            <div className="px-4 py-3">
               <div className="text-2xs font-bold uppercase tracking-widest text-faint">
                 Annual premium
               </div>
-              <div className="num text-xl font-bold text-ink" data-testid="quote-premium">
+              <div className="num mt-1 text-xl font-bold text-ink" data-testid="quote-premium">
                 <MathValue breakdown={premiumBreakdown}>
                   {formatUsd(premiumUsd)}{' '}
                   <span className="text-md font-semibold text-muted">
@@ -210,28 +216,25 @@ export default function Quote() {
                   </span>
                 </MathValue>
               </div>
-              <div className="num text-2xs text-muted" data-testid="quote-price-source">
-                at <PriceChipInline /> · {priceFeed.source}
+              <div className="num mt-0.5 text-2xs text-muted" data-testid="quote-price-source">
+                at <PriceChipInline /> via {priceFeed.source}
               </div>
             </div>
-            <div className="ml-auto text-right">
+            <div className="px-4 py-3">
               <div className="text-2xs font-bold uppercase tracking-widest text-faint">
                 Quarterly option
               </div>
-              <div className="num text-md font-semibold text-ink-2" data-testid="quote-quarterly">
+              <div className="num mt-1 text-md font-semibold text-ink" data-testid="quote-quarterly">
                 4 × {formatUsd(premiumUsd / 4)} ≈ {formatN(premiumNVal / 4, { maxFractionDigits: 1 })}
               </div>
-              <div className="text-2xs text-muted">{QUARTERLY_NOTE}</div>
+              <div className="mt-0.5 text-2xs text-muted">{QUARTERLY_NOTE}</div>
             </div>
           </div>
 
           {/* Advanced disclosure — STATIC copy, never computed (plan §4). */}
-          <details className="mt-5 rounded-md border border-line bg-[#f7f9fc]" data-testid="quote-advanced">
+          <details className="mt-5 rounded-md border border-line bg-[#f6f8f7]" data-testid="quote-advanced">
             <summary className="cursor-pointer px-4 py-2 text-xs font-semibold text-ink-2">
-              Advanced pricing disclosure{' '}
-              <span className="font-normal text-faint">
-                — static schedule items · not applied in this demo quote
-              </span>
+              Advanced pricing disclosure
             </summary>
             <ul className="space-y-1.5 border-t border-line-soft px-4 py-3 text-xs text-muted">
               {ADVANCED_PRICING_COPY.map((item) => (
@@ -250,7 +253,7 @@ export default function Quote() {
         <div className="flex items-center gap-2.5 border-b border-line-soft px-6 py-3.5">
           <h2 className="text-md">What you're covered for</h2>
           <span className="text-xs text-muted" title={COVERAGE_PANEL_TOOLTIP}>
-            six coverages, derived from your controls — nothing here is selectable
+            Derived from your controls. Coverages are not individually selectable.
           </span>
         </div>
         <div className="px-6 py-5">
@@ -262,7 +265,7 @@ export default function Quote() {
       <ExclusionWall className="mt-5" />
 
       {/* limits picture + retention preview */}
-      <section className="mt-5 grid grid-cols-[1fr_340px] gap-4">
+      <section className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         <div className="rounded-card border border-line bg-panel shadow-card" data-testid="quote-limits">
           <div className="flex items-center gap-2.5 border-b border-line-soft px-6 py-3.5">
             <h2 className="text-md">Limits, per event</h2>
@@ -277,20 +280,21 @@ export default function Quote() {
                 className="flex items-center gap-3 border-b border-line-soft py-2 text-xs last:border-b-0"
               >
                 <span className="w-[130px] text-muted">{label}</span>
-                <span className="h-2 flex-1 overflow-hidden rounded-full bg-[#eef2f7]">
+                <span className="h-2 flex-1 overflow-hidden rounded-full bg-[#edf0ee]">
                   <span
                     className="block h-full bg-accent"
                     style={{ width: `${pct}%`, opacity: pct === 100 ? 1 : pct === 50 ? 0.7 : 0.45 }}
                   />
                 </span>
                 <b className="num w-[170px] text-right text-ink">
-                  {pct}% of cap · {formatUsd(usd)}
+                  {pct}% of cap ({formatUsd(usd)})
                 </b>
               </div>
             ))}
             <p className="mt-2.5 text-2xs text-muted">
-              Recovery and bounty costs capped at 10% inside F. One aggregate across
-              everything; a single incident touching several coverages pays once.
+              Recovery and bounty costs are capped at 10% within Coverage F. One
+              aggregate limit applies, and a single incident that touches several
+              coverages pays once.
             </p>
           </div>
         </div>
@@ -305,11 +309,11 @@ export default function Quote() {
               Test a scenario
             </Link>
             <button
-              className="rounded-md bg-accent px-4 py-2 text-xs font-semibold text-white"
+              className="rounded-md bg-accent px-4 py-2 text-xs font-semibold text-ink"
               data-testid="quote-continue"
               onClick={() => navigate('/fleet')}
             >
-              Continue — add additional agents
+              Continue to fleet
             </button>
           </div>
         </div>

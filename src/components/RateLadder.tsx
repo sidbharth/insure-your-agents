@@ -24,14 +24,14 @@ export interface RateLadderProps {
 }
 
 const SLICE_COLORS = [
-  '#1e56d6', // base — accent
-  '#7791d8',
-  '#98abe2',
-  '#b3c1ea',
-  '#c7d2f0',
-  '#d8e0f5',
-  '#e3e9f0',
-  '#edf1f7',
+  '#00EC97', // base — NEAR green
+  '#5bf2b8',
+  '#8ff7cd',
+  '#b4fadd',
+  '#cdfce8',
+  '#defdf0',
+  '#e9fef5',
+  '#f2fff9',
 ];
 
 export function RateLadder({
@@ -60,16 +60,16 @@ export function RateLadder({
               ceilingReached ? 'font-semibold text-bad' : 'text-faint'
             }`}
           >
-            3.0% ladder ceiling — never more than this for skipped controls
+            3.0% ladder ceiling for skipped controls
           </div>
           {/* track */}
-          <div className="absolute inset-0 flex flex-col-reverse overflow-hidden rounded-md border border-line-soft bg-[#eef2f7]">
+          <div className="absolute inset-0 flex flex-col-reverse overflow-hidden rounded-md border border-line-soft bg-[#edf0ee]">
             {ladder.map((line, i) => (
               <div
                 key={line.label}
                 data-testid="ladder-slice"
-                title={`${line.label} · ${formatPct(line.points, { signed: i > 0 })} · ${line.clause}`}
-                className="num flex items-center justify-center text-2xs font-semibold text-white"
+                title={`${line.label}: ${formatPct(line.points, { signed: i > 0 })} (${line.clause})`}
+                className="num flex items-center justify-center text-2xs font-semibold text-[#0b3b28]"
                 style={{
                   height: Math.max(2, line.points * pxPerPoint),
                   background: SLICE_COLORS[Math.min(i, SLICE_COLORS.length - 1)],
@@ -97,7 +97,7 @@ export function RateLadder({
               data-testid="ceiling-reached"
               className="mt-1 rounded border border-bad-line bg-bad-bg px-2 py-1 font-semibold text-bad"
             >
-              Ceiling reached — the ladder never exceeds 3.0%
+              Ceiling reached. The ladder never exceeds 3.0%.
             </div>
           )}
         </div>
@@ -110,14 +110,14 @@ export function RateLadder({
           className="mt-3 space-y-1 border-t border-line-soft pt-2 text-2xs"
         >
           <div className="text-2xs font-bold uppercase tracking-wider text-faint">
-            Loadings — applied after the ceiling
+            Loadings (applied after the ceiling)
           </div>
           {loadings.map((line) => (
             <div key={line.label} className="flex items-center gap-1.5">
               <span className="h-2 w-2 flex-none rounded-sm border border-warn-line bg-warn-bg" />
               <span className="flex-1 text-muted">
                 {line.label}
-                <span className="ml-1 text-faint">· {line.clause}</span>
+                <span className="ml-1 text-faint">({line.clause})</span>
               </span>
               <b className="num text-warn">{formatPct(line.points, { signed: true })}</b>
             </div>

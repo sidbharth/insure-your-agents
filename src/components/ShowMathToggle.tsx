@@ -19,7 +19,7 @@ export function ShowMathToggle({ className = '' }: ShowMathToggleProps) {
       data-testid="show-math-toggle"
       aria-pressed={showMath}
       onClick={() => setShowMath(!showMath)}
-      className={`flex items-center gap-2 whitespace-nowrap text-xs text-[#c3cfdf] ${className}`}
+      className={`flex items-center gap-2 whitespace-nowrap text-xs text-[#c6ccc8] ${className}`}
     >
       <span
         className={`relative h-[19px] w-[34px] flex-none rounded-full transition-colors ${

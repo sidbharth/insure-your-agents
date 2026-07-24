@@ -59,8 +59,8 @@ describe('7.7 — totals are the exact sum (REQ-7.7.1, AC-5)', () => {
     await waitFor(() =>
       expect(screen.getByTestId('fleet-total-premium')).toHaveTextContent('$300'),
     );
-    expect(screen.getByTestId('fleet-total-n')).toHaveTextContent('≈ 100 N');
-    expect(screen.getByText(/exact sum of 1 per-agent premiums/)).toBeInTheDocument();
+    expect(screen.getByTestId('fleet-total-n')).toHaveTextContent('≈ 100 $NEAR');
+    expect(screen.getByText(/Exact sum of 1 per-agent premiums/)).toBeInTheDocument();
   });
 
   it("auto-enrolls a 'Quoted' wizard agent (post-connect status) on arrival", async () => {
@@ -99,8 +99,8 @@ describe('7.7 — totals are the exact sum (REQ-7.7.1, AC-5)', () => {
     // 6 × $300 + 5 × $350 + 1 × $600 = $4,150
     expect(fleetTotals(useStore.getState()).premiumUsd).toBe(4_150);
     expect(screen.getByTestId('fleet-total-premium')).toHaveTextContent('$4,150');
-    expect(screen.getByTestId('fleet-total-n')).toHaveTextContent('≈ 1,383 N');
-    expect(screen.getByText(/exact sum of 12 per-agent premiums · no volume discount/)).toBeInTheDocument();
+    expect(screen.getByTestId('fleet-total-n')).toHaveTextContent('≈ 1,383 $NEAR');
+    expect(screen.getByText(/Exact sum of 12 per-agent premiums with no volume discount/)).toBeInTheDocument();
   });
 
   it('de-enrolling an agent drops the total by exactly its premium', () => {
@@ -204,7 +204,7 @@ describe('7.7 — de-enroll menu (REQ-7.7.4, D7)', () => {
     renderFleet();
     fireEvent.click(screen.getByTestId('row-menu-relay-bot'));
     const menu = screen.getByTestId('deenroll-menu-relay-bot');
-    expect(menu).toHaveTextContent(/past events remain claimable/);
+    expect(menu).toHaveTextContent(/past events remain claimable/i);
     expect(within(menu).getByTestId('deenroll-refund')).toHaveTextContent(/pro rata/);
     // enrolled just now → refund ≈ full premium $300
     expect(within(menu).getByTestId('deenroll-refund')).toHaveTextContent('$300');
@@ -239,7 +239,7 @@ describe('7.7 — de-enroll menu (REQ-7.7.4, D7)', () => {
     fireEvent.click(screen.getByTestId('row-menu-payables-bot'));
     const menu = screen.getByTestId('deenroll-menu-payables-bot');
     const blocked = within(menu).getByTestId('deenroll-no-refund');
-    expect(blocked).toHaveTextContent(/No premium returns/);
+    expect(blocked).toHaveTextContent(/No premium is returned/);
     expect(blocked).toHaveTextContent('claim paid or noticed');
     expect(within(menu).queryByTestId('deenroll-refund')).not.toBeInTheDocument();
   });

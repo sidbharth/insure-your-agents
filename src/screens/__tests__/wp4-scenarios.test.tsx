@@ -76,7 +76,7 @@ describe('7.10 Scenario Explorer', () => {
     const card = screen.getByTestId('scenario-verdict-card');
     expect(card).toHaveAttribute('data-covered', 'false');
     expect(screen.getByTestId('verdict-headline').textContent).toMatch(
-      /Not covered — model conduct/,
+      /Not covered: model conduct/,
     );
     expect(screen.getByTestId('verdict-route').textContent).toBeTruthy();
     expect(screen.getByTestId('verdict-reason').textContent).toMatch(/clause/i);
@@ -92,7 +92,7 @@ describe('7.10 Scenario Explorer', () => {
       'true',
     );
     expect(screen.getByTestId('verdict-headline').textContent).toMatch(
-      /Covered under B/,
+      /Covered under Coverage B/,
     );
 
     const toggle = screen.getByTestId('no-attestation-toggle');
@@ -105,7 +105,7 @@ describe('7.10 Scenario Explorer', () => {
       'false',
     );
     expect(screen.getByTestId('verdict-headline').textContent).toMatch(
-      /Denied — unprovable without attestation/,
+      /Denied: unprovable without attestation/,
     );
     expect(screen.getByTestId('verdict-reason').textContent).toMatch(/D3\.5/);
 
@@ -144,7 +144,7 @@ describe('7.10 Scenario Explorer', () => {
       'false',
     );
     expect(screen.getByTestId('verdict-headline').textContent).toMatch(
-      /Denied — unprovable without attestation/,
+      /Denied: unprovable without attestation/,
     );
     expect(screen.getByTestId('agent-attestation-state').textContent).toMatch(
       /no attestation operative at event time/i,

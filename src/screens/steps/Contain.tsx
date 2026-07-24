@@ -39,20 +39,20 @@ export default function Contain({ claim, incident, onBack, onNext }: ContainProp
     {
       key: 'kill-switch',
       title: 'Kill switch activated',
-      detail: 'Halts the agent immediately — timestamp is read from your action log',
+      detail: 'Halts the agent immediately. Timestamp read from your action log.',
       at: c.killSwitchAt,
       auto: true,
     },
     {
       key: 'whitelist',
       title: 'Affected whitelist entries frozen',
-      detail: c.frozen.length > 0 ? c.frozen.join(' · ') : 'No whitelist entries implicated',
+      detail: c.frozen.length > 0 ? c.frozen.join(', ') : 'No whitelist entries implicated',
       at: (c.killSwitchAt ?? incident.discoveredAt) + 4 * MIN_MS,
     },
     {
       key: 'credentials',
       title: 'Implicated credentials rotated',
-      detail: c.rotated.length > 0 ? c.rotated.join(' · ') : 'No credentials implicated',
+      detail: c.rotated.length > 0 ? c.rotated.join(', ') : 'No credentials implicated',
       at: (c.killSwitchAt ?? incident.discoveredAt) + 22 * MIN_MS,
     },
     {
@@ -106,7 +106,7 @@ export default function Contain({ claim, incident, onBack, onNext }: ContainProp
                 {item.at !== undefined ? (
                   <span className="num whitespace-nowrap font-mono text-xs text-muted">
                     {fmtUtcTimeSec(item.at)}
-                    {item.auto ? ' · auto' : ''}
+                    {item.auto ? ' (auto)' : ''}
                   </span>
                 ) : imaged ? (
                   <span className="text-xs font-semibold text-good">confirmed</span>
@@ -138,7 +138,7 @@ export default function Contain({ claim, incident, onBack, onNext }: ContainProp
             data-testid="contain-continue"
             disabled={!allConfirmed}
             onClick={next}
-            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-40"
+            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-ink disabled:cursor-not-allowed disabled:opacity-40"
           >
             Continue to evidence →
           </button>

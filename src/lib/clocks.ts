@@ -125,7 +125,7 @@ export function deadlines(state: ClockState): DeadlineRow[] {
       note:
         a.packageReceivedAt === undefined
           ? 'starts at a complete evidence package'
-          : 'incomplete package — the determination clock has not started',
+          : 'incomplete package (the determination clock has not started)',
     });
   } else {
     const due = addDays(a.packageCompleteAt, DETERMINATION_DAYS);

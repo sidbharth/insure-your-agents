@@ -1,14 +1,20 @@
 /**
- * WP-2 wizard progress stepper (mockups wizard-*.html): six steps —
- * Company → Agent → Mandate → Controls → Quote → Pay & activate.
- * Done steps render a green check; the current step is highlighted.
+ * WP-2 wizard progress stepper (mockups wizard-*.html): seven steps —
+ * Company → Agent → Mandate → Controls → Quote → Fleet → Pay & activate.
+ * Done steps render a green check; the current step is highlighted; a
+ * progress bar under the labels shows how far along the purchase is.
+ * WizardBack is the shared back control: plain navigation, with an optional
+ * confirm when leaving would cancel something in progress.
  */
+import { useNavigate } from 'react-router-dom';
+
 export type WizardStepKey =
   | 'company'
   | 'agent'
   | 'mandate'
   | 'controls'
   | 'quote'
+  | 'fleet'
   | 'pay';
 
 const STEPS: { key: WizardStepKey; label: string }[] = [
@@ -17,6 +23,7 @@ const STEPS: { key: WizardStepKey; label: string }[] = [
   { key: 'mandate', label: 'Mandate' },
   { key: 'controls', label: 'Controls' },
   { key: 'quote', label: 'Quote' },
+  { key: 'fleet', label: 'Fleet' },
   { key: 'pay', label: 'Pay & activate' },
 ];
 
@@ -27,6 +34,7 @@ export interface WizardStepperProps {
 
 export function WizardStepper({ current, className = '' }: WizardStepperProps) {
   const currentIdx = STEPS.findIndex((s) => s.key === current);
+  const progressPct = (currentIdx / (STEPS.length - 1)) * 100;
   return (
     <div className={className} data-testid="wizard-stepper">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
@@ -39,7 +47,7 @@ export function WizardStepper({ current, className = '' }: WizardStepperProps) {
                   state === 'done'
                     ? 'bg-good-bg text-good'
                     : state === 'current'
-                      ? 'bg-accent text-white'
+                      ? 'bg-accent text-ink'
                       : 'bg-line-soft text-faint'
                 }`}
               >
@@ -60,9 +68,56 @@ export function WizardStepper({ current, className = '' }: WizardStepperProps) {
           );
         })}
       </div>
-      <div className="mt-1 text-2xs font-semibold uppercase tracking-widest text-faint">
-        Step {Math.max(1, currentIdx + 1)} of 6
+      <div
+        className="mt-2 h-1 w-full max-w-[560px] overflow-hidden rounded-full bg-line-soft"
+        data-testid="wizard-progress"
+        role="progressbar"
+        aria-valuemin={1}
+        aria-valuemax={STEPS.length}
+        aria-valuenow={currentIdx + 1}
+      >
+        <div
+          className="h-full rounded-full bg-accent transition-all"
+          style={{ width: `${progressPct}%` }}
+        />
       </div>
+      <div className="mt-1 text-2xs font-semibold uppercase tracking-widest text-faint">
+        Step {Math.max(1, currentIdx + 1)} of {STEPS.length}
+      </div>
+    </div>
+  );
+}
+
+export interface WizardBackProps {
+  /** Route of the previous step. */
+  to: string;
+  /** Confirm message when leaving cancels something in progress. */
+  warn?: string;
+  /**
+   * Tooltip on the button (e.g. what going back keeps). Never rendered as
+   * visible caption text — entered data persisting is expected behavior, so
+   * the UI does not announce it.
+   */
+  note?: string;
+  className?: string;
+}
+
+export function WizardBack({ to, warn, note, className = '' }: WizardBackProps) {
+  const navigate = useNavigate();
+  return (
+    <div className={className}>
+      <button
+        type="button"
+        data-testid="wizard-back"
+        title={note}
+        onClick={() => {
+          if (warn !== undefined && !window.confirm(warn)) return;
+          navigate(to);
+        }}
+        className="flex items-center gap-1 rounded-md border border-line bg-panel px-2.5 py-1 text-xs font-semibold text-muted hover:text-ink"
+      >
+        ← Back
+      </button>
     </div>
   );
 }

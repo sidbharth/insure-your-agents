@@ -27,7 +27,7 @@ export function QuoteSidebar({ result, capUsd, className = '' }: QuoteSidebarPro
       <aside
         data-testid="quote-sidebar"
         data-state="declined"
-        className={`sticky top-6 rounded-card border border-bad-line bg-bad-bg p-5 shadow-card ${className}`}
+        className={`rounded-card border border-bad-line bg-bad-bg p-5 shadow-card ${className}`}
       >
         <div className="text-2xs font-bold uppercase tracking-widest text-bad">Declined</div>
         <div className="mt-2 text-lg font-bold text-bad">DECLINED</div>
@@ -35,8 +35,8 @@ export function QuoteSidebar({ result, capUsd, className = '' }: QuoteSidebarPro
           {TIER1_DECLINE_COPY(first)}
         </p>
         <p className="mt-2 text-xs text-muted">
-          Tier-1 controls are eligibility gates. Missing any one means declined —
-          never merely more expensive.
+          Tier-1 controls are eligibility gates. Missing any one results in a
+          decline, not a higher price.
         </p>
       </aside>
     );
@@ -58,7 +58,7 @@ export function QuoteSidebar({ result, capUsd, className = '' }: QuoteSidebarPro
     <aside
       data-testid="quote-sidebar"
       data-state="quoted"
-      className={`sticky top-6 rounded-card border border-line bg-panel p-5 shadow-card ${className}`}
+      className={`rounded-card border border-line bg-panel p-5 shadow-card ${className}`}
     >
       <div className="text-2xs font-bold uppercase tracking-widest text-muted">
         Live quote preview

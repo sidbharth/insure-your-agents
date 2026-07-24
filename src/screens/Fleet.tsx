@@ -28,6 +28,7 @@ import { formatN, formatPct, formatUsd, usdToN, type MathBreakdown } from '../li
 import { deEnrollRefund } from '../lib/pricing';
 import { useStore } from '../store';
 import type { Agent, Enrollment } from '../store/types';
+import { WizardBack, WizardStepper } from './wizard/Stepper';
 import {
   capUsdFor,
   controlsSummary,
@@ -76,18 +77,18 @@ function DeEnrollMenu({
     >
       <div className="text-sm font-semibold text-ink">De-enroll {agent.name}</div>
       <p className="mt-1.5 text-xs text-muted">
-        Cover for <b>new</b> events ends now; past events remain claimable.{' '}
+        Cover for <b>new</b> events ends now. Past events remain claimable.{' '}
         {blocked ? (
           <span data-testid="deenroll-no-refund">
-            No premium returns — <b>{refund.reason}</b> on this agent (D7 exception).
+            No premium is returned: <b>{refund.reason}</b> on this agent (D7 exception).
           </span>
         ) : (
           <span data-testid="deenroll-refund">
-            Unused premium returns pro rata —{' '}
+            Unused premium is returned pro rata:{' '}
             <MathValue breakdown={refund.breakdown} className="font-semibold text-ink">
               {formatUsd(refund.usd)} ≈ {formatN(usdToN(refund.usd, usdPerN), { maxFractionDigits: 1 })}
-            </MathValue>{' '}
-            — unless a claim has been paid or noticed on this agent.
+            </MathValue>
+            , unless a claim has been paid or noticed on this agent.
           </span>
         )}
       </p>
@@ -163,13 +164,13 @@ export default function Fleet() {
       ([, g]) => `${g.count} × ${formatUsd(g.premium)}`,
     );
     return {
-      title: 'Fleet premium — the exact sum, no volume discount',
+      title: 'Fleet premium: exact sum, no volume discount',
       inputs: [...groups.entries()].map(([key, g]) => ({
         label: `${g.count} agent${g.count > 1 ? 's' : ''} at ${key.split(' → ')[0]}`,
         amount: `${g.count} × ${formatUsd(g.premium)}`,
       })),
-      formula: `${parts.join(' + ')} = ${formatUsd(totals.premiumUsd)} · ÷ $${usdPerN.toFixed(2)} = ${formatN(usdToN(totals.premiumUsd, usdPerN), { maxFractionDigits: 0 })}`,
-      clause: 'REQ-7.7.1 · Appendix 3',
+      formula: `${parts.join(' + ')} = ${formatUsd(totals.premiumUsd)}. ${formatUsd(totals.premiumUsd)} ÷ $${usdPerN.toFixed(2)} = ${formatN(usdToN(totals.premiumUsd, usdPerN), { maxFractionDigits: 0 })}.`,
+      clause: 'Appendix 3',
       resultUsd: totals.premiumUsd,
       rateUsed: usdPerN,
     };
@@ -205,17 +206,34 @@ export default function Fleet() {
   const sweepRunning = importing !== null && !sweepDone;
   const currentSpec = sweepRunning ? importing.specs[importing.index] : null;
 
+  // Purchase in progress: at least one live enrollment still awaiting its
+  // initial payment. The wizard chrome (stepper + back) renders only then —
+  // post-purchase, Fleet is a standing dashboard page.
+  const purchaseInProgress = state.enrollments.some(
+    (e) => e.terminatedAt === undefined && e.effectiveAt === 0,
+  );
+
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Fleet">
-      <div className="mb-5 flex items-end justify-between gap-4">
+      {purchaseInProgress && (
+        <>
+          <WizardStepper current="fleet" className="mb-3" />
+          <WizardBack
+            to="/quote"
+            note="Going back keeps every enrolled agent. Nothing is charged until you pay."
+            className="mb-5"
+          />
+        </>
+      )}
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-lg">Your fleet</h1>
           <p className="mt-1 max-w-xl text-sm text-muted">
-            Every agent is enrolled, priced, and covered individually. The fleet
-            premium is the plain sum — with two honest fleet effects shown below.
+            Every agent is enrolled, priced, and covered individually. The
+            fleet premium is the exact sum of per-agent premiums.
           </p>
         </div>
-        <div className="flex flex-none gap-2">
+        <div className="flex flex-none flex-wrap gap-2">
           <button
             data-testid="duplicate-agent-button"
             disabled={sweepRunning}
@@ -241,7 +259,7 @@ export default function Fleet() {
           <button
             data-testid="import-fleet-csv-button"
             disabled={sweepRunning || remainingImportSpecs(state).length === 0}
-            className="rounded-md bg-accent px-3.5 py-2 text-xs font-semibold text-white disabled:opacity-60"
+            className="rounded-md bg-accent px-3.5 py-2 text-xs font-semibold text-ink disabled:opacity-60"
             onClick={startImport}
           >
             {sweepRunning ? 'Importing…' : 'Import fleet (CSV)'}
@@ -253,8 +271,7 @@ export default function Fleet() {
       {sweepRunning && currentSpec && (
         <div className="mb-4" data-testid="import-progress-card">
           <div className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-ink">
-            Importing fleet.csv — agent {importing.index + 1} of {importing.specs.length}:{' '}
-            {currentSpec.name} <SimulatedBadge />
+            Importing fleet.csv: agent {importing.index + 1} of {importing.specs.length} ({currentSpec.name}) <SimulatedBadge />
           </div>
           <LatencyTheater
             key={currentSpec.id}
@@ -264,16 +281,17 @@ export default function Fleet() {
               { label: 'Checking tier-1 gates…' },
               { label: 'Pricing controls…' },
             ]}
-            totalMs={550}
+            totalMs={2200}
             onDone={onAgentImported}
           />
         </div>
       )}
 
-      <div className="grid grid-cols-[1fr_320px] items-start gap-4">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_320px]">
         {/* ------------------------------------------------ fleet table */}
         <div className="overflow-visible rounded-card border border-line bg-panel shadow-card" data-testid="fleet-table">
-          <table className="w-full border-collapse text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-line text-left text-2xs font-bold uppercase tracking-wider text-muted">
                 <th className="px-4 py-2.5">Agent</th>
@@ -360,14 +378,15 @@ export default function Fleet() {
               )}
             </tbody>
           </table>
+          </div>
 
           {/* totals bar — the exact sum, in $ and N (REQ-7.7.1, AC-5) */}
           <div
             data-testid="fleet-totals-bar"
-            className="flex items-center gap-7 rounded-b-card bg-ink px-4 py-3 text-[#dfe7f2]"
+            className="flex items-center gap-7 rounded-b-card bg-ink px-4 py-3 text-[#e2e6e3]"
           >
-            <span className="text-2xs font-semibold uppercase tracking-wider text-[#9fb0c6]">
-              Fleet total · {totals.count} agent{totals.count === 1 ? '' : 's'}
+            <span className="text-2xs font-semibold uppercase tracking-wider text-[#a3adaa]">
+              Fleet total ({totals.count} agent{totals.count === 1 ? '' : 's'})
             </span>
             <span className="num text-xs">
               Insured caps <b className="text-sm">{formatUsd(totals.capsUsd)}</b>
@@ -378,7 +397,7 @@ export default function Fleet() {
                 <b className="text-md" data-testid="fleet-total-premium">
                   {formatUsd(totals.premiumUsd)}
                 </b>{' '}
-                <span className="font-mono text-xs text-[#8ed8c3]" data-testid="fleet-total-n">
+                <span className="font-mono text-xs text-[#00EC97]" data-testid="fleet-total-n">
                   ≈ {formatN(usdToN(totals.premiumUsd, usdPerN), { maxFractionDigits: 0 })} at $
                   {usdPerN.toFixed(2)}
                 </span>
@@ -386,7 +405,7 @@ export default function Fleet() {
             </span>
           </div>
           <div className="px-4 py-1.5 text-right text-2xs text-faint">
-            exact sum of {totals.count} per-agent premiums · no volume discount
+            Exact sum of {totals.count} per-agent premiums with no volume discount
           </div>
         </div>
 
@@ -399,24 +418,24 @@ export default function Fleet() {
                 data-testid="concentration-crossed-toast"
                 className="mt-2.5 inline-flex rounded border border-warn-line bg-warn-bg px-2 py-1 text-2xs font-semibold text-warn"
               >
-                Threshold crossed at {importing.crossedAt} — enrollments from here on
-                carry the +0.1% loading (5.8.2)
+                Threshold crossed at {importing.crossedAt}. Subsequent
+                enrollments carry the +0.1% loading (5.8.2).
               </div>
             )}
             <p className="mt-2 text-xs text-muted">
-              Agents enrolled before a crossing keep their rate; the loading is frozen
-              into each enrollment when it is made and never changes retroactively
-              (5.8.2).
+              Agents enrolled before a crossing keep their rate. The loading is
+              frozen into each enrollment when it is made and never changes
+              retroactively (5.8.2).
             </p>
           </div>
 
           <div className="rounded-card border border-line bg-panel p-4 shadow-card" data-testid="callout-sum">
-            <div className="text-sm font-semibold text-ink">? {FLEET_CALLOUT_SUM.title}</div>
+            <div className="text-sm font-semibold text-ink">{FLEET_CALLOUT_SUM.title}</div>
             <p className="mt-1 text-xs text-muted">{FLEET_CALLOUT_SUM.body}</p>
           </div>
 
           <div className="rounded-card border border-line bg-panel p-4 shadow-card" data-testid="callout-common-cause">
-            <div className="text-sm font-semibold text-ink">! {FLEET_CALLOUT_COMMON_CAUSE.title}</div>
+            <div className="text-sm font-semibold text-ink">{FLEET_CALLOUT_COMMON_CAUSE.title}</div>
             <p className="mt-1 text-xs text-muted">{FLEET_CALLOUT_COMMON_CAUSE.body}</p>
           </div>
 
@@ -438,17 +457,17 @@ export default function Fleet() {
                 <b className="text-md text-ink">{formatUsd(totals.premiumUsd)}</b>
               </div>
             </div>
-            <div className="num mt-1 text-right font-mono text-2xs text-accent">
-              ≈ {formatN(usdToN(totals.premiumUsd, usdPerN), { maxFractionDigits: 0 })} · 1 N = $
+            <div className="num mt-1 text-right font-mono text-2xs text-accent-ink">
+              ≈ {formatN(usdToN(totals.premiumUsd, usdPerN), { maxFractionDigits: 0 })} at 1 $NEAR = $
               {usdPerN.toFixed(2)}
             </div>
             <button
               data-testid="continue-to-deposit-button"
               disabled={totals.count === 0 || sweepRunning}
-              className="mt-3.5 w-full rounded-md bg-accent px-4 py-2.5 text-xs font-semibold text-white disabled:opacity-60"
+              className="mt-3.5 w-full rounded-md bg-accent px-4 py-2.5 text-xs font-semibold text-ink disabled:opacity-60"
               onClick={() => navigate('/pay')}
             >
-              Continue to deposit requirement
+              Continue to payment
             </button>
           </div>
         </div>

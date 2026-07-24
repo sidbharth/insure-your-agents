@@ -11,7 +11,7 @@ import type { Agent, Mandate, Timestamp } from '../../store/types';
 /** "2026-07-24 · 14:26:12 UTC" — the mockups' timestamp form. */
 export function formatUtcStamp(ts: Timestamp): string {
   const iso = new Date(ts).toISOString(); // 2026-07-24T14:26:12.000Z
-  return `${iso.slice(0, 10)} · ${iso.slice(11, 19)} UTC`;
+  return `${iso.slice(0, 10)} ${iso.slice(11, 19)} UTC`;
 }
 
 /** Deterministic challenge nonce, e.g. "8c41-d2f0-99ab" (REQ-6.6). */
@@ -64,7 +64,7 @@ export function premiumBreakdown(
   const loadingsPart =
     loadings.length > 0 ? ` + loadings ${formatPct(result.loadingsPct)}` : '';
   return {
-    title: 'Annual premium — rate × cap',
+    title: 'Annual premium: rate × cap',
     inputs: result.breakdown.map((l, i) => ({
       label: l.label,
       amount: formatPct(l.points, { signed: i > 0 }),

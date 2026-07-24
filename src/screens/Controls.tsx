@@ -20,13 +20,13 @@ import { useStore } from '../store';
 import type { Tier1Gate, Tier2Control } from '../store/types';
 import { buildPricingInput, formatUtcStamp, premiumBreakdown } from './wizard/format';
 import { getWizardAgentId } from './wizard/wizardAgent';
-import { WizardStepper } from './wizard/Stepper';
+import { WizardBack, WizardStepper } from './wizard/Stepper';
 
 const TIER1_COPY: { key: Tier1Gate; label: string; desc: string }[] = [
   {
     key: 'hashIdentity',
     label: 'Registered hash identity',
-    desc: "The agent's configuration fingerprint is anchored in the registry — the policy insures the fingerprinted agent.",
+    desc: "The agent's configuration fingerprint is anchored in the registry. The policy insures the fingerprinted agent.",
   },
   {
     key: 'transferCaps',
@@ -36,7 +36,7 @@ const TIER1_COPY: { key: Tier1Gate; label: string; desc: string }[] = [
   {
     key: 'whitelist',
     label: 'Whitelist enforced',
-    desc: 'Money can only move to approved payees; new entries wait through the cooling period.',
+    desc: 'Funds can only move to approved payees. New entries wait through the cooling period.',
   },
   {
     key: 'actionLogging',
@@ -64,7 +64,7 @@ function tier2Desc(
     case 'hitl':
       return `A named person must approve anything over ${formatUsd(m.hitlThreshold)} before the agent acts.`;
     case 'killSwitch':
-      return 'Alerts watch for anomalies; the big red button halts the agent instantly.';
+      return 'Anomaly alerts plus a manual kill switch that halts the agent instantly.';
   }
 }
 
@@ -86,10 +86,10 @@ export default function Controls() {
       <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Controls">
         <WizardStepper current="controls" className="mb-6" />
         <p className="text-sm text-muted">
-          No agent connected yet — start at{' '}
+          No agent connected yet. Start at{' '}
           <button
             type="button"
-            className="text-accent underline"
+            className="text-accent-ink underline"
             onClick={() => navigate('/connect')}
           >
             Connect your agent
@@ -113,15 +113,20 @@ export default function Controls() {
 
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Controls">
-      <WizardStepper current="controls" className="mb-6" />
+      <WizardStepper current="controls" className="mb-3" />
+      <WizardBack
+        to="/mandate"
+        note="Changes on this page are saved automatically."
+        className="mb-5"
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div>
           <h1 className="text-xl font-bold text-ink">Safety controls</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted">
-            Four controls are non-negotiable — miss one and no policy exists at
-            any price. Seven more are your choice — each one you skip has a
-            published price, and some skips shrink what's covered.
+            Four controls are required for eligibility. Seven are optional:
+            each skipped control carries a published surcharge, and some reduce
+            coverage.
           </p>
 
           {/* ------------------------------------------------------------ */}
@@ -132,9 +137,9 @@ export default function Controls() {
             data-testid="tier1-group"
           >
             <div className="flex items-baseline gap-2">
-              <h2 className="text-md font-semibold text-ink">Tier 1 — required</h2>
+              <h2 className="text-md font-semibold text-ink">Tier 1: Required controls</h2>
               <span className="text-2xs text-faint">
-                the four gates · missing any one means declined, never merely more expensive
+                Missing any one of these results in a decline.
               </span>
             </div>
 
@@ -163,11 +168,11 @@ export default function Controls() {
                           <span className="text-sm font-semibold text-ink">{gate.label}</span>
                           {locked && (
                             <span className="rounded-full border border-good-line bg-good-bg px-2 py-px text-2xs font-semibold text-good">
-                              already earned · locked on
+                              Locked at registration
                             </span>
                           )}
                           <span className="ml-auto rounded-full border border-line bg-canvas px-2 py-px text-2xs font-semibold text-faint">
-                            Gate · not priced
+                            Eligibility gate
                           </span>
                         </span>
                         <span className="mt-0.5 block text-2xs text-faint">{gate.desc}</span>
@@ -195,9 +200,9 @@ export default function Controls() {
             data-testid="tier2-group"
           >
             <div className="flex items-baseline gap-2">
-              <h2 className="text-md font-semibold text-ink">Tier 2 — priced choices</h2>
+              <h2 className="text-md font-semibold text-ink">Tier 2: Priced options</h2>
               <span className="text-2xs text-faint">
-                skip any of these; each skip has a published surcharge, some shrink coverage
+                Each skipped control carries a published surcharge. Some reduce coverage.
               </span>
             </div>
 
@@ -250,8 +255,8 @@ export default function Controls() {
                             className="mt-1 block text-2xs font-semibold text-warn"
                             data-testid="kyb-mirror-note"
                           >
-                            Company unverified — priced as skipped no matter this toggle.
-                            Verify the company (step 1) to lift it.
+                            Company not verified: priced as skipped regardless of this
+                            toggle. Complete verification in step 1 to apply it.
                           </span>
                         )}
                         {!effectiveOn && ctrl.chip && (
@@ -270,8 +275,8 @@ export default function Controls() {
             </div>
 
             <p className="mt-3 text-2xs text-faint">
-              Hover any row for the insurer's why. Every surcharge is published
-              in the Appendix 3 rate schedule — no hidden pricing.
+              Hover any row to see the insurer's reasoning. Every surcharge is
+              published in the Appendix 3 rate schedule. No hidden pricing.
             </p>
           </section>
 
@@ -282,13 +287,13 @@ export default function Controls() {
               data-testid="controls-continue"
               disabled={declined}
               onClick={() => navigate('/quote')}
-              className="rounded-lg bg-accent px-6 py-2 text-sm font-semibold text-white hover:bg-accent-ink disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-lg bg-accent px-6 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Continue
             </button>
             {declined && (
               <span className="text-xs font-semibold text-bad" data-testid="controls-continue-blocked">
-                Switch the gate back on to restore your quote.
+                Re-enable the required control to restore your quote.
               </span>
             )}
           </div>
@@ -297,9 +302,9 @@ export default function Controls() {
         {/* ------------------------------------------------------------ */}
         {/* Right rail — live quote (collapses to DECLINED, AC-2)          */}
         {/* ------------------------------------------------------------ */}
-        <div>
+        <div className="self-start lg:sticky lg:top-6">
           <div className="mb-2 text-2xs font-bold uppercase tracking-widest text-muted">
-            Your quote · {agent.name}
+            Your quote for {agent.name}
           </div>
           <QuoteSidebar result={pricing} capUsd={mandate.caps.perTx} />
           {pricing.kind === 'quoted' && (
@@ -313,11 +318,12 @@ export default function Controls() {
               {pricing.ceilingReached && (
                 <p className="mt-1.5 text-2xs font-semibold text-bad" data-testid="ceiling-note">
                   Ceiling reached. The rate schedule labels this rung "tier-1
-                  only: unassessed custom harness." Never more than 3.0%.
+                  only: unassessed custom harness." The rate never exceeds 3.0%.
                 </p>
               )}
               <p className="mt-1.5 text-2xs text-faint">
-                Tier-1 gates never appear in this price. They gate; they never price.
+                Tier-1 gates never appear in this price. They are eligibility
+                requirements, not priced options.
               </p>
             </div>
           )}

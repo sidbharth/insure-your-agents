@@ -64,26 +64,27 @@ export default function ScenarioExplorer() {
 
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-ScenarioExplorer">
-      <div className="mb-1 text-xs text-faint">
-        <Link to="/coverage" className="hover:underline">
-          Coverage
-        </Link>{' '}
-        · <b className="text-muted">Scenario Explorer</b>
-      </div>
-      <div className="mb-4 flex items-start justify-between gap-5">
+      <Link
+        to="/coverage"
+        className="mb-3 inline-flex items-center gap-1 rounded-md border border-line bg-panel px-2.5 py-1 text-xs font-semibold text-muted hover:text-ink"
+      >
+        ← Back to coverage
+      </Link>
+      <div className="mb-4 flex flex-wrap items-start justify-between gap-5">
         <div>
           <h1 className="text-lg">Scenario Explorer</h1>
           <p className="mt-1 max-w-xl text-sm text-muted">
-            Eight curated situations — covered, partly covered, and denied — each
-            answered with a decisive verdict, its route, and one clause-level reason.
+            Eight reference scenarios with covered, partly covered, and denied
+            outcomes. Each shows the determination, the coverage route, and the
+            clause it rests on.
           </p>
         </div>
         <span className="self-center rounded-md border border-line bg-canvas px-2.5 py-1 text-2xs font-semibold tracking-wide text-faint">
-          Framework scenario library · simulated
+          Framework scenario library (simulated)
         </span>
       </div>
 
-      <div className="grid grid-cols-[430px_1fr] items-start gap-4">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[430px_1fr]">
         {/* -- picker -------------------------------------------------------- */}
         <div className="overflow-hidden rounded-card border border-line bg-panel shadow-card">
           {SCENARIOS.map((s) => {
@@ -97,7 +98,7 @@ export default function ScenarioExplorer() {
                   setNoAttestationToggle(false);
                 }}
                 className={`flex w-full items-start gap-2.5 border-b border-line px-3.5 py-2.5 text-left last:border-b-0 ${
-                  active ? 'bg-canvas shadow-[inset_3px_0_0_#1e56d6]' : ''
+                  active ? 'bg-canvas shadow-[inset_3px_0_0_#00c988]' : ''
                 }`}
               >
                 <span
@@ -131,11 +132,11 @@ export default function ScenarioExplorer() {
           <div className="mb-3 rounded-card border border-line bg-panel px-4.5 py-3.5 p-4 shadow-card">
             <div className="text-2xs font-bold uppercase tracking-widest text-faint">
               Scenario {scenario.num}
-              {scenario.attestationSensitive && noAttestationToggle && ' · counterfactual'}
+              {scenario.attestationSensitive && noAttestationToggle && ' (counterfactual)'}
             </div>
             <p className="mt-1 text-sm leading-relaxed text-body">
               {scenario.attestationSensitive && noAttestationToggle
-                ? 'The same hidden-instructions attack — but on an agent that skipped TEE attestation (+0.6% was saved on the premium).'
+                ? 'The same hidden-instructions attack, on an agent without TEE attestation (saving 0.6% on the premium).'
                 : scenario.narrative}
             </p>
           </div>
@@ -178,15 +179,15 @@ export default function ScenarioExplorer() {
               </div>
               <div className="mt-3 border-t border-line pt-3">
                 <div className="text-2xs font-bold uppercase tracking-widest text-faint">
-                  The one clause-level reason
+                  Basis for determination
                 </div>
                 <p className="mt-1 text-sm leading-relaxed text-body" data-testid="verdict-reason">
                   {verdict.reason}{' '}
-                  <span className="text-2xs text-faint">· clause {verdict.clause}</span>
+                  <span className="text-2xs text-faint">(clause {verdict.clause})</span>
                 </p>
               </div>
               <div className="mt-3 rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-xs text-muted">
-                <b className="text-ink">Which control made the difference:</b>{' '}
+                <b className="text-ink">Determining control:</b>{' '}
                 <span data-testid="verdict-control">{verdict.control}</span>
               </div>
 
@@ -215,8 +216,8 @@ export default function ScenarioExplorer() {
                     <span className="text-xs text-muted">
                       <b className="text-ink">What if no attestation?</b>{' '}
                       {noAttestationToggle
-                        ? '— ON. Same event, same loss, no attested inputs. The verdict above is what changes.'
-                        : 'Flip the toggle to see this same event on an agent that skipped TEE attestation.'}
+                        ? 'Enabled. The same event is evaluated without attested inputs, and the determination above changes accordingly.'
+                        : 'Enable the toggle to evaluate the same event for an agent without TEE attestation.'}
                     </span>
                   </div>
                   {targetAgent && (
@@ -244,8 +245,8 @@ export default function ScenarioExplorer() {
                           <>attestation operative at event time</>
                         ) : (
                           <b className="text-bad">
-                            no attestation operative at event time — the verdict
-                            reflects this agent’s reality
+                            no attestation operative at event time. The verdict
+                            reflects this agent’s actual state.
                           </b>
                         )}
                       </span>

@@ -43,7 +43,7 @@ import { useStore } from '../store';
 import type { ActionFamilies, Mandate as MandateType } from '../store/types';
 import { buildPricingInput, formatUtcStamp } from './wizard/format';
 import { getWizardAgentId } from './wizard/wizardAgent';
-import { WizardStepper } from './wizard/Stepper';
+import { WizardBack, WizardStepper } from './wizard/Stepper';
 
 const ACTION_FAMILY_COPY: { key: keyof ActionFamilies; label: string; hint: string }[] = [
   { key: 'valueTransfers', label: 'Value transfers', hint: 'Send money to approved payees' },
@@ -55,7 +55,7 @@ const ACTION_FAMILY_COPY: { key: keyof ActionFamilies; label: string; hint: stri
 ];
 
 const COUNTERSIGN_STEPS = [
-  { label: 'Mandate v1.0 sent to Principal · magic link' },
+  { label: 'Mandate v1.0 sent to the Principal by secure link' },
   { label: `Opened by ${SEED_PRINCIPAL_NAME}` },
   { label: 'Awaiting review and signature…' },
 ];
@@ -88,8 +88,8 @@ function CapField({
     >
       <span className={emphasized ? 'text-accent-ink' : 'text-muted'}>{label}</span>
       {emphasized && (
-        <span className="ml-1.5 rounded bg-accent px-1.5 py-px text-[9.5px] font-bold uppercase tracking-wider text-white">
-          this number sets your premium base
+        <span className="ml-1.5 whitespace-nowrap rounded bg-accent px-1.5 py-px text-[9.5px] font-bold uppercase tracking-wider text-ink">
+          premium base
         </span>
       )}
       <span className="relative mt-1 block">
@@ -131,8 +131,8 @@ function MandateWizard() {
       <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Mandate">
         <WizardStepper current="mandate" className="mb-6" />
         <p className="text-sm text-muted">
-          No agent connected yet — start at{' '}
-          <button type="button" className="text-accent underline" onClick={() => navigate('/connect')}>
+          No agent connected yet. Start at{' '}
+          <button type="button" className="text-accent-ink underline" onClick={() => navigate('/connect')}>
             Connect your agent
           </button>
           .
@@ -156,18 +156,23 @@ function MandateWizard() {
 
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Mandate">
-      <WizardStepper current="mandate" className="mb-6" />
+      <WizardStepper current="mandate" className="mb-3" />
+      <WizardBack
+        to="/connect"
+        note="Changes on this page are saved automatically."
+        className="mb-5"
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div>
           <h1 className="text-xl font-bold text-ink">
             Set the mandate{' '}
-            <span className="font-normal text-muted">— {agent.name}'s rulebook</span>
+            <span className="font-normal text-muted">for {agent.name}</span>
           </h1>
           <p className="mt-2 text-sm text-muted">
-            The mandate is the rulebook your customer signs. The policy pays
-            when the machinery around this rulebook fails — so the rulebook
-            itself must be exact.
+            The mandate is the rulebook the Principal countersigns. The
+            policy pays when the machinery enforcing it fails, so the mandate
+            must be exact.
           </p>
 
           {/* Group 1 — What it may do */}
@@ -175,7 +180,7 @@ function MandateWizard() {
             <div className="flex items-baseline gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded bg-accent-soft text-2xs font-bold text-accent-ink">1</span>
               <h2 className="text-md font-semibold text-ink">What it may do</h2>
-              <span className="text-2xs text-faint">the six action families — unchecked means not delegated</span>
+              <span className="text-2xs text-faint">Unchecked actions are not delegated.</span>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
               {ACTION_FAMILY_COPY.map((fam) => (
@@ -200,8 +205,8 @@ function MandateWizard() {
               ))}
             </div>
             <p className="mt-2 text-2xs text-faint">
-              Unchecked = not delegated at all. The agent simply cannot take
-              that class of action.
+              Unchecked actions are not delegated. The agent cannot take that
+              class of action.
             </p>
           </section>
 
@@ -215,7 +220,7 @@ function MandateWizard() {
             <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
               <CapField
                 label="Per-transaction cap"
-                hint="The most one transaction may move — and the base your rate is applied to."
+                hint="The maximum a single transaction may move. This is the base your rate applies to."
                 value={mandate.caps.perTx}
                 emphasized
                 testId="cap-perTx"
@@ -230,7 +235,7 @@ function MandateWizard() {
               />
               <CapField
                 label="Rolling 30-day cap"
-                hint="A slow leak is still a leak."
+                hint="Limits gradual outflows over any 30-day window."
                 value={mandate.caps.rolling30d}
                 testId="cap-rolling30d"
                 onChange={(v) => patch((m) => ({ ...m, caps: { ...m.caps, rolling30d: v } }))}
@@ -247,7 +252,7 @@ function MandateWizard() {
               <div className="rounded-md border border-line px-3 py-2">
                 <div className="font-semibold text-muted">Permitted assets & chains</div>
                 <div className="num mt-0.5 text-sm text-ink">
-                  {mandate.assets.join(', ')} · {mandate.chains.join(', ')}
+                  {mandate.assets.join(', ')} on {mandate.chains.join(', ')}
                 </div>
                 <div className="mt-0.5 text-2xs text-faint">Anything else is out of mandate.</div>
               </div>
@@ -303,7 +308,7 @@ function MandateWizard() {
             </div>
             <div className="mt-3 rounded-md border border-line px-3 py-2 text-xs">
               <div className="font-semibold text-muted">
-                Approved payees · {mandate.whitelist.entries.length} seeded
+                Approved payees ({mandate.whitelist.entries.length})
               </div>
               <div className="mt-1.5 flex flex-wrap gap-1.5" data-testid="payee-list">
                 {mandate.whitelist.entries.map((p) => (
@@ -317,10 +322,9 @@ function MandateWizard() {
                 ))}
               </div>
               <div className="mt-1.5 text-2xs text-faint">
-                Like a phone's contacts: the agent may only pay entries on this
-                list. New entries wait through a {mandate.whitelist.coolingHours}h
-                cooling period before they can be paid — the framework's
-                recommended minimum.
+                The agent can only pay entries on this list. New entries wait
+                through a {mandate.whitelist.coolingHours}h cooling period
+                before they can be paid, the framework's recommended minimum.
               </div>
             </div>
             <label className="mt-3 flex items-start gap-2 rounded-md border border-line px-3 py-2">
@@ -390,10 +394,11 @@ function MandateWizard() {
           <section className="mt-4 rounded-card border border-line bg-panel p-5 shadow-card">
             <h2 className="text-md font-semibold text-ink">Principal countersignature</h2>
             <p className="mt-1.5 text-sm text-muted">
-              The Principal — whose money this agent spends — must countersign
-              this rulebook. No countersignature, no cover (framework T3.2).
+              The Principal, whose funds this agent spends, must countersign
+              the mandate. Cover requires the countersignature (framework
+              T3.2).
             </p>
-            <p className="mt-2 text-2xs text-faint" data-testid="s31-note">
+            <p className="mt-2 text-xs text-muted" data-testid="s31-note">
               <b>Why the signature matters:</b> {S31_NOTE}
             </p>
 
@@ -403,13 +408,13 @@ function MandateWizard() {
                   type="button"
                   data-testid="send-countersign"
                   onClick={startCountersign}
-                  className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-white hover:bg-accent-ink"
+                  className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489]"
                 >
                   Send to Principal for countersignature
                 </button>
                 <SimulatedBadge />
                 <span className="ml-auto text-2xs text-faint">
-                  Mandate v{mandate.version} · draft · awaiting countersignature
+                  Mandate v{mandate.version} draft, awaiting countersignature
                 </span>
               </div>
             )}
@@ -424,11 +429,11 @@ function MandateWizard() {
                 className="mt-3 rounded-card border border-good-line bg-good-bg p-4"
               >
                 <div className="flex items-center gap-2 text-sm font-bold text-good">
-                  Countersigned ✓ · version {mandate.version}
+                  Mandate v{mandate.version} countersigned ✓
                   <SimulatedBadge className="ml-auto" />
                 </div>
                 <p className="num mt-1 text-xs text-good" data-testid="countersigned-timestamp">
-                  Signed by {mandate.countersigned.by} (Principal) ·{' '}
+                  Signed by {mandate.countersigned.by} (Principal),{' '}
                   {formatUtcStamp(mandate.countersigned.at)}
                 </p>
               </div>
@@ -442,7 +447,7 @@ function MandateWizard() {
               data-testid="mandate-continue"
               disabled={!countersigned}
               onClick={() => navigate('/controls')}
-              className="rounded-lg bg-accent px-6 py-2 text-sm font-semibold text-white hover:bg-accent-ink disabled:cursor-not-allowed disabled:opacity-40"
+              className="rounded-lg bg-accent px-6 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Continue
             </button>
@@ -455,14 +460,14 @@ function MandateWizard() {
         </div>
 
         {/* live quote sidebar — cap edits move this immediately (REQ-7.4.2) */}
-        <QuoteSidebar result={pricing} capUsd={mandate.caps.perTx} />
+        <QuoteSidebar result={pricing} capUsd={mandate.caps.perTx} className="lg:sticky lg:top-6 self-start" />
       </div>
 
       {/* Phone-mockup toast: Aria Chen signs */}
       {toastVisible && (
         <div
           data-testid="countersign-toast"
-          className="fixed bottom-6 right-6 z-40 w-[340px] rounded-2xl border border-line bg-ink p-4 text-white shadow-2xl"
+          className="fixed bottom-6 right-6 z-40 w-[340px] max-w-[calc(100vw-2rem)] rounded-2xl border border-line bg-ink p-4 text-white shadow-2xl"
         >
           <div className="flex items-start gap-3">
             <span className="flex h-9 w-9 flex-none items-center justify-center rounded-full bg-accent text-sm font-bold">
@@ -472,16 +477,16 @@ function MandateWizard() {
               <div className="text-sm font-semibold">
                 {SEED_PRINCIPAL_NAME} (Principal) reviewed and signed
               </div>
-              <div className="mt-0.5 text-2xs text-[#9db1cc]">
-                Mandate v{mandate.version} · {agent.name}
-                {mandate.countersigned && <> · {formatUtcStamp(mandate.countersigned.at)}</>}
+              <div className="mt-0.5 text-2xs text-[#a3adaa]">
+                Mandate v{mandate.version} for {agent.name}
+                {mandate.countersigned && <>, {formatUtcStamp(mandate.countersigned.at)}</>}
               </div>
-              <SimulatedBadge className="mt-1.5 border-white/30 bg-transparent text-[#9db1cc]" />
+              <SimulatedBadge className="mt-1.5 border-white/30 bg-transparent text-[#a3adaa]" />
             </div>
             <button
               type="button"
               aria-label="Dismiss"
-              className="ml-auto text-[#9db1cc]"
+              className="ml-auto text-[#a3adaa]"
               onClick={() => setToastVisible(false)}
             >
               ×
@@ -546,7 +551,7 @@ function MandateEdit({ agentId }: { agentId: string }) {
   if (!agent || !live || !draft) {
     return (
       <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Mandate">
-        <p className="text-sm text-muted">Unknown agent — nothing to edit.</p>
+        <p className="text-sm text-muted">Unknown agent. Nothing to edit.</p>
       </div>
     );
   }
@@ -641,7 +646,7 @@ function MandateEdit({ agentId }: { agentId: string }) {
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Mandate" data-mode="edit">
       <h1 className="text-xl font-bold text-ink">
-        Edit mandate <span className="font-normal text-muted">— {agent.name}</span>
+        Edit mandate <span className="font-normal text-muted">for {agent.name}</span>
       </h1>
 
       {/* Pending state visibly labeled (AC-8) */}
@@ -650,7 +655,7 @@ function MandateEdit({ agentId }: { agentId: string }) {
           data-testid="pending-edit-label"
           className="mt-3 flex items-center gap-2 rounded-card border border-warn-line bg-warn-bg px-4 py-2.5 text-sm text-warn"
         >
-          <b>Pending mandate change — v{live.version} → v{draft.version}.</b>
+          <b>Pending mandate change: v{live.version} → v{draft.version}.</b>
           The old mandate (v{live.version}) governs your cover until the
           difference is paid.
         </div>
@@ -669,7 +674,7 @@ function MandateEdit({ agentId }: { agentId: string }) {
             type="button"
             data-testid="edit-back-to-policies"
             onClick={() => navigate('/policies')}
-            className="mt-3 rounded-lg bg-accent px-4 py-1.5 text-sm font-semibold text-white"
+            className="mt-3 rounded-lg bg-accent px-4 py-1.5 text-sm font-semibold text-ink"
           >
             Back to My policies
           </button>
@@ -678,12 +683,12 @@ function MandateEdit({ agentId }: { agentId: string }) {
         <div className="mt-5 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
           <div className="rounded-card border border-line bg-panel p-5 shadow-card">
             <div className="text-2xs font-bold uppercase tracking-widest text-faint">
-              Draft — mandate v{draft.version}
+              Draft mandate v{draft.version}
             </div>
             <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
               <CapField
                 label="Per-transaction cap"
-                hint="The premium base — changing it re-prices the policy."
+                hint="The premium base. Changing it re-prices the policy."
                 value={draft.caps.perTx}
                 emphasized
                 testId="edit-cap-perTx"
@@ -724,7 +729,7 @@ function MandateEdit({ agentId }: { agentId: string }) {
                 type="button"
                 data-testid="save-reprice"
                 onClick={saveAndReprice}
-                className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-ink"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489]"
               >
                 Save & re-price
               </button>
@@ -747,17 +752,17 @@ function MandateEdit({ agentId }: { agentId: string }) {
             >
               <div className="flex items-center gap-2">
                 <div className="text-sm font-bold text-ink">
-                  Mandate change — re-price before it's real
+                  Mandate change: updated pricing
                 </div>
                 <SimulatedBadge className="ml-auto" />
               </div>
               <div className="mt-1 text-2xs text-faint">
-                {agent.name} · mandate v{live.version} → v{draft.version}
+                {agent.name}, mandate v{live.version} → v{draft.version}
               </div>
 
               <div className="mt-3 space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-muted">What changed · per-transaction cap</span>
+                  <span className="text-muted">Per-transaction cap</span>
                   <span className="num text-ink">
                     {formatUsd(live.caps.perTx)} → {formatUsd(draft.caps.perTx)}
                   </span>
@@ -780,7 +785,7 @@ function MandateEdit({ agentId }: { agentId: string }) {
                   {formatUsd(annualDiff, { signed: true })}/yr
                 </div>
                 <div className="mt-2 text-2xs font-bold uppercase tracking-widest text-faint">
-                  Due now — pro-rated for the remaining term
+                  Due now (pro-rated for the remaining term)
                 </div>
                 <MathValue breakdown={delta.breakdown} className="block">
                   <span className="text-md font-bold text-ink" data-testid="due-now-delta">
@@ -794,8 +799,8 @@ function MandateEdit({ agentId }: { agentId: string }) {
               </div>
 
               <p className="mt-3 rounded-md bg-warn-bg px-3 py-2 text-2xs text-warn" data-testid="takes-effect-note">
-                The change takes effect <b>only after payment</b> — until then
-                the old mandate (v{live.version}) governs your cover (T5.2).
+                The change takes effect <b>only after payment</b>. Until then
+                the current mandate (v{live.version}) governs cover (T5.2).
               </p>
 
               <div className="mt-3 flex gap-2">
@@ -804,11 +809,11 @@ function MandateEdit({ agentId }: { agentId: string }) {
                   data-testid="pay-difference"
                   disabled={paying}
                   onClick={() => void payDifference()}
-                  className="flex-1 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-white hover:bg-accent-ink disabled:opacity-50"
+                  className="flex-1 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489] disabled:opacity-50"
                 >
                   {paying
                     ? 'Paying…'
-                    : `Pay difference — ${formatN(usdToN(delta.deltaUsd, usdPerN), { maxFractionDigits: 1 })}`}
+                    : `Pay difference of ${formatN(usdToN(delta.deltaUsd, usdPerN), { maxFractionDigits: 1 })}`}
                 </button>
                 <button
                   type="button"

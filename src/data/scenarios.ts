@@ -1,12 +1,11 @@
 /**
  * Scenario Explorer data (PRD §7.10, plan §8) — WP-4 owned.
  *
- * The framework's scenario library turned into an interactive quiz: eight
- * curated situations, deliberately mixing covered, partly covered, and
- * denied (≥2 denials — REQ-7.10.1). Each verdict is decisive — "Covered
- * under B," "Not covered — model conduct" — with the coverage route, ONE
- * clause-level reason, and the control that made the difference
- * (REQ-7.10.2).
+ * The framework's scenario library turned into an interactive reference:
+ * eight situations, deliberately mixing covered, partly covered, and denied
+ * (≥2 denials — REQ-7.10.1). Each verdict is decisive, with the coverage
+ * route, ONE clause-level reason, and the control that determined the
+ * outcome (REQ-7.10.2).
  *
  * Scenario 2 is conditional on attestation: the verdict function receives
  * the effective attestation state (the target agent's real
@@ -33,14 +32,14 @@ export interface ScenarioContext {
 
 export interface ScenarioVerdict {
   covered: boolean;
-  /** Decisive headline, e.g. "Covered under B" / "Not covered — model conduct". */
+  /** Decisive headline, e.g. "Covered under Coverage B". */
   headline: string;
   /** The coverage route line (or the explicit absence of one). */
   routeLine: string;
   /** THE one clause-level reason. */
   reason: string;
   clause: string;
-  /** Which control made the difference (or why none could). */
+  /** Which control determined the outcome (or why none could). */
   control: string;
 }
 
@@ -62,162 +61,163 @@ const S03 = SEED_INCIDENT_PARAMS['S-03'];
 export const SCENARIOS: ScenarioDef[] = [
   {
     num: 1,
-    title: 'Harness bug skips the whitelist check; funds go to a stranger',
+    title:
+      'A harness defect bypasses the whitelist check and funds are sent to an unapproved payee',
     narrative:
-      'A harness bug skips the whitelist check and funds go to a payee that was never on the list. No attacker anywhere — the machinery simply acted outside the mandate.',
+      'A defect in the harness bypasses the whitelist check, and funds are sent to a payee that was never on the approved list. No attacker was involved. The enforcement machinery acted outside the mandate.',
     pickerVerdict: 'Covered',
     verdict: ({ capUsd }) => ({
       covered: true,
-      headline: 'Covered under A + D',
-      routeLine: `Coverage A — agent broke its rulebook · pays up to 100% of the ${formatUsd(capUsd)} cap, with D picking up the slice the whitelist guardrail should have stopped`,
+      headline: 'Covered under Coverages A and D',
+      routeLine: `Coverage A (mandate breach) pays up to 100% of the ${formatUsd(capUsd)} cap. Coverage D covers the portion the whitelist guardrail should have prevented.`,
       reason:
-        'The transfer left to a payee outside the countersigned whitelist — a mandate breach needs no attacker (Coverage A), and the skipped whitelist check is a guardrail that failed to fire (Coverage D).',
-      clause: 'Coverage A · Coverage D',
+        'The transfer was sent to a payee outside the countersigned whitelist. A mandate breach does not require an attacker (Coverage A), and the bypassed whitelist check is a guardrail that failed to operate (Coverage D).',
+      clause: 'Coverage A, Coverage D',
       control:
-        'Action logging + the registered whitelist: the logs prove the payee was off-list, which is what turns "something went wrong" into a payable breach.',
+        'Action logging and the registered whitelist. The logs prove the payee was not on the approved list, which is what makes the breach payable.',
     }),
   },
   {
     num: 2,
     title:
-      'Hidden instructions on a product page trick the agent into paying an attacker — inside all its rules',
+      'Hidden instructions on a product page cause the agent to pay an attacker while remaining within its rules',
     narrative:
-      'Hidden instructions on a product page trick the agent into paying an attacker. The agent stayed inside every rule — approved payee, under cap, in-mandate action.',
+      'Hidden instructions embedded in a product page cause the agent to pay an attacker. The agent remained within every rule: an approved payee, an amount under the cap, and an action within its mandate.',
     pickerVerdict: 'Covered',
     attestationSensitive: true,
     verdict: ({ capUsd, attested }) =>
       attested
         ? {
             covered: true,
-            headline: 'Covered under B',
-            routeLine: `Coverage B — agent was manipulated · pays up to 100% of the ${formatUsd(capUsd)} cap`,
+            headline: 'Covered under Coverage B',
+            routeLine: `Coverage B (manipulation) pays up to 100% of the ${formatUsd(capUsd)} cap.`,
             reason:
-              'The attested input record proves crafted adversarial content reached the agent (clause D3.5): fooled by an attacker = covered and provable. Without that proof this exact event is unprovable — and unpayable.',
+              'The attested input record proves that crafted adversarial content reached the agent. Without that record, the same event could not be proven and would not be payable.',
             clause: 'D3.5',
             control:
-              'TEE attestation. It is the difference between "we believe the agent was tricked" and "here is cryptographic proof of the trick."',
+              'TEE attestation. It provides cryptographic proof that the agent was manipulated rather than a belief that it was.',
           }
         : {
             covered: false,
-            headline: 'Denied — unprovable without attestation',
+            headline: 'Denied: unprovable without attestation',
             routeLine:
-              'Coverage B would apply — but Coverage B is excluded on this agent',
+              'Coverage B would apply, but Coverage B is excluded on this agent.',
             reason:
-              'Skipping TEE attestation excludes Coverage B entirely (rate schedule + D3.5): without attested inputs, manipulation can\u2019t be proven, so "the agent was tricked" cannot be distinguished from "the agent was simply wrong."',
+              'Without TEE attestation, Coverage B is excluded entirely (rate schedule and D3.5). Absent attested inputs, manipulation cannot be distinguished from an ordinary model error.',
             clause: 'D3.5',
             control:
-              'TEE attestation — the +0.6% saved at quote time is exactly what this claim needed at proof time.',
+              'TEE attestation. The 0.6% saved at quote time is what this claim required at proof time.',
           },
   },
   {
     num: 3,
-    title: `Cap module waves through ${formatUsd(S03.lossGrossUsd)} against a ${formatUsd(50_000)} cap`,
+    title: `The cap module fails to block a ${formatUsd(S03.lossGrossUsd)} transfer against a ${formatUsd(50_000)} cap`,
     narrative:
-      'The cap-checking module fails open and waves through a transfer above the mandate\u2019s per-transaction cap. The guardrail existed, was scheduled, and simply did not fire.',
+      'The cap-checking module fails open and allows a transfer above the mandate’s per-transaction cap. The guardrail existed and was scheduled for verification, but it did not operate.',
     pickerVerdict: 'Covered',
     verdict: ({ capUsd }) => {
       const excess = Math.max(0, S03.lossGrossUsd - capUsd);
       return {
         covered: true,
-        headline: `Covered under D — the ${formatUsd(excess)} excess`,
-        routeLine: `Coverage D — a guardrail failed to fire · pays the slice the cap module would have stopped: ${formatUsd(S03.lossGrossUsd)} − ${formatUsd(capUsd)} = ${formatUsd(excess)}`,
+        headline: `Covered under Coverage D for the ${formatUsd(excess)} excess`,
+        routeLine: `Coverage D (guardrail failure) pays the portion the cap module should have blocked: ${formatUsd(S03.lossGrossUsd)} − ${formatUsd(capUsd)} = ${formatUsd(excess)}.`,
         reason:
-          'Coverage D pays the excess a correctly-working cap module would have stopped — not the gross transfer. The deductible is waived because the cap module had passed its latest scheduled test (5.3).',
-        clause: 'Coverage D · 5.3',
+          'Coverage D pays the excess a correctly functioning cap module would have blocked, not the gross transfer. The deductible is waived because the module passed its most recent scheduled test (5.3).',
+        clause: 'Coverage D, 5.3',
         control:
-          'Scheduled guardrail verification: passing the latest test is what waives the deductible on this claim.',
+          'Scheduled guardrail verification. Passing the most recent test is what waives the deductible on this claim.',
       };
     },
   },
   {
     num: 4,
     title:
-      'Agent session key stolen from the Operator\u2019s servers; attacker signs directly',
+      'An agent session key is stolen from the Operator’s servers and used to sign transfers directly',
     narrative:
-      'The agent\u2019s session key is exfiltrated from the Operator\u2019s servers and the attacker signs transfers directly — neither the agent nor the Principal initiated anything.',
+      'The agent’s session key is exfiltrated from the Operator’s servers, and the attacker uses it to sign transfers directly. Neither the agent nor the Principal initiated the transactions.',
     pickerVerdict: 'Covered',
     verdict: ({ capUsd }) => ({
       covered: true,
-      headline: 'Covered under C',
-      routeLine: `Coverage C — keys were stolen · pays up to 100% of the ${formatUsd(capUsd)} cap`,
+      headline: 'Covered under Coverage C',
+      routeLine: `Coverage C (key theft) pays up to 100% of the ${formatUsd(capUsd)} cap.`,
       reason:
-        'Signing credentials inside the disclosed key map were stolen and misused, and money moved without the agent or Principal initiating it — the definition of a Coverage C event.',
+        'Signing credentials in the disclosed key map were stolen and misused, and funds moved without the agent or the Principal initiating them. This meets the definition of a Coverage C event.',
       clause: 'Coverage C',
       control:
-        'The disclosed key map: only credentials in the disclosed setup are covered — disclosure is what made this key an insured key.',
+        'The disclosed key map. Only credentials in the disclosed setup are covered, and disclosure is what made this key an insured key.',
     }),
   },
   {
     num: 5,
     title:
-      'Agent pays a completely hallucinated invoice — real payee, in-cap, no attacker anywhere',
+      'The agent pays a fabricated invoice to a real payee, within its cap, with no attacker involved',
     narrative:
-      'The agent pays a completely hallucinated invoice — real payee, in-cap, and no attacker anywhere in the attested inputs.',
+      'The agent pays an invoice for goods that were never ordered and do not exist. The payee is real and approved, the amount is under the cap, and the attested inputs show no adversarial content.',
     pickerVerdict: 'Denied',
     verdict: () => ({
       covered: false,
-      headline: 'Not covered — model conduct',
-      routeLine: 'No coverage route — model conduct exclusion (4.9)',
+      headline: 'Not covered: model conduct',
+      routeLine:
+        'No coverage applies. The model conduct exclusion governs this event (4.9).',
       reason:
-        'The attested record shows clean inputs and an in-mandate action: the model was simply wrong. Fooled by an attacker = covered and provable; simply wrong = not this policy. The policy insures the delegation and the machinery, not the model\u2019s brain.',
+        'The attested record shows clean inputs and an action within the mandate. The model produced an incorrect result on its own. The policy insures the delegation and the systems that enforce it, not the quality of the model’s output.',
       clause: '4.9',
-      control:
-        'None could — this boundary is what keeps the class insurable at all.',
+      control: 'None. This boundary is what keeps the risk class insurable.',
     }),
   },
   {
     num: 6,
     title:
-      'Model provider outage; a payment deadline is missed; late fees follow',
+      'A model provider outage causes a missed payment deadline and late fees',
     narrative:
-      'The model provider goes down, the agent misses a payment deadline, and late fees follow. Nothing was attacked; nothing moved outside the mandate.',
+      'The model provider becomes unavailable, the agent misses a payment deadline, and late fees follow. Nothing was attacked and nothing moved outside the mandate.',
     pickerVerdict: 'Denied',
     verdict: () => ({
       covered: false,
-      headline: 'Not covered — model conduct',
+      headline: 'Not covered: model conduct',
       routeLine:
-        'No coverage route — uptime is model conduct / service-level territory (4.9)',
+        'No coverage applies. Provider uptime is a model conduct and service-level matter (4.9).',
       reason:
-        'The model simply being slow or unavailable is excluded model conduct: downtime and its consequential fees belong to a service-level agreement with the provider, not to this policy.',
+        'A slow or unavailable model is excluded model conduct. Downtime and its consequential fees belong to the service agreement with the provider, not to this policy.',
       clause: '4.9',
       control:
-        'None applies — no safety control governs a provider\u2019s uptime; that risk is contractual, not insurable here.',
+        'None applies. No safety control governs a provider’s uptime. That risk is contractual, not insurable here.',
     }),
   },
   {
     num: 7,
     title:
-      'Principal fat-fingers the mandate cap ($500,000 instead of $50,000); agent spends within the typo',
+      'The Principal countersigns a mandate cap entered as $500,000 instead of $50,000, and the agent spends within it',
     narrative:
-      'The Principal types the per-transaction cap as $500,000 instead of $50,000, countersigns it, and the agent spends within the typo.',
+      'The per-transaction cap is entered as $500,000 instead of $50,000. The Principal countersigns the mandate as written, and the agent spends within the erroneous cap.',
     pickerVerdict: 'Denied',
     verdict: ({ capUsd }) => ({
       covered: false,
-      headline: 'Not covered — the countersigned mandate is the mandate',
-      routeLine: `No route for the excess (S-31) — though cleanup help under F applies, up to ${formatUsd(perEventLimit('F', capUsd))} (15% of cap)`,
+      headline: 'Not covered: the countersigned mandate governs',
+      routeLine: `No coverage applies to the excess (S-31). Coverage F covers cleanup and containment, up to ${formatUsd(perEventLimit('F', capUsd))} (15% of the cap).`,
       reason:
-        'The agent acted inside the mandate as countersigned — the signature is what makes the rulebook the rulebook (S-31). The policy doesn\u2019t pay for the typo; Coverage F still helps with cleanup and containment.',
-      clause: 'S-31 · T3.2',
+        'The agent acted within the mandate as countersigned. The countersignature makes the mandate authoritative (S-31), and the policy does not pay for the entry error. Coverage F still covers cleanup and containment.',
+      clause: 'S-31, T3.2',
       control:
-        'Countersignature: it protects both sides — the Principal\u2019s signature defines the mandate, so an unsigned intention can\u2019t override a signed cap.',
+        'The countersignature. The Principal’s signature defines the mandate, so an unsigned intention cannot override a signed cap.',
     }),
   },
   {
     num: 8,
     title:
-      'A compromised insured agent poisons a counterparty\u2019s agent; the counterparty sues',
+      'A compromised insured agent corrupts a counterparty’s agent, and the counterparty sues',
     narrative:
-      'A compromised insured agent poisons a counterparty\u2019s agent; the counterparty sues for their losses while the insured agent also lost funds of its own.',
+      'A compromised insured agent passes corrupted data to a counterparty’s agent. The counterparty sues for its losses, and the insured agent also lost funds of its own.',
     pickerVerdict: 'Covered',
     verdict: ({ capUsd }) => ({
       covered: true,
-      headline: 'Covered under E + B',
-      routeLine: `Coverage E — someone else was harmed · pays their claim up to ${formatUsd(perEventLimit('E', capUsd))} (50% of cap) · Coverage B pays the insured\u2019s own losses up to ${formatUsd(perEventLimit('B', capUsd))}`,
+      headline: 'Covered under Coverages E and B',
+      routeLine: `Coverage E (third-party liability) pays the counterparty’s claim up to ${formatUsd(perEventLimit('E', capUsd))} (50% of the cap). Coverage B pays the insured’s own losses up to ${formatUsd(perEventLimit('B', capUsd))}.`,
       reason:
-        'The counterparty\u2019s damages flow from the insured agent\u2019s covered failure (Coverage E, defense costs inside the limit); the insured\u2019s own manipulation losses are Coverage B, provable through the attested record.',
-      clause: 'Coverage E · Coverage B',
+        'The counterparty’s damages arise from the insured agent’s covered failure (Coverage E, with defense costs inside the limit). The insured’s own manipulation losses fall under Coverage B, proven through the attested record.',
+      clause: 'Coverage E, Coverage B',
       control:
-        'TEE attestation again — it proves the insured agent was itself compromised, which is what routes the counterparty\u2019s claim to E instead of a bare liability fight.',
+        'TEE attestation. It proves the insured agent was itself compromised, which is what routes the counterparty’s claim to Coverage E.',
     }),
   },
 ];

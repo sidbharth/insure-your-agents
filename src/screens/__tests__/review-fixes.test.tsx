@@ -175,7 +175,7 @@ describe('fix #2 — claim settlement at the post-refetch rate', () => {
       await useStore.getState().refetchNow();
     });
     expect(screen.getByTestId('outcome-payout')).toHaveTextContent('$38,000');
-    expect(screen.getByTestId('outcome-payout-n')).toHaveTextContent('1 N = $4.00');
+    expect(screen.getByTestId('outcome-payout-n')).toHaveTextContent('1 $NEAR = $4.00');
   });
 });
 
@@ -190,7 +190,7 @@ describe('fix #3 — quarterly payment plan', () => {
     renderPay();
     fireEvent.click(screen.getByTestId('plan-quarterly'));
     // Due-today line reflects the quarterly amount ($75 ≈ 25 N at $3.00).
-    expect(screen.getByTestId('settlement-line')).toHaveTextContent('25 N');
+    expect(screen.getByTestId('settlement-line')).toHaveTextContent('25 $NEAR');
     await act(async () => {
       fireEvent.click(screen.getByTestId('pay-button'));
     });
