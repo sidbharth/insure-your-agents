@@ -1,16 +1,328 @@
 /**
- * Screen 7.5 — Safety controls (placeholder).
- * WP-2 replaces this file with the full implementation; WP-0 only registers
- * the route so navigation and shell tests work end to end.
+ * Screen 7.5 — Safety controls (WP-2; mockups wizard-controls-*.html).
+ * THE CENTERPIECE: tier-1 gates that DECLINE (never price), tier-2 priced
+ * toggles with published surcharges + coverage/coinsurance chips + the
+ * "insurer's why" hovers (REQ-7.5.4), and the live QuoteSidebar whose
+ * RateLadder animates to the 3.0% ladder ceiling (REQ-7.5.2, AC-4).
+ * Any tier-1 gate OFF collapses the sidebar to red DECLINED naming the gate
+ * and disables Continue (REQ-7.5.1, AC-2). Attestation OFF greys Coverage B
+ * the same instant (REQ-7.5.3, AC-3). The KYB row mirrors the 7.2 company
+ * step: an unverified operator prices as KYB-skipped whatever the toggle.
  */
+import { useNavigate } from 'react-router-dom';
+import { MathValue } from '../components/MathValue';
+import { QuoteSidebar } from '../components/QuoteSidebar';
+import { isOperatorVerifiedNow } from '../components/UnverifiedBanner';
+import { TIER1_DECLINE_COPY, TIER2_COPY } from '../data/copy';
+import { formatN, formatUsd, usdToN } from '../lib/money';
+import { GATE_LABELS, priceAgent } from '../lib/pricing';
+import { useStore } from '../store';
+import type { Tier1Gate, Tier2Control } from '../store/types';
+import { buildPricingInput, formatUtcStamp, premiumBreakdown } from './wizard/format';
+import { getWizardAgentId } from './wizard/wizardAgent';
+import { WizardStepper } from './wizard/Stepper';
+
+const TIER1_COPY: { key: Tier1Gate; label: string; desc: string }[] = [
+  {
+    key: 'hashIdentity',
+    label: 'Registered hash identity',
+    desc: "The agent's configuration fingerprint is anchored in the registry — the policy insures the fingerprinted agent.",
+  },
+  {
+    key: 'transferCaps',
+    label: 'Transfer caps enforced',
+    desc: "The harness refuses any transaction over the mandate's caps, deterministically.",
+  },
+  {
+    key: 'whitelist',
+    label: 'Whitelist enforced',
+    desc: 'Money can only move to approved payees; new entries wait through the cooling period.',
+  },
+  {
+    key: 'actionLogging',
+    label: 'Action logging',
+    desc: 'Append-only log of everything the agent does, anchored on-chain every 24h.',
+  },
+];
+
+/** Tier-2 row descriptions (mockup copy; timelock/HITL fill in live mandate figures). */
+function tier2Desc(
+  key: Tier2Control,
+  m: { timelockThreshold: number; timelockHold: number; hitlThreshold: number },
+): string {
+  switch (key) {
+    case 'attestation':
+      return 'A secure enclave produces tamper-proof receipts of what the agent saw and did.';
+    case 'kyb':
+      return 'Reflects the company step.';
+    case 'timelock':
+      return `Transfers above ${formatUsd(m.timelockThreshold)} wait ${m.timelockHold} hours so a bad one can be caught and reversed.`;
+    case 'recovery':
+      return 'A pre-built path to claw funds back: freeze contacts, tracing retainer, key rotation runbook.';
+    case 'harnessAudit':
+      return 'A third party has audited the guardrail code that enforces the mandate.';
+    case 'hitl':
+      return `A named person must approve anything over ${formatUsd(m.hitlThreshold)} before the agent acts.`;
+    case 'killSwitch':
+      return 'Alerts watch for anomalies; the big red button halts the agent instantly.';
+  }
+}
+
 export default function Controls() {
+  const navigate = useNavigate();
+  const agentId = getWizardAgentId();
+  const agent = useStore((s) => s.agents.find((a) => a.id === agentId));
+  const versions = useStore((s) => s.mandates[agentId]);
+  const setTier1 = useStore((s) => s.setTier1);
+  const setTier2 = useStore((s) => s.setTier2);
+  const verificationHistory = useStore((s) => s.operator.verificationHistory);
+  const usdPerN = useStore((s) => s.priceFeed.usdPerN);
+  useStore((s) => s.presenter.timeOffsetMs);
+
+  const mandate = versions?.[versions.length - 1];
+
+  if (!agent || !mandate) {
+    return (
+      <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Controls">
+        <WizardStepper current="controls" className="mb-6" />
+        <p className="text-sm text-muted">
+          No agent connected yet — start at{' '}
+          <button
+            type="button"
+            className="text-accent underline"
+            onClick={() => navigate('/connect')}
+          >
+            Connect your agent
+          </button>
+          .
+        </p>
+      </div>
+    );
+  }
+
+  const operatorVerified = isOperatorVerifiedNow(verificationHistory);
+  const openVerified = verificationHistory.find((iv) => iv.verified && iv.to === undefined);
+  const pricing = priceAgent(buildPricingInput(agent, mandate, operatorVerified));
+  const declined = pricing.kind === 'declined';
+
+  const descInputs = {
+    timelockThreshold: mandate.timelock.threshold,
+    timelockHold: mandate.timelock.holdHours,
+    hitlThreshold: mandate.hitl.threshold,
+  };
+
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Controls">
-      <div className="mb-1 text-2xs font-bold uppercase tracking-widest text-faint">
-        Screen 7.5 · placeholder (WP-2)
+      <WizardStepper current="controls" className="mb-6" />
+
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+        <div>
+          <h1 className="text-xl font-bold text-ink">Safety controls</h1>
+          <p className="mt-2 max-w-2xl text-sm text-muted">
+            Four controls are non-negotiable — miss one and no policy exists at
+            any price. Seven more are your choice — each one you skip has a
+            published price, and some skips shrink what's covered.
+          </p>
+
+          {/* ------------------------------------------------------------ */}
+          {/* Tier 1 — required (gates: they decline, they never price)     */}
+          {/* ------------------------------------------------------------ */}
+          <section
+            className="mt-6 rounded-card border border-line bg-panel p-5 shadow-card"
+            data-testid="tier1-group"
+          >
+            <div className="flex items-baseline gap-2">
+              <h2 className="text-md font-semibold text-ink">Tier 1 — required</h2>
+              <span className="text-2xs text-faint">
+                the four gates · missing any one means declined, never merely more expensive
+              </span>
+            </div>
+
+            <div className="mt-3 space-y-2">
+              {TIER1_COPY.map((gate) => {
+                const locked = gate.key === 'hashIdentity';
+                const on = agent.controls.tier1[gate.key];
+                return (
+                  <div
+                    key={gate.key}
+                    className={`rounded-md border px-3 py-2.5 ${
+                      on ? 'border-line' : 'border-bad-line bg-bad-bg'
+                    }`}
+                  >
+                    <label className="flex items-start gap-2.5">
+                      <input
+                        type="checkbox"
+                        data-testid={`gate-${gate.key}`}
+                        checked={on}
+                        disabled={locked}
+                        onChange={(e) => setTier1(agentId, gate.key, e.target.checked)}
+                        className="mt-0.5"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-x-2">
+                          <span className="text-sm font-semibold text-ink">{gate.label}</span>
+                          {locked && (
+                            <span className="rounded-full border border-good-line bg-good-bg px-2 py-px text-2xs font-semibold text-good">
+                              already earned · locked on
+                            </span>
+                          )}
+                          <span className="ml-auto rounded-full border border-line bg-canvas px-2 py-px text-2xs font-semibold text-faint">
+                            Gate · not priced
+                          </span>
+                        </span>
+                        <span className="mt-0.5 block text-2xs text-faint">{gate.desc}</span>
+                        {!on && (
+                          <span
+                            className="mt-1 block text-xs font-semibold text-bad"
+                            data-testid={`gate-off-note-${gate.key}`}
+                          >
+                            {TIER1_DECLINE_COPY(GATE_LABELS[gate.key])}
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ------------------------------------------------------------ */}
+          {/* Tier 2 — priced choices                                       */}
+          {/* ------------------------------------------------------------ */}
+          <section
+            className="mt-4 rounded-card border border-line bg-panel p-5 shadow-card"
+            data-testid="tier2-group"
+          >
+            <div className="flex items-baseline gap-2">
+              <h2 className="text-md font-semibold text-ink">Tier 2 — priced choices</h2>
+              <span className="text-2xs text-faint">
+                skip any of these; each skip has a published surcharge, some shrink coverage
+              </span>
+            </div>
+
+            <div className="mt-3 space-y-2">
+              {TIER2_COPY.map((ctrl) => {
+                // Tier2Copy.key is typed string in the frozen copy contract.
+                const key = ctrl.key as Tier2Control;
+                const toggled = agent.controls.tier2[key];
+                const isKyb = key === 'kyb';
+                // KYB mirrors the 7.2 company step: unverified prices as skipped.
+                const effectiveOn = isKyb ? toggled && operatorVerified : toggled;
+                return (
+                  <div
+                    key={ctrl.key}
+                    title={`Insurer's why: ${ctrl.insurersWhy}`}
+                    className={`rounded-md border px-3 py-2.5 ${
+                      effectiveOn ? 'border-line' : 'border-warn-line bg-warn-bg'
+                    }`}
+                  >
+                    <label className="flex items-start gap-2.5">
+                      <input
+                        type="checkbox"
+                        data-testid={`tier2-${ctrl.key}`}
+                        checked={toggled}
+                        onChange={(e) => setTier2(agentId, key, e.target.checked)}
+                        className="mt-0.5"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex flex-wrap items-center gap-x-2">
+                          <span className="text-sm font-semibold text-ink">{ctrl.label}</span>
+                          <span
+                            data-testid={`tier2-chip-${ctrl.key}`}
+                            className={`ml-auto rounded-full border px-2 py-px text-2xs font-bold ${
+                              effectiveOn
+                                ? 'border-line bg-canvas text-faint'
+                                : 'border-warn-line bg-panel text-warn'
+                            }`}
+                          >
+                            {ctrl.surcharge} {effectiveOn ? 'if off' : 'applied'}
+                          </span>
+                        </span>
+                        <span className="mt-0.5 block text-2xs text-faint">
+                          {tier2Desc(key, descInputs)}
+                          {isKyb && operatorVerified && openVerified && (
+                            <span className="num"> Verified {formatUtcStamp(openVerified.from)}.</span>
+                          )}
+                        </span>
+                        {isKyb && !operatorVerified && (
+                          <span
+                            className="mt-1 block text-2xs font-semibold text-warn"
+                            data-testid="kyb-mirror-note"
+                          >
+                            Company unverified — priced as skipped no matter this toggle.
+                            Verify the company (step 1) to lift it.
+                          </span>
+                        )}
+                        {!effectiveOn && ctrl.chip && (
+                          <span
+                            className="mt-1 block text-xs font-semibold text-warn"
+                            data-testid={`tier2-consequence-${ctrl.key}`}
+                          >
+                            {ctrl.chip}
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="mt-3 text-2xs text-faint">
+              Hover any row for the insurer's why. Every surcharge is published
+              in the Appendix 3 rate schedule — no hidden pricing.
+            </p>
+          </section>
+
+          {/* Continue gate (REQ-7.5.1) */}
+          <div className="mt-5 flex items-center gap-4">
+            <button
+              type="button"
+              data-testid="controls-continue"
+              disabled={declined}
+              onClick={() => navigate('/quote')}
+              className="rounded-lg bg-accent px-6 py-2 text-sm font-semibold text-white hover:bg-accent-ink disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Continue
+            </button>
+            {declined && (
+              <span className="text-xs font-semibold text-bad" data-testid="controls-continue-blocked">
+                Switch the gate back on to restore your quote.
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* ------------------------------------------------------------ */}
+        {/* Right rail — live quote (collapses to DECLINED, AC-2)          */}
+        {/* ------------------------------------------------------------ */}
+        <div>
+          <div className="mb-2 text-2xs font-bold uppercase tracking-widest text-muted">
+            Your quote · {agent.name}
+          </div>
+          <QuoteSidebar result={pricing} capUsd={mandate.caps.perTx} />
+          {pricing.kind === 'quoted' && (
+            <div className="mt-3 rounded-card border border-line bg-panel p-4 text-xs shadow-card">
+              <MathValue breakdown={premiumBreakdown(pricing, mandate.caps.perTx)}>
+                <span className="font-bold text-ink" data-testid="controls-premium">
+                  {formatUsd(pricing.premiumUsd)}/yr ≈{' '}
+                  {formatN(usdToN(pricing.premiumUsd, usdPerN), { maxFractionDigits: 1 })}
+                </span>
+              </MathValue>
+              {pricing.ceilingReached && (
+                <p className="mt-1.5 text-2xs font-semibold text-bad" data-testid="ceiling-note">
+                  Ceiling reached. The rate schedule labels this rung "tier-1
+                  only: unassessed custom harness." Never more than 3.0%.
+                </p>
+              )}
+              <p className="mt-1.5 text-2xs text-faint">
+                Tier-1 gates never appear in this price. They gate; they never price.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
-      <h1 className="text-lg">Safety controls</h1>
-      <p className="mt-2 max-w-xl text-sm text-muted">Tier-1 gates that DECLINE, tier-2 priced toggles, animated rate ladder.</p>
     </div>
   );
 }
