@@ -64,11 +64,20 @@ describe('7.1 Get started', () => {
 
   it('renames the company through the store', () => {
     renderAt('/');
-    fireEvent.click(screen.getByTestId('rename-company'));
+    fireEvent.click(screen.getByTestId('company-name'));
     const input = screen.getByTestId('company-name-input');
     fireEvent.change(input, { target: { value: 'Acme Autonomy Ltd' } });
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(useStore.getState().operator.name).toBe('Acme Autonomy Ltd');
+  });
+
+  it('an emptied company name falls back to the default', () => {
+    renderAt('/');
+    fireEvent.click(screen.getByTestId('company-name'));
+    const input = screen.getByTestId('company-name-input');
+    fireEvent.change(input, { target: { value: '   ' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(useStore.getState().operator.name).toBe('Acme, Inc');
   });
 });
 

@@ -196,8 +196,10 @@ export default function Policies() {
     setDeEnrollConfirm(undefined);
   };
 
-  // -- near-miss reporting (REQ-7.9.3) ----------------------------------------
+  // -- near-miss reporting (REQ-7.9.3; capped at the four preset events) ------
+  const nearMissLimitReached = nearMisses.length >= NEAR_MISS_TEMPLATES.length;
   const reportNearMiss = () => {
+    if (nearMissLimitReached) return;
     const template = NEAR_MISS_TEMPLATES[nearMisses.length % NEAR_MISS_TEMPLATES.length];
     const at = demoNow();
     store().addNearMiss({
@@ -360,17 +362,26 @@ export default function Policies() {
               Renewal preview
             </div>
             <p className="mt-1 text-xs text-muted">
-              Clean year so far → <b className="num text-ink">−0.05% at renewal</b>{' '}
-              (floor 0.45%){nearMisses.length > 0 && (
+              A clean year earns a <b className="num text-ink">0.05% credit</b> at
+              renewal, with a floor of 0.45%.{' '}
+              {nearMisses.length > 0 && (
                 <>
-                  {' '}
-                  plus <b className="num text-ink">−0.01% × {nearMisses.length}</b>{' '}
-                  reported near-miss{nearMisses.length === 1 ? '' : 'es'}
+                  {nearMisses.length === 1 ? (
+                    <>
+                      One reported near miss earns a further{' '}
+                      <b className="num text-ink">0.01% credit</b>.
+                    </>
+                  ) : (
+                    <>
+                      The <b className="num text-ink">{nearMisses.length}</b> reported
+                      near misses earn a further{' '}
+                      <b className="num text-ink">0.01%</b> each.
+                    </>
+                  )}{' '}
                 </>
               )}
-              . No-change guarantee: your renewal rate moves at most{' '}
-              <b className="num text-ink">±0.15%</b> if nothing about your setup
-              changes.
+              If nothing in your setup changes, your renewal rate moves by at most{' '}
+              <b className="num text-ink">±0.15%</b>.
             </p>
           </div>
         </div>
@@ -416,19 +427,21 @@ export default function Policies() {
           <div className="rounded-card border border-line bg-panel p-4 shadow-card" data-testid="near-miss-feed">
             <div className="flex items-baseline justify-between">
               <div className="text-2xs font-bold uppercase tracking-widest text-faint">
-                Near-miss feed
+                Near miss feed
               </div>
-              <button
-                data-testid="report-near-miss"
-                onClick={reportNearMiss}
-                className="text-2xs font-semibold text-accent-ink"
-              >
-                Report a near-miss
-              </button>
+              {!nearMissLimitReached && (
+                <button
+                  data-testid="report-near-miss"
+                  onClick={reportNearMiss}
+                  className="text-2xs font-semibold text-accent-ink"
+                >
+                  Report a near miss
+                </button>
+              )}
             </div>
             {nearMisses.length === 0 ? (
               <p className="mt-2 text-xs text-muted">
-                Nothing reported yet. Each reported near-miss earns a renewal
+                Nothing reported yet. Each reported near miss earns a renewal
                 credit.
               </p>
             ) : (
@@ -455,8 +468,7 @@ export default function Policies() {
               </ul>
             )}
             <p className="mt-2 border-t border-line-soft pt-2 text-2xs text-faint">
-              Near-misses are reportable within 7 days of discovery and inform
-              programme pricing.
+              Near misses are reportable within 7 days of discovery.
             </p>
           </div>
         </div>
@@ -526,7 +538,7 @@ function PolicyRowCard({
       data-testid={`policy-row-${agent.id}`}
       className="rounded-card border border-line bg-panel px-4 py-3.5 shadow-card"
     >
-      <div className="grid grid-cols-2 gap-2 md:grid-cols-[150px_minmax(85px,1fr)_95px_82px_95px_100px_85px] md:items-center">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-[150px_minmax(125px,1fr)_95px_82px_95px_100px_85px] md:items-start">
         <div>
           <div className="text-sm font-semibold text-ink">{agent.name}</div>
           <span className="rounded border border-line bg-canvas px-1.5 font-mono text-2xs text-muted">
@@ -571,19 +583,24 @@ function PolicyRowCard({
             )}
           </div>
         </div>
-        <div className="num text-xs text-muted">
-          Cap <b className="text-ink">{formatUsd(capUsd)}</b>
+        <div>
+          <div className="text-2xs font-bold uppercase tracking-wider text-faint">Cap</div>
+          <div className="num mt-0.5 text-xs font-semibold text-ink">
+            {formatUsd(capUsd)}
+          </div>
         </div>
-        <div className="num text-xs text-muted">
-          Rate{' '}
-          <b className="text-ink" data-testid="row-rate">
+        <div>
+          <div className="text-2xs font-bold uppercase tracking-wider text-faint">Rate</div>
+          <div className="num mt-0.5 text-xs font-semibold text-ink" data-testid="row-rate">
             {terminated ? '—' : `${row.totalPct}%`}
-          </b>
+          </div>
         </div>
-        <div className="num text-xs text-muted">
-          Premium{' '}
+        <div>
+          <div className="text-2xs font-bold uppercase tracking-wider text-faint">
+            Premium
+          </div>
           {terminated ? (
-            <b className="text-ink">—</b>
+            <div className="num mt-0.5 text-xs font-semibold text-ink">—</div>
           ) : (
             <MathValue
               breakdown={{
@@ -597,15 +614,21 @@ function PolicyRowCard({
                 resultUsd: enrollment.premiumUsd,
               }}
             >
-              <b className="text-ink">{formatUsd(enrollment.premiumUsd)}</b>
+              <div className="num mt-0.5 text-xs font-semibold text-ink">
+                {formatUsd(enrollment.premiumUsd)}
+              </div>
             </MathValue>
           )}
         </div>
-        <div className="text-xs text-muted">
-          Renews{' '}
-          <b className="text-ink">{terminated ? '—' : fmtDate(enrollment.renewalAt)}</b>
+        <div>
+          <div className="text-2xs font-bold uppercase tracking-wider text-faint">
+            Renews
+          </div>
+          <div className="num mt-0.5 whitespace-nowrap text-xs font-semibold text-ink">
+            {terminated ? '—' : fmtDate(enrollment.renewalAt)}
+          </div>
         </div>
-        <div className="text-right">
+        <div className="text-right md:self-center">
           <StatusPill status={status} reason={suspension?.reason} />
         </div>
       </div>

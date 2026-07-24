@@ -94,10 +94,10 @@ export default function GetStarted() {
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(operatorName);
 
+  // An empty commit falls back to the default company name.
   const commitRename = () => {
     const next = draftName.trim();
-    if (next.length > 0) renameOperator(next);
-    else setDraftName(operatorName);
+    renameOperator(next.length > 0 ? next : 'Acme, Inc');
     setEditingName(false);
   };
 
@@ -123,23 +123,18 @@ export default function GetStarted() {
               }}
             />
           ) : (
-            <>
-              <b className="text-ink" data-testid="company-name">
-                {operatorName}
-              </b>
-
-              <button
-                type="button"
-                data-testid="rename-company"
-                className="text-xs text-accent-ink underline decoration-dotted"
-                onClick={() => {
-                  setDraftName(operatorName);
-                  setEditingName(true);
-                }}
-              >
-                rename
-              </button>
-            </>
+            <button
+              type="button"
+              data-testid="company-name"
+              title="Edit company name"
+              className="cursor-text font-bold text-ink"
+              onClick={() => {
+                setDraftName(operatorName);
+                setEditingName(true);
+              }}
+            >
+              {operatorName}
+            </button>
           )}
         </div>
 
