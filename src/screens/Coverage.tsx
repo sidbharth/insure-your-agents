@@ -48,9 +48,12 @@ export default function Coverage() {
   const now = demoNow();
 
   // Post-purchase: bind to a real policy (?agent=… or the first live
-  // enrollment). Pre-purchase (no enrollment): quote-stage numbers.
+  // enrollment). Pre-purchase (no enrollment): quote-stage numbers. An unpaid
+  // quote (effectiveAt still 0, stamped only at payment) is not a policy yet.
   const requestedAgentId = params.get('agent') ?? undefined;
-  const liveEnrollments = enrollments.filter((e) => e.terminatedAt === undefined);
+  const liveEnrollments = enrollments.filter(
+    (e) => e.terminatedAt === undefined && e.effectiveAt !== 0,
+  );
   const enrollment =
     liveEnrollments.find((e) => e.agentId === requestedAgentId) ??
     liveEnrollments[0];

@@ -566,7 +566,9 @@ function PolicyRowCard({
             ))}
           </span>
           <div className="mt-1 text-2xs text-faint">
-            Guardrails verified {fmtDayMonth(enrollment.effectiveAt)}
+            {enrollment.effectiveAt !== 0
+              ? `Guardrails verified ${fmtDayMonth(enrollment.effectiveAt)}`
+              : 'Guardrails verified at activation'}
             {row.loadingsPct > 0 && (
               <>
                 {', '}
