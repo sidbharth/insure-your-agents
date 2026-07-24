@@ -190,7 +190,7 @@ export interface Mandate {
   };
   hitl: { threshold: number; approvers: string[]; channel: string };
   maxSessionHours: number;
-  countersigned?: { by: 'Aria Chen'; at: Timestamp };
+  countersigned?: { by: string; at: Timestamp };
   /** In-force interval for this mandate version (GT-8/AC-8). */
   inForceFrom?: Timestamp;
   inForceTo?: Timestamp;
@@ -492,7 +492,7 @@ export interface SessionSlice {
   // -- mandates -------------------------------------------------------------
   /** Save/replace the newest (draft) mandate version for an agent. */
   saveMandate: (agentId: string, mandate: Mandate) => void;
-  countersignMandate: (agentId: string, at?: Timestamp) => void;
+  countersignMandate: (agentId: string, at?: Timestamp, by?: string) => void;
   setPendingEdit: (agentId: string, edit: PendingMandateEdit) => void;
   clearPendingEdit: (agentId: string) => void;
   /** Commit a paid pending edit: closes old version's inForceTo, opens new (AC-8). */
@@ -569,10 +569,16 @@ export interface PresenterSlice {
   injectIncident: (scenarioId: ScenarioId, agentId: string, lossUsd?: number) => void;
 }
 
-/** UI slice: global "Show the math" toggle (REQ-6.7); persists across screens. */
+/** The role the visitor enrolls under (framework Appendix 1 parties). */
+export type EnrollmentRole = 'operator' | 'principal' | 'both';
+
+/** UI slice: global "Show the math" toggle (REQ-6.7) + selected role. */
 export interface UiSlice {
   showMath: boolean;
   setShowMath: (on: boolean) => void;
+  /** null until the visitor picks a role on the landing page. */
+  role: EnrollmentRole | null;
+  setRole: (role: EnrollmentRole) => void;
 }
 
 export interface RootActions {

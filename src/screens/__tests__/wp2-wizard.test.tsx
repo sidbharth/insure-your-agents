@@ -52,7 +52,7 @@ describe('7.1 Get started', () => {
     renderAt('/');
     expect(screen.getByTestId('screen-GetStarted')).toBeInTheDocument();
     expect(screen.getByTestId('step-strip')).toBeInTheDocument();
-    expect(screen.getByTestId('operator-footnote')).toBeInTheDocument();
+    expect(screen.getByTestId('role-cards')).toBeInTheDocument();
     expect(screen.queryByLabelText(/password/i)).not.toBeInTheDocument();
   });
 

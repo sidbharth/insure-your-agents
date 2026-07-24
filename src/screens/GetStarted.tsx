@@ -10,6 +10,47 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { POSITIONING_LINE } from '../data/copy';
 import { useStore } from '../store';
+import type { EnrollmentRole } from '../store/types';
+
+/** Framework Appendix 1 parties, presented as enrollment roles. */
+const ROLES: {
+  key: EnrollmentRole;
+  title: string;
+  definition: string;
+  journey: string;
+  cta: string;
+  testId: string;
+  highlight?: boolean;
+}[] = [
+  {
+    key: 'operator',
+    title: 'Operator',
+    definition:
+      'You build and run the agents. You choose the model, design the harness, manage the keys, and are responsible for uptime and updates. The Operator takes out the policy and manages it.',
+    journey: 'Full enrollment: verify, register agents, set mandates, and pay.',
+    cta: 'Continue as Operator',
+    testId: 'get-started',
+    highlight: true,
+  },
+  {
+    key: 'principal',
+    title: 'Principal',
+    definition:
+      'Agents run by an Operator spend your funds. You delegate authority to them and define what they may do. As an enrolled Principal you are an insured under the policy, and your losses are paid directly to you.',
+    journey: 'Short journey: verify, review the mandate, and countersign it.',
+    cta: 'Continue as Principal',
+    testId: 'role-principal',
+  },
+  {
+    key: 'both',
+    title: 'Operator and Principal',
+    definition:
+      'One organization builds the agents and owns the funds they spend. You complete the full enrollment and countersign the mandate through your own authorized officer.',
+    journey: 'Full enrollment with in-house countersignature.',
+    cta: 'Continue as both',
+    testId: 'role-both',
+  },
+];
 
 const STEPS = [
   {
@@ -53,6 +94,7 @@ export default function GetStarted() {
   const navigate = useNavigate();
   const operatorName = useStore((s) => s.operator.name);
   const renameOperator = useStore((s) => s.renameOperator);
+  const setRole = useStore((s) => s.setRole);
   const [showHow, setShowHow] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(operatorName);
@@ -118,14 +160,6 @@ export default function GetStarted() {
         <div className="mt-6 flex items-center gap-4">
           <button
             type="button"
-            data-testid="get-started"
-            onClick={() => navigate('/verify')}
-            className="rounded-lg bg-accent px-6 py-2.5 text-md font-semibold text-ink shadow-card hover:bg-[#0bd489]"
-          >
-            Get started
-          </button>
-          <button
-            type="button"
             data-testid="how-it-works-toggle"
             aria-expanded={showHow}
             onClick={() => setShowHow((v) => !v)}
@@ -133,6 +167,53 @@ export default function GetStarted() {
           >
             How it works
           </button>
+        </div>
+
+        {/* Role selection: who is enrolling (framework Appendix 1 parties) */}
+        <h2 className="mt-10 text-lg font-semibold text-ink">
+          How will you be enrolling?
+        </h2>
+        <p className="mt-1 max-w-[640px] text-sm text-muted">
+          The policy is taken out by the Operator for the benefit of the
+          Operator and its enrolled Principals. Select the role that describes
+          your organization.
+        </p>
+        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3" data-testid="role-cards">
+          {ROLES.map((r) => (
+            <div
+              key={r.key}
+              data-testid={`role-card-${r.key}`}
+              className={`flex flex-col rounded-card border bg-panel p-5 shadow-card ${
+                r.highlight ? 'border-accent-line' : 'border-line'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <h3 className="text-md font-semibold text-ink">{r.title}</h3>
+                {r.highlight && (
+                  <span className="rounded bg-accent-soft px-1.5 py-px text-2xs font-bold text-accent-ink">
+                    Policyholder
+                  </span>
+                )}
+              </div>
+              <p className="mt-2 flex-1 text-sm text-muted">{r.definition}</p>
+              <p className="mt-2 text-xs text-faint">{r.journey}</p>
+              <button
+                type="button"
+                data-testid={r.testId}
+                onClick={() => {
+                  setRole(r.key);
+                  navigate('/verify');
+                }}
+                className={`mt-4 rounded-lg px-4 py-2 text-sm font-semibold ${
+                  r.highlight
+                    ? 'bg-accent text-ink hover:bg-[#0bd489]'
+                    : 'border border-line bg-panel text-ink hover:bg-canvas'
+                }`}
+              >
+                {r.cta}
+              </button>
+            </div>
+          ))}
         </div>
 
         {showHow && (
@@ -162,12 +243,7 @@ export default function GetStarted() {
           ))}
         </div>
 
-        {/* single-role footnote (REQ-7.1.1) */}
-        <p className="mt-2 max-w-[640px] text-xs text-faint" data-testid="operator-footnote">
-          You're signed in as the <b className="text-muted">Operator</b>, the
-          company that runs the agents. The Principal, whose funds the agents
-          spend, appears once: to countersign the mandate.
-        </p>
+
       </div>
     </div>
   );

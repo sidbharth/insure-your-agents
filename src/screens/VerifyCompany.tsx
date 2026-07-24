@@ -30,6 +30,7 @@ const VERIFY_STEPS = [
 
 export default function VerifyCompany() {
   const navigate = useNavigate();
+  const role = useStore((s) => s.role);
   const operator = useStore((s) => s.operator);
   const verifyOperator = useStore((s) => s.verifyOperator);
   const revokeVerification = useStore((s) => s.revokeVerification);
@@ -53,6 +54,9 @@ export default function VerifyCompany() {
 
   const verifiedNow = isOperatorVerifiedNow(operator.verificationHistory);
 
+  const isPrincipal = role === 'principal';
+  const nextPath = isPrincipal ? '/review' : '/connect';
+
   const startVerify = () => setPhase('verifying');
   const finishVerify = () => {
     verifyOperator();
@@ -68,12 +72,12 @@ export default function VerifyCompany() {
         if (a.status === 'Active') s.suspendAgent(a.id, 'verification withdrawn');
       }
     }
-    navigate('/connect');
+    navigate(nextPath);
   };
 
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-VerifyCompany">
-      <WizardStepper current="company" className="mb-3" />
+      <WizardStepper current="company" flow={isPrincipal ? 'principal' : 'operator'} className="mb-3" />
       <WizardBack
         to="/"
         note="Going back keeps everything you've entered."
@@ -86,11 +90,13 @@ export default function VerifyCompany() {
       />
 
       <div className="mx-auto max-w-[720px]">
-        <h1 className="text-xl font-bold text-ink">Verify your company</h1>
+        <h1 className="text-xl font-bold text-ink">
+          {isPrincipal ? 'Verify your organization' : 'Verify your company'}
+        </h1>
         <p className="mt-2 text-sm text-muted">
-          Verification ties the policy to a named legal entity. It enables
-          the programme to pursue recovery on your behalf and stand behind
-          claims. This takes about a minute.
+          {isPrincipal
+            ? 'Verification identifies you as the enrolled Principal. Claim payments for your losses are made directly to your verified organization (T8.4). This takes about a minute.'
+            : 'Verification ties the policy to a named legal entity. It enables the programme to pursue recovery on your behalf and stand behind claims. This takes about a minute.'}
         </p>
 
         {/* Company details (pre-filled) */}
@@ -203,7 +209,7 @@ export default function VerifyCompany() {
               <button
                 type="button"
                 data-testid="kyb-continue"
-                onClick={() => navigate('/connect')}
+                onClick={() => navigate(nextPath)}
                 className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489]"
               >
                 Continue

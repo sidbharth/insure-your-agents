@@ -201,14 +201,12 @@ export const createSessionSlice: StateCreator<RootState, [], [], SessionSlice> =
         return { mandates: { ...s.mandates, [agentId]: next } };
       }),
 
-    countersignMandate: (agentId, at = demoNow()) =>
+    countersignMandate: (agentId, at = demoNow(), by = 'Aria Chen') =>
       set((s) => {
         const versions = s.mandates[agentId] ?? [];
         if (versions.length === 0) return {};
         const next = versions.map((m, i) =>
-          i === versions.length - 1
-            ? { ...m, countersigned: { by: 'Aria Chen' as const, at } }
-            : m,
+          i === versions.length - 1 ? { ...m, countersigned: { by, at } } : m,
         );
         return { mandates: { ...s.mandates, [agentId]: next } };
       }),

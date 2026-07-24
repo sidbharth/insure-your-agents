@@ -23,6 +23,8 @@ import type { StateCreator } from 'zustand';
 const createUiSlice: StateCreator<RootState, [], [], UiSlice> = (set) => ({
   showMath: false,
   setShowMath: (on) => set({ showMath: on }),
+  role: null,
+  setRole: (role) => set({ role }),
 });
 
 export const useStore = create<RootState>()((set, get, api) => ({
@@ -56,6 +58,7 @@ export const useStore = create<RootState>()((set, get, api) => ({
       priceFeed: seed.priceFeed, // pinned: false — the seeded setting (AC-16)
       presenter: seed.presenter, // panel closed, disarmed, time offset 0
       showMath: seed.showMath,
+      role: null,
     });
     // A fresh fetch resumes after reset (plan §6).
     void get().refetchNow();

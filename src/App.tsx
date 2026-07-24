@@ -31,6 +31,7 @@ import GetStarted from './screens/GetStarted';
 import Mandate from './screens/Mandate';
 import Pay from './screens/Pay';
 import Policies from './screens/Policies';
+import PrincipalReview from './screens/PrincipalReview';
 import ProgrammeDashboard from './screens/ProgrammeDashboard';
 import PresenterPanel from './screens/PresenterPanel';
 import Quote from './screens/Quote';
@@ -203,6 +204,7 @@ export function AppShell() {
         <Routes>
           <Route path="/" element={<GetStarted />} />
           <Route path="/verify" element={<VerifyCompany />} />
+          <Route path="/review" element={<PrincipalReview />} />
           <Route path="/connect" element={<ConnectAgent />} />
           <Route path="/mandate" element={<Mandate />} />
           <Route path="/controls" element={<Controls />} />

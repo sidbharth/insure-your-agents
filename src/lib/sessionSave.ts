@@ -19,6 +19,7 @@ const DATA_KEYS = [
   'incidents',
   'claims',
   'showMath',
+  'role',
 ] as const;
 
 type DataKey = (typeof DATA_KEYS)[number];

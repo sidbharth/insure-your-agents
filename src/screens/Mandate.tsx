@@ -60,6 +60,12 @@ const COUNTERSIGN_STEPS = [
   { label: 'Awaiting review and signature…' },
 ];
 
+const SELF_COUNTERSIGN_STEPS = [
+  { label: 'Preparing mandate for signature' },
+  { label: 'Recording authorized officer countersignature' },
+  { label: 'Anchoring the signature to the enrollment record' },
+];
+
 function bumpVersion(v: string): string {
   const [major, minor = '0'] = v.split('.');
   return `${major}.${Number(minor) + 1}`;
@@ -114,6 +120,8 @@ function CapField({
 
 function MandateWizard() {
   const navigate = useNavigate();
+  const role = useStore((s) => s.role);
+  const operatorName = useStore((s) => s.operator.name);
   const agentId = getWizardAgentId();
   const agent = useStore((s) => s.agents.find((a) => a.id === agentId));
   const versions = useStore((s) => s.mandates[agentId]);
@@ -147,10 +155,15 @@ function MandateWizard() {
 
   const patch = (fn: (m: MandateType) => MandateType) => saveMandate(agentId, fn(mandate));
 
+  const selfSign = role === 'both';
   const startCountersign = () => setSigning(true);
   const finishCountersign = () => {
-    setToastVisible(true);
-    countersignMandate(agentId);
+    if (selfSign) {
+      countersignMandate(agentId, undefined, operatorName);
+    } else {
+      setToastVisible(true);
+      countersignMandate(agentId);
+    }
     setSigning(false);
   };
 
@@ -394,9 +407,9 @@ function MandateWizard() {
           <section className="mt-4 rounded-card border border-line bg-panel p-5 shadow-card">
             <h2 className="text-md font-semibold text-ink">Principal countersignature</h2>
             <p className="mt-1.5 text-sm text-muted">
-              The Principal, whose funds this agent spends, must countersign
-              the mandate. Cover requires the countersignature (framework
-              T3.2).
+              {selfSign
+                ? 'Your organization acts as both Operator and Principal. An authorized officer countersigns the mandate directly through the enrollment flow (Acceptance clause). Cover requires the countersignature (T3.2).'
+                : 'The Principal, whose funds this agent spends, must countersign the mandate. Cover requires the countersignature (framework T3.2).'}
             </p>
             <p className="mt-2 text-xs text-muted" data-testid="s31-note">
               <b>Why the signature matters:</b> {S31_NOTE}
@@ -410,7 +423,9 @@ function MandateWizard() {
                   onClick={startCountersign}
                   className="rounded-lg bg-accent px-5 py-2 text-sm font-semibold text-ink hover:bg-[#0bd489]"
                 >
-                  Send to Principal for countersignature
+                  {selfSign
+                    ? 'Countersign as Principal'
+                    : 'Send to Principal for countersignature'}
                 </button>
                 <SimulatedBadge />
                 <span className="ml-auto text-2xs text-faint">
@@ -420,7 +435,11 @@ function MandateWizard() {
             )}
 
             {signing && (
-              <LatencyTheater className="mt-3" steps={COUNTERSIGN_STEPS} onDone={finishCountersign} />
+              <LatencyTheater
+                className="mt-3"
+                steps={selfSign ? SELF_COUNTERSIGN_STEPS : COUNTERSIGN_STEPS}
+                onDone={finishCountersign}
+              />
             )}
 
             {countersigned && mandate.countersigned && (

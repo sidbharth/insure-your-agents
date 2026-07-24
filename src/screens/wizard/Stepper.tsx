@@ -15,9 +15,11 @@ export type WizardStepKey =
   | 'controls'
   | 'quote'
   | 'fleet'
-  | 'pay';
+  | 'pay'
+  | 'review'
+  | 'confirm';
 
-const STEPS: { key: WizardStepKey; label: string }[] = [
+const OPERATOR_STEPS: { key: WizardStepKey; label: string }[] = [
   { key: 'company', label: 'Company' },
   { key: 'agent', label: 'Agent' },
   { key: 'mandate', label: 'Mandate' },
@@ -27,12 +29,21 @@ const STEPS: { key: WizardStepKey; label: string }[] = [
   { key: 'pay', label: 'Pay & activate' },
 ];
 
+const PRINCIPAL_STEPS: { key: WizardStepKey; label: string }[] = [
+  { key: 'company', label: 'Organization' },
+  { key: 'review', label: 'Review & countersign' },
+  { key: 'confirm', label: 'Confirmation' },
+];
+
 export interface WizardStepperProps {
   current: WizardStepKey;
+  /** 'principal' renders the short countersignature journey. */
+  flow?: 'operator' | 'principal';
   className?: string;
 }
 
-export function WizardStepper({ current, className = '' }: WizardStepperProps) {
+export function WizardStepper({ current, flow = 'operator', className = '' }: WizardStepperProps) {
+  const STEPS = flow === 'principal' ? PRINCIPAL_STEPS : OPERATOR_STEPS;
   const currentIdx = STEPS.findIndex((s) => s.key === current);
   const progressPct = (currentIdx / (STEPS.length - 1)) * 100;
   return (
