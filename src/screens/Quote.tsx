@@ -157,23 +157,12 @@ export default function Quote() {
         note="Going back keeps your mandate and controls. The quote re-derives from them."
         className="mb-5"
       />
-      <div className="mb-5">
-        <h1 className="text-lg">
-          Your quote
-        </h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
-          Review the premium, coverage terms, and exclusions for this agent
-          before continuing.
-        </p>
-      </div>
+      <h1 className="mb-5 text-lg">Your quote</h1>
 
       {/* ------------------------------------------------ 1 · the price */}
       <section className="rounded-card border border-line bg-panel shadow-card" data-testid="quote-price-panel">
-        <div className="flex items-center gap-2.5 border-b border-line-soft px-6 py-3.5">
+        <div className="border-b border-line-soft px-6 py-3.5">
           <h2 className="text-md">The price</h2>
-          <span className="text-xs text-muted">
-            {agent.name}, mandate v{mandate?.version ?? '1.0'}
-          </span>
         </div>
         <div className="px-6 py-5">
           <LadderRecap ladder={ladderLines} />
@@ -250,11 +239,8 @@ export default function Quote() {
         className="mt-5 rounded-card border border-line bg-panel shadow-card"
         data-testid="quote-coverage-panel"
       >
-        <div className="flex items-center gap-2.5 border-b border-line-soft px-6 py-3.5">
-          <h2 className="text-md">What you're covered for</h2>
-          <span className="text-xs text-muted" title={COVERAGE_PANEL_TOOLTIP}>
-            Derived from your controls. Coverages are not individually selectable.
-          </span>
+        <div className="border-b border-line-soft px-6 py-3.5">
+          <h2 className="text-md" title={COVERAGE_PANEL_TOOLTIP}>Coverage</h2>
         </div>
         <div className="px-6 py-5">
           <CoverageCards states={coverageStates} />
@@ -267,11 +253,8 @@ export default function Quote() {
       {/* limits picture + retention preview */}
       <section className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
         <div className="rounded-card border border-line bg-panel shadow-card" data-testid="quote-limits">
-          <div className="flex items-center gap-2.5 border-b border-line-soft px-6 py-3.5">
-            <h2 className="text-md">Limits, per event</h2>
-            <span className="text-xs text-muted">
-              sublimits sit inside the per-event limit, not on top
-            </span>
+          <div className="border-b border-line-soft px-6 py-3.5">
+            <h2 className="text-md">Per-event limits</h2>
           </div>
           <div className="px-6 py-4">
             {limits.map(({ label, pct, usd }) => (
@@ -292,9 +275,10 @@ export default function Quote() {
               </div>
             ))}
             <p className="mt-2.5 text-2xs text-muted">
-              Recovery and bounty costs are capped at 10% within Coverage F. One
-              aggregate limit applies, and a single incident that touches several
-              coverages pays once.
+              Sublimits apply within the per-event limit. Recovery and bounty
+              costs are capped at 10% within Coverage F. One aggregate limit
+              applies, and a single incident that touches several coverages pays
+              once.
             </p>
           </div>
         </div>

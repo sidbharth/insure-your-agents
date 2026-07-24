@@ -60,7 +60,6 @@ describe('7.7 — totals are the exact sum (REQ-7.7.1, AC-5)', () => {
       expect(screen.getByTestId('fleet-total-premium')).toHaveTextContent('$300'),
     );
     expect(screen.getByTestId('fleet-total-n')).toHaveTextContent('≈ 100 $NEAR');
-    expect(screen.getByText(/Exact sum of 1 per-agent premiums/)).toBeInTheDocument();
   });
 
   it("auto-enrolls a 'Quoted' wizard agent (post-connect status) on arrival", async () => {
@@ -100,7 +99,6 @@ describe('7.7 — totals are the exact sum (REQ-7.7.1, AC-5)', () => {
     expect(fleetTotals(useStore.getState()).premiumUsd).toBe(4_150);
     expect(screen.getByTestId('fleet-total-premium')).toHaveTextContent('$4,150');
     expect(screen.getByTestId('fleet-total-n')).toHaveTextContent('≈ 1,383 $NEAR');
-    expect(screen.getByText(/Exact sum of 12 per-agent premiums with no volume discount/)).toBeInTheDocument();
   });
 
   it('de-enrolling an agent drops the total by exactly its premium', () => {

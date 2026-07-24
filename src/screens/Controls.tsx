@@ -136,12 +136,10 @@ export default function Controls() {
             className="mt-6 rounded-card border border-line bg-panel p-5 shadow-card"
             data-testid="tier1-group"
           >
-            <div className="flex items-baseline gap-2">
-              <h2 className="text-md font-semibold text-ink">Tier 1: Required controls</h2>
-              <span className="text-2xs text-faint">
-                Missing any one of these results in a decline.
-              </span>
-            </div>
+            <h2 className="text-md font-semibold text-ink">Tier 1: Required controls</h2>
+            <p className="mt-0.5 text-xs text-muted">
+              Missing any one of these results in a decline.
+            </p>
 
             <div className="mt-3 space-y-2">
               {TIER1_COPY.map((gate) => {
@@ -199,12 +197,11 @@ export default function Controls() {
             className="mt-4 rounded-card border border-line bg-panel p-5 shadow-card"
             data-testid="tier2-group"
           >
-            <div className="flex items-baseline gap-2">
-              <h2 className="text-md font-semibold text-ink">Tier 2: Priced options</h2>
-              <span className="text-2xs text-faint">
-                Each skipped control carries a published surcharge. Some reduce coverage.
-              </span>
-            </div>
+            <h2 className="text-md font-semibold text-ink">Tier 2: Priced options</h2>
+            <p className="mt-0.5 text-xs text-muted">
+              Each skipped control carries a published surcharge. Some reduce
+              coverage.
+            </p>
 
             <div className="mt-3 space-y-2">
               {TIER2_COPY.map((ctrl) => {

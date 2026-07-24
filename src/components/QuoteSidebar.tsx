@@ -29,14 +29,9 @@ export function QuoteSidebar({ result, capUsd, className = '' }: QuoteSidebarPro
         data-state="declined"
         className={`rounded-card border border-bad-line bg-bad-bg p-5 shadow-card ${className}`}
       >
-        <div className="text-2xs font-bold uppercase tracking-widest text-bad">Declined</div>
-        <div className="mt-2 text-lg font-bold text-bad">DECLINED</div>
+        <div className="text-lg font-bold text-bad">Declined</div>
         <p className="mt-2 text-sm text-bad" data-testid="decline-reason">
           {TIER1_DECLINE_COPY(first)}
-        </p>
-        <p className="mt-2 text-xs text-muted">
-          Tier-1 controls are eligibility gates. Missing any one results in a
-          decline, not a higher price.
         </p>
       </aside>
     );

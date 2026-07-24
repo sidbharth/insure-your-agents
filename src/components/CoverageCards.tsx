@@ -66,9 +66,18 @@ export function CoverageCards({ states, compact = false, className = '' }: Cover
                 </>
               )}
               {!state.active && state.greyReason && (
-                <p className="mt-1 text-2xs font-semibold text-bad" data-testid="grey-reason">
-                  {state.greyReason}
-                </p>
+                compact ? (
+                  <span
+                    className="mt-1 inline-flex rounded border border-bad-line bg-bad-bg px-1.5 py-px text-2xs font-semibold text-bad"
+                    data-testid="grey-reason"
+                  >
+                    Excluded
+                  </span>
+                ) : (
+                  <p className="mt-1 text-2xs font-semibold text-bad" data-testid="grey-reason">
+                    {state.greyReason}
+                  </p>
+                )
               )}
             </div>
           );

@@ -48,13 +48,6 @@ export function RateLadder({
       <div className="flex gap-3.5">
         {/* ladder column */}
         <div className="relative w-[74px] flex-none" style={{ height: heightPx }}>
-          {/* ceiling line */}
-          <div
-            className={`absolute inset-x-[-6px] top-0 border-t-2 border-dashed ${
-              ceilingReached ? 'border-bad' : 'border-faint'
-            }`}
-            data-testid="ladder-ceiling-line"
-          />
           <div
             className={`absolute left-[84px] top-[-7px] w-40 text-2xs ${
               ceilingReached ? 'font-semibold text-bad' : 'text-faint'
@@ -79,6 +72,13 @@ export function RateLadder({
               </div>
             ))}
           </div>
+          {/* ceiling line, drawn above the track */}
+          <div
+            className={`absolute inset-x-[-6px] top-0 z-10 border-t-2 border-dashed ${
+              ceilingReached ? 'border-bad' : 'border-faint'
+            }`}
+            data-testid="ladder-ceiling-line"
+          />
         </div>
         {/* legend */}
         <div className="flex flex-1 flex-col justify-end gap-1.5 text-2xs">

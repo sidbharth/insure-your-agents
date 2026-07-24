@@ -374,7 +374,7 @@ export default function Pay() {
           <h2 className="text-md">Order summary</h2>
           <span className="num text-xs text-muted">
             {rows.length} agent{rows.length === 1 ? '' : 's'}, total insured caps{' '}
-            {formatUsd(totalCaps)}, no volume discount
+            {formatUsd(totalCaps)}
           </span>
         </div>
         <div className="overflow-x-auto">

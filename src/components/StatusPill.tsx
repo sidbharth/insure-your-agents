@@ -20,15 +20,6 @@ const STYLES: Record<AgentStatus, string> = {
   Quoted: 'bg-accent-soft text-accent-ink border-accent-line',
 };
 
-const DOTS: Record<AgentStatus, string> = {
-  Active: 'bg-good',
-  Suspended: 'bg-warn-deep',
-  'De-enrolled': 'bg-faint',
-  Declined: 'bg-bad',
-  Draft: 'bg-faint',
-  Quoted: 'bg-accent',
-};
-
 export function StatusPill({ status, reason, className = '' }: StatusPillProps) {
   return (
     <span
@@ -37,7 +28,6 @@ export function StatusPill({ status, reason, className = '' }: StatusPillProps) 
       title={reason}
       className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-2xs font-semibold ${STYLES[status]} ${className}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${DOTS[status]}`} />
       {status}
       {status === 'Suspended' && reason ? (
         <span className="font-normal">({reason})</span>

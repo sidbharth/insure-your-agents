@@ -192,8 +192,7 @@ function MandateWizard() {
           <section className="mt-6 rounded-card border border-line bg-panel p-5 shadow-card">
             <div className="flex items-baseline gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded bg-accent-soft text-2xs font-bold text-accent-ink">1</span>
-              <h2 className="text-md font-semibold text-ink">What it may do</h2>
-              <span className="text-2xs text-faint">Unchecked actions are not delegated.</span>
+              <h2 className="text-md font-semibold text-ink">Delegated actions</h2>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
               {ACTION_FAMILY_COPY.map((fam) => (
@@ -227,8 +226,7 @@ function MandateWizard() {
           <section className="mt-4 rounded-card border border-line bg-panel p-5 shadow-card">
             <div className="flex items-baseline gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded bg-accent-soft text-2xs font-bold text-accent-ink">2</span>
-              <h2 className="text-md font-semibold text-ink">How much</h2>
-              <span className="text-2xs text-faint">caps, permitted assets, and the timelock</span>
+              <h2 className="text-md font-semibold text-ink">Limits</h2>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
               <CapField
@@ -286,8 +284,7 @@ function MandateWizard() {
           <section className="mt-4 rounded-card border border-line bg-panel p-5 shadow-card">
             <div className="flex items-baseline gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded bg-accent-soft text-2xs font-bold text-accent-ink">3</span>
-              <h2 className="text-md font-semibold text-ink">Who it may pay</h2>
-              <span className="text-2xs text-faint">the whitelist and its cooling period</span>
+              <h2 className="text-md font-semibold text-ink">Payees</h2>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-3 text-xs md:grid-cols-2">
               <div className="rounded-md border border-line px-3 py-2">
@@ -369,8 +366,7 @@ function MandateWizard() {
           <section className="mt-4 rounded-card border border-line bg-panel p-5 shadow-card">
             <div className="flex items-baseline gap-2">
               <span className="flex h-5 w-5 items-center justify-center rounded bg-accent-soft text-2xs font-bold text-accent-ink">4</span>
-              <h2 className="text-md font-semibold text-ink">When a human steps in</h2>
-              <span className="text-2xs text-faint">approval threshold, approvers, session limits</span>
+              <h2 className="text-md font-semibold text-ink">Human approval</h2>
             </div>
             <div className="mt-3 grid grid-cols-1 gap-3 text-xs md:grid-cols-2">
               <div className="rounded-md border border-line px-3 py-2">

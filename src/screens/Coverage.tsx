@@ -128,7 +128,7 @@ export default function Coverage() {
         className="mb-4 rounded-card border border-line bg-panel px-5 py-4 shadow-card"
       >
         <div className="text-2xs font-bold uppercase tracking-widest text-faint">
-          Limits picture
+          Per-event limits
         </div>
         <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-3">
           {(['A', 'E', 'F'] as CoverageRoute[]).map((route) => (
@@ -155,7 +155,7 @@ export default function Coverage() {
           ))}
         </div>
         <p className="mt-2 border-t border-line-soft pt-2 text-2xs text-faint">
-          Sublimits sit inside the per-event limit, not on top of it. Recovery
+          Sublimits apply within the per-event limit. Recovery
           and bounty costs inside Coverage F are capped at 10% of the cap
           ({formatUsd(0.1 * capUsd)}). One aggregate applies, and a single
           incident pays once. The retention per event is the{' '}

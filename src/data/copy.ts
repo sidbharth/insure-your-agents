@@ -34,8 +34,8 @@ export interface CoverageCardCopy {
 export const COVERAGE_CARDS: CoverageCardCopy[] = [
   {
     route: 'A',
-    title: 'Agent broke its rulebook',
-    shortTitle: 'Mandate breach',
+    title: 'Unauthorized agent transaction',
+    shortTitle: 'Unauthorized transaction',
     oneLiner:
       'Covers net asset losses when the agent acts outside its mandate. No attacker required.',
     whatItPays:
@@ -44,8 +44,8 @@ export const COVERAGE_CARDS: CoverageCardCopy[] = [
   },
   {
     route: 'B',
-    title: 'Agent was manipulated',
-    shortTitle: 'Manipulation',
+    title: 'Agent compromise',
+    shortTitle: 'Agent compromise',
     oneLiner:
       'Pays when an attacker tricked the agent while it stayed inside the rules.',
     whatItPays:
@@ -55,8 +55,8 @@ export const COVERAGE_CARDS: CoverageCardCopy[] = [
   },
   {
     route: 'C',
-    title: 'Keys were stolen',
-    shortTitle: 'Key theft',
+    title: 'Key and credential compromise',
+    shortTitle: 'Key compromise',
     oneLiner:
       'Pays when signing credentials inside the disclosed setup are stolen or misused.',
     whatItPays:
@@ -66,7 +66,7 @@ export const COVERAGE_CARDS: CoverageCardCopy[] = [
   },
   {
     route: 'D',
-    title: 'A guardrail failed to fire',
+    title: 'Guardrail failure',
     shortTitle: 'Guardrail failure',
     oneLiner:
       'Pays the slice of loss a correctly-working scheduled guardrail would have stopped.',
@@ -77,8 +77,8 @@ export const COVERAGE_CARDS: CoverageCardCopy[] = [
   },
   {
     route: 'E',
-    title: 'Someone else was harmed and comes after you',
-    shortTitle: 'Third-party liability',
+    title: 'Counterparty liability',
+    shortTitle: 'Counterparty liability',
     oneLiner:
       "Pays damages and defense costs when a third party claims your agent's covered failure hurt them.",
     whatItPays:
@@ -87,8 +87,8 @@ export const COVERAGE_CARDS: CoverageCardCopy[] = [
   },
   {
     route: 'F',
-    title: 'Cleanup and recovery',
-    shortTitle: 'Cleanup & recovery',
+    title: 'Incident response and recovery',
+    shortTitle: 'Response & recovery',
     oneLiner:
       'Covers investigation, tracing, bounties, freezes, and key rotation, including qualifying near-miss investigations.',
     whatItPays:
@@ -190,7 +190,7 @@ export const TIER2_COPY: Tier2Copy[] = [
 ];
 
 export const TIER1_DECLINE_COPY = (gateLabel: string) =>
-  `No ${gateLabel}: not insurable. This control is an eligibility requirement, not a priced option.`;
+  `The programme declines any agent without ${gateLabel}. Enable the control to restore your quote.`;
 
 export const COUNTERSIGN_GATE_REASON =
   "Cover requires the Principal's countersignature (framework T3.2).";

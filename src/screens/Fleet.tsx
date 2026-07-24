@@ -218,13 +218,7 @@ export default function Fleet() {
         </>
       )}
       <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-lg">Your fleet</h1>
-          <p className="mt-1 max-w-xl text-sm text-muted">
-            Every agent is enrolled, priced, and covered individually. The
-            fleet premium is the exact sum of per-agent premiums.
-          </p>
-        </div>
+        <h1 className="text-lg">Your fleet</h1>
         <div className="flex flex-none flex-wrap gap-2">
           <button
             data-testid="duplicate-agent-button"
@@ -285,15 +279,15 @@ export default function Fleet() {
           <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-line text-left text-2xs font-bold uppercase tracking-wider text-muted">
+              <tr className="border-b border-line text-left text-2xs font-bold uppercase tracking-wider text-muted [&>th]:border-r [&>th]:border-line-soft [&>th:last-child]:border-r-0">
                 <th className="px-4 py-2.5">Agent</th>
-                <th className="px-2 py-2.5">Hash</th>
-                <th className="px-2 py-2.5">Cap</th>
-                <th className="px-2 py-2.5">Controls</th>
-                <th className="px-2 py-2.5 text-right">Rate</th>
-                <th className="px-2 py-2.5 text-right">Premium</th>
-                <th className="px-2 py-2.5">Status</th>
-                <th className="px-2 py-2.5" />
+                <th className="px-4 py-2.5">Hash</th>
+                <th className="px-4 py-2.5 text-right">Cap</th>
+                <th className="px-4 py-2.5">Controls</th>
+                <th className="px-4 py-2.5 text-right">Rate</th>
+                <th className="px-4 py-2.5 text-right">Premium</th>
+                <th className="px-4 py-2.5">Status</th>
+                <th className="px-4 py-2.5" />
               </tr>
             </thead>
             <tbody>
@@ -303,14 +297,14 @@ export default function Fleet() {
                   <tr
                     key={agent.id}
                     data-testid={`fleet-row-${agent.id}`}
-                    className={`border-b border-line-soft last:border-b-0 ${terminated ? 'opacity-55' : ''}`}
+                    className={`border-b border-line-soft last:border-b-0 [&>td]:border-r [&>td]:border-line-soft [&>td:last-child]:border-r-0 ${terminated ? 'opacity-55' : ''}`}
                   >
-                    <td className="px-4 py-2.5 font-semibold text-ink">{agent.name}</td>
-                    <td className="num px-2 py-2.5 font-mono text-xs text-muted">
+                    <td className="whitespace-nowrap px-4 py-2.5 font-semibold text-ink">{agent.name}</td>
+                    <td className="num whitespace-nowrap px-4 py-2.5 font-mono text-xs text-muted">
                       {shortHash(agent.configHash)}
                     </td>
-                    <td className="num px-2 py-2.5">{formatUsd(capUsdFor(state, agent.id))}</td>
-                    <td className="px-2 py-2.5 text-xs text-muted">
+                    <td className="num px-4 py-2.5 text-right">{formatUsd(capUsdFor(state, agent.id))}</td>
+                    <td className="px-4 py-2.5 text-xs text-muted">
                       {controlsSummary(agent)}
                       {hasConcentrationLoading(enrollment) && (
                         <span
@@ -329,17 +323,17 @@ export default function Fleet() {
                         </span>
                       )}
                     </td>
-                    <td className="num px-2 py-2.5 text-right font-semibold text-ink">
+                    <td className="num px-4 py-2.5 text-right font-semibold text-ink">
                       {formatPct(enrollmentRatePct(enrollment))}
                     </td>
-                    <td className="num px-2 py-2.5 text-right">
+                    <td className="num whitespace-nowrap px-4 py-2.5 text-right">
                       {formatUsd(enrollment.premiumUsd)}
-                      <span className="text-2xs text-faint"> /yr</span>
+                      <span className="text-2xs text-faint">/yr</span>
                     </td>
-                    <td className="px-2 py-2.5">
+                    <td className="px-4 py-2.5">
                       <StatusPill status={agent.status} />
                     </td>
-                    <td className="relative px-2 py-2.5 text-right">
+                    <td className="relative px-4 py-2.5 text-right">
                       {!terminated && (
                         <button
                           data-testid={`row-menu-${agent.id}`}
@@ -395,9 +389,6 @@ export default function Fleet() {
                 </span>
               </MathValue>
             </span>
-          </div>
-          <div className="px-4 py-1.5 text-right text-2xs text-faint">
-            Exact sum of {totals.count} per-agent premiums with no volume discount
           </div>
         </div>
 

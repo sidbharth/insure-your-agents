@@ -126,7 +126,7 @@ describe('7.6 — declined branch (GT-1)', () => {
     const declined = screen.getByTestId('quote-declined');
     expect(declined).toHaveTextContent('DECLINED');
     expect(declined).toHaveTextContent(/transfer caps/);
-    expect(declined).toHaveTextContent(/an eligibility requirement, not a priced option/);
+    expect(declined).toHaveTextContent(/declines any agent without transfer caps/);
     expect(screen.queryByTestId('quote-rate')).not.toBeInTheDocument();
   });
 });
