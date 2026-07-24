@@ -4,11 +4,15 @@
 
 @layer base {
   html {
-    @apply bg-canvas;
+    /* Overscroll bounce reveals the area beyond the page: paint it dark
+       behind the header at the top and canvas at the bottom, and suppress
+       the spring where the browser supports it. */
+    background: linear-gradient(to bottom, theme('colors.ink') 50%, theme('colors.canvas') 50%);
+    overscroll-behavior-y: none;
   }
   body {
     @apply font-sans text-base text-body bg-canvas antialiased;
-    min-width: 1280px;
+    overscroll-behavior-y: none;
   }
   h1,
   h2,
