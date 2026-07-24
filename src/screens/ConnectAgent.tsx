@@ -29,9 +29,6 @@ import { WizardBack, WizardStepper } from './wizard/Stepper';
 
 type Phase = 'pick' | 'registering' | 'identity' | 'challenging' | 'verified';
 
-const OFF_LIST_TOOLTIP =
-  'A tool not on this list is both uncovered and a configuration breach.';
-
 function registrationSteps(name: string, toolCount: number) {
   return [
     { label: `Fetching tool manifest (${toolCount} tools declared)` },
@@ -359,16 +356,6 @@ export default function ConnectAgent() {
                         ))}
                       </tbody>
                     </table>
-                    <p
-                      className="border-t border-line-soft bg-canvas px-3 py-1.5 text-2xs text-faint"
-                      title={OFF_LIST_TOOLTIP}
-                      data-testid="off-list-tooltip"
-                    >
-                      A tool not on this list is both{' '}
-                      <b className="text-warn">uncovered</b> and a{' '}
-                      <b className="text-warn">configuration breach</b> (D3.4,
-                      scenario S-11).
-                    </p>
                   </div>
                 )}
               </div>
