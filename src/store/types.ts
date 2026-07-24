@@ -312,6 +312,16 @@ export interface Incident {
   artifacts: Record<number, MockArtifact>;
   /** Optional debugging aid; adjudication always recomputes from interval histories. */
   conditionSnapshot?: ConditionState;
+
+  // -- optional incident parameters (WP-1 amendment; Appendix B) -----------
+  /** S-17 only: Coverage-F investigation cost for a near-miss (no loss). */
+  investigationCostUsd?: number;
+  /** Loss slice accrued after the first missed alert (kill-switch coinsurance, 5.5). */
+  postFirstAlertLossUsd?: number;
+  /** Loss slice a recovery mechanism would have recovered (recovery coinsurance, 5.5). */
+  recoverableUsd?: number;
+  /** S-03: the failed guardrail passed its latest scheduled verification (retention waiver, 5.3). */
+  guardrailPassedVerification?: boolean;
 }
 
 export type ClaimPhase =
@@ -338,6 +348,8 @@ export interface ClockState {
   };
   /** Presenter flag: insurer missed a clock ("delay doesn't count against you"). */
   insurerMissed?: boolean;
+  /** Near-miss claims get a 7-day (not 48 h) notify window (WP-1 amendment, GT-5). */
+  nearMiss?: boolean;
 }
 
 export interface DeadlineRow {

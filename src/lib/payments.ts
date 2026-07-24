@@ -1,6 +1,5 @@
 /**
- * Centralized payment preflight / execute helper (plan §7a, finding 7) —
- * FROZEN SIGNATURES; WP-1 fills the bodies.
+ * Centralized payment preflight / execute helper (plan §7a, finding 7) — WP-1.
  *
  * This is the ONLY code path that moves value. executePayment:
  *   1. await priceFeed.refetchNow()   (REQ-6.2 — before ANY payment action)
@@ -9,6 +8,10 @@
  *   3. return receipt {rateUsed, paidAt, amountN}
  * Activation is a SEPARATE store transition after recording
  * (session.activateEnrollments(receipt)).
+ *
+ * The store side-effects are injected through `registerPaymentPorts` (the
+ * store assembly wires the real adapter; tests wire fakes), keeping this
+ * module free of store imports while honoring the frozen signature.
  */
 import type { Timestamp } from '../store/types';
 
@@ -23,18 +26,6 @@ export interface NamedBlocker {
 
 export type PreflightResult = { ok: true } | { ok: false; blockers: NamedBlocker[] };
 
-/**
- * Pure preflight; drives the Pay button's disabled state. Initial-premium
- * scope checks: hash registered + ownership verified, mandate countersigned,
- * all tier-1 gates on, payment method selected.
- */
-export function paymentPreflight(
-  _session: PaymentSessionView,
-  _scope: PaymentScope,
-): PreflightResult {
-  throw new Error('WP-1');
-}
-
 /** The minimal session view preflight needs (kept narrow for purity/tests). */
 export interface PaymentSessionView {
   agents: Array<{
@@ -45,6 +36,58 @@ export interface PaymentSessionView {
     mandateCountersigned: boolean;
   }>;
   paymentMethodSelected: boolean;
+}
+
+/**
+ * Pure preflight; drives the Pay button's disabled state. Initial-premium
+ * scope checks: hash registered + ownership verified, mandate countersigned,
+ * all tier-1 gates on, payment method selected — each failure produces a
+ * NAMED blocker (REQ-7.8.1, AC-7). Delta and claim-settlement scopes only
+ * require a payment method (their legs were established at enrollment).
+ */
+export function paymentPreflight(
+  session: PaymentSessionView,
+  scope: PaymentScope,
+): PreflightResult {
+  const blockers: NamedBlocker[] = [];
+
+  if (scope === 'initial-premium') {
+    for (const agent of session.agents) {
+      if (!agent.configHash) {
+        blockers.push({
+          key: `hash-not-registered:${agent.id}`,
+          reason: `${agent.id}: configuration hash not registered — the policy insures the fingerprinted agent`,
+        });
+      }
+      if (!agent.ownershipVerified) {
+        blockers.push({
+          key: `ownership-not-verified:${agent.id}`,
+          reason: `${agent.id}: ownership challenge not completed — control of the agent is unproven`,
+        });
+      }
+      if (!agent.mandateCountersigned) {
+        blockers.push({
+          key: `mandate-not-countersigned:${agent.id}`,
+          reason: `${agent.id}: no countersignature, no cover (framework T3.2)`,
+        });
+      }
+      if (!agent.tier1AllOn) {
+        blockers.push({
+          key: `tier1-gate-off:${agent.id}`,
+          reason: `${agent.id}: a tier-1 gate is off — not insurable at any price (GT-1)`,
+        });
+      }
+    }
+  }
+
+  if (!session.paymentMethodSelected) {
+    blockers.push({
+      key: 'payment-method-not-selected',
+      reason: 'No payment method selected',
+    });
+  }
+
+  return blockers.length === 0 ? { ok: true } : { ok: false, blockers };
 }
 
 export type PaymentKind = 'initial' | 'delta' | 'claim-settlement';
@@ -65,13 +108,59 @@ export interface PaymentReceipt {
 }
 
 /**
+ * Store side-effects executePayment orchestrates, injected by the store
+ * assembly (`store/index.ts`) — or by tests.
+ */
+export interface PaymentPorts {
+  /** priceFeed.refetchNow — awaited before ANY payment (REQ-6.2). */
+  refetchNow: () => Promise<void>;
+  /** Effective USD-per-N rate AFTER the refetch (pin-aware). */
+  getUsdPerN: () => number;
+  /** Virtual demo-clock now. */
+  now: () => Timestamp;
+  /**
+   * Record the payment: append paymentHistory item(s)
+   * {dueAt, paidAt, amountUsd, amountN, rateUsed}. Never activates anything.
+   */
+  recordPayment: (receipt: PaymentReceipt) => void;
+}
+
+let ports: PaymentPorts | undefined;
+
+/** Wire the store adapter (store assembly) or a fake (tests). */
+export function registerPaymentPorts(p: PaymentPorts): void {
+  ports = p;
+}
+
+/**
  * Execute a payment: re-fetch the price first, record the payment history
- * item, return the receipt. Never activates anything itself.
+ * item, return the receipt. Never activates anything itself — activation is
+ * a separate store transition (`session.activateEnrollments(receipt)`).
  */
 export async function executePayment(
-  _kind: PaymentKind,
-  _amountUsd: number,
-  _targets: PaymentTargets,
+  kind: PaymentKind,
+  amountUsd: number,
+  targets: PaymentTargets,
 ): Promise<PaymentReceipt> {
-  throw new Error('WP-1');
+  if (ports === undefined) {
+    throw new Error('payments: registerPaymentPorts() has not been called');
+  }
+  // 1. Re-fetch the price before ANY payment action (REQ-6.2).
+  await ports.refetchNow();
+
+  // 2. Convert at the post-refetch rate and record.
+  const rateUsed = ports.getUsdPerN();
+  const paidAt = ports.now();
+  const receipt: PaymentReceipt = {
+    kind,
+    rateUsed,
+    paidAt,
+    amountUsd,
+    amountN: amountUsd / rateUsed,
+    targets,
+  };
+  ports.recordPayment(receipt);
+
+  // 3. Return the receipt; the caller drives any activation transition.
+  return receipt;
 }
