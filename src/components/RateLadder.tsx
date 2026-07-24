@@ -63,13 +63,14 @@ export function RateLadder({
                 key={line.label}
                 data-testid="ladder-slice"
                 title={`${line.label}: ${formatPct(line.points, { signed: i > 0 })}`}
-                className="num flex items-center justify-center text-2xs font-semibold text-[#0b3b28]"
+                className="num flex items-center justify-center text-[10px] font-semibold leading-none text-[#0b3b28]"
                 style={{
                   height: Math.max(2, line.points * pxPerPoint),
                   background: SLICE_COLORS[Math.min(i, SLICE_COLORS.length - 1)],
+                  boxShadow: i > 0 ? 'inset 0 1px 0 rgba(255,255,255,.9)' : undefined,
                 }}
               >
-                {line.points * pxPerPoint > 14 ? formatPct(line.points, { signed: i > 0 }) : ''}
+                {line.points * pxPerPoint >= 12 ? formatPct(line.points, { signed: i > 0 }) : ''}
               </div>
             ))}
             {loadings.map((line) => (
@@ -77,13 +78,14 @@ export function RateLadder({
                 key={line.label}
                 data-testid="ladder-loading-slice"
                 title={`${line.label}: ${formatPct(line.points, { signed: true })}`}
-                className="num flex items-center justify-center text-2xs font-semibold text-white"
+                className="num flex items-center justify-center text-[10px] font-semibold leading-none text-white"
                 style={{
                   height: Math.max(2, line.points * pxPerPoint),
                   background: '#d98a1f',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,.9)',
                 }}
               >
-                {line.points * pxPerPoint > 14 ? formatPct(line.points, { signed: true }) : ''}
+                {line.points * pxPerPoint >= 12 ? formatPct(line.points, { signed: true }) : ''}
               </div>
             ))}
           </div>
