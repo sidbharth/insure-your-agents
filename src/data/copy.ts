@@ -9,8 +9,7 @@ import type { CoverageRoute } from '../store/types';
 // Positioning / shell
 // ---------------------------------------------------------------------------
 
-export const POSITIONING_LINE =
-  'Insurance for AI agents that move money, priced on the safety controls you run';
+export const POSITIONING_LINE = 'Insure your Agents up to $50,000';
 
 export const RESET_FOOTNOTE =
   'Data is stored in this browser only. Save your session to keep progress across reloads. Unsaved changes revert to the sample fleet.';

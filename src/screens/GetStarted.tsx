@@ -91,7 +91,6 @@ export default function GetStarted() {
   const operatorName = useStore((s) => s.operator.name);
   const renameOperator = useStore((s) => s.renameOperator);
   const setRole = useStore((s) => s.setRole);
-  const [showHow, setShowHow] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [draftName, setDraftName] = useState(operatorName);
 
@@ -145,25 +144,11 @@ export default function GetStarted() {
         </div>
 
         <h1 className="max-w-[720px] text-2xl font-bold tracking-tight text-ink">
-          {POSITIONING_LINE}.
+          {POSITIONING_LINE}
         </h1>
         <p className="mt-3 max-w-[640px] text-md text-muted">
           Verify your company, register an agent, and set its mandate.
-          Pricing responds to each safety control you enable. Setup takes
-          about six minutes.
         </p>
-
-        <div className="mt-6 flex items-center gap-4">
-          <button
-            type="button"
-            data-testid="how-it-works-toggle"
-            aria-expanded={showHow}
-            onClick={() => setShowHow((v) => !v)}
-            className="text-sm font-semibold text-accent-ink"
-          >
-            How it works
-          </button>
-        </div>
 
         {/* Role selection: who is enrolling (framework Appendix 1 parties) */}
         <h2 className="mt-10 text-lg font-semibold text-ink">
@@ -211,22 +196,9 @@ export default function GetStarted() {
           ))}
         </div>
 
-        {showHow && (
-          <div
-            data-testid="how-it-works"
-            className="mt-5 grid grid-cols-1 gap-3 rounded-card border border-line bg-panel p-5 shadow-card md:grid-cols-2"
-          >
-            {HOW_IT_WORKS.map((item) => (
-              <div key={item.q}>
-                <div className="text-sm font-semibold text-ink">{item.q}</div>
-                <p className="mt-1 text-xs text-muted">{item.a}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* three-step preview strip */}
-        <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3" data-testid="step-strip">
+        {/* How it works: the three-step journey */}
+        <h2 className="mt-12 text-lg font-semibold text-ink">How it works</h2>
+        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3" data-testid="step-strip">
           {STEPS.map((step) => (
             <div key={step.n} className="rounded-card border border-line bg-panel p-5 shadow-card">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent-ink">
@@ -234,6 +206,22 @@ export default function GetStarted() {
               </span>
               <div className="mt-3 text-md font-semibold text-ink">{step.title}</div>
               <p className="mt-1.5 text-sm text-muted">{step.body}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* FAQs */}
+        <h2 className="mt-12 text-lg font-semibold text-ink">
+          Frequently asked questions
+        </h2>
+        <div
+          data-testid="how-it-works"
+          className="mt-4 grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2"
+        >
+          {HOW_IT_WORKS.map((item) => (
+            <div key={item.q}>
+              <div className="text-sm font-semibold text-ink">{item.q}</div>
+              <p className="mt-1 text-sm text-muted">{item.a}</p>
             </div>
           ))}
         </div>

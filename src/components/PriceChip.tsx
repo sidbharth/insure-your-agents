@@ -3,7 +3,7 @@
  * "1 N = $3.02 · CoinGecko · live · 14:31:07", or "stale", or "pinned $3.00".
  * Lives in the header; every N display traces to this rate/source/timestamp.
  */
-import { formatClockTime, formatRate } from '../lib/money';
+import { formatRate } from '../lib/money';
 import { useStore } from '../store';
 import { priceFeedMode } from './helpers';
 
@@ -15,12 +15,6 @@ export function PriceChip({ className = '' }: PriceChipProps) {
   const feed = useStore((s) => s.priceFeed);
 
   const mode = priceFeedMode(feed);
-  const dotClass =
-    mode === 'live'
-      ? 'bg-[#00EC97] shadow-[0_0_0_3px_rgba(53,197,109,.18)]'
-      : mode === 'stale'
-        ? 'bg-[#e8a13c] shadow-[0_0_0_3px_rgba(232,161,60,.18)]'
-        : 'bg-[#a3adaa] shadow-[0_0_0_3px_rgba(157,177,204,.18)]';
 
   return (
     <span
@@ -28,12 +22,7 @@ export function PriceChip({ className = '' }: PriceChipProps) {
       data-mode={mode}
       className={`num inline-flex items-center gap-2 whitespace-nowrap rounded-lg border border-white/15 bg-white/5 px-2.5 py-1 text-xs text-[#e2e6e3] ${className}`}
     >
-      <span className={`h-[7px] w-[7px] flex-none rounded-full ${dotClass}`} />
       <b className="font-semibold text-white">{formatRate(feed.usdPerN)}</b>
-      <span className="text-[#9aa39f]">
-        {mode} via {feed.source === 'CoinGecko' ? 'CoinGecko' : 'seed'},{' '}
-        {formatClockTime(feed.fetchedAt)}
-      </span>
       {mode === 'stale' && (
         <span className="rounded-sm bg-[#e8a13c] px-1 py-px text-[9px] font-extrabold tracking-widest text-[#3c2b06]">
           PRICE STALE
