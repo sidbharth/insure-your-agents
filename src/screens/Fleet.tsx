@@ -31,7 +31,6 @@ import {
   capUsdFor,
   controlsSummary,
   coverageBExcluded,
-  duplicateWizardAgent,
   enrollAgent,
   enrollmentAgentRows,
   enrollmentRatePct,
@@ -52,10 +51,13 @@ interface ImportState {
 function DeEnrollMenu({
   agent,
   enrollment,
+  anchor,
   onClose,
 }: {
   agent: Agent;
   enrollment: Enrollment;
+  /** Viewport coordinates of the row-menu button. */
+  anchor: { x: number; y: number };
   onClose: () => void;
 }) {
   const claims = useStore((s) => s.claims);
@@ -69,7 +71,8 @@ function DeEnrollMenu({
   return (
     <div
       data-testid={`deenroll-menu-${agent.id}`}
-      className="absolute right-0 top-7 z-10 w-[340px] rounded-card border border-line bg-panel p-4 text-left shadow-card"
+      className="fixed z-50 w-[340px] max-w-[calc(100vw-2rem)] rounded-card border border-line bg-panel p-4 text-left shadow-card"
+      style={{ top: anchor.y + 6, left: Math.max(16, anchor.x - 340) }}
     >
       <div className="text-sm font-semibold text-ink">De-enroll {agent.name}</div>
       <p className="mt-1.5 text-xs text-muted">
@@ -117,7 +120,7 @@ export default function Fleet() {
   const usdPerN = state.priceFeed.usdPerN;
 
   const [importing, setImporting] = useState<ImportState | null>(null);
-  const [menuFor, setMenuFor] = useState<string | null>(null);
+  const [menuFor, setMenuFor] = useState<{ id: string; x: number; y: number } | null>(null);
 
   // The wizard agent arrives from 7.6 priced but possibly not yet enrolled on
   // the book: enroll it first so its row exists and the Appendix-B
@@ -221,26 +224,12 @@ export default function Fleet() {
         <h1 className="text-lg">Your fleet</h1>
         <div className="flex flex-none flex-wrap gap-2">
           <button
-            data-testid="duplicate-agent-button"
+            data-testid="add-agent-button"
             disabled={sweepRunning}
             className="rounded-md border border-line bg-panel px-3.5 py-2 text-xs font-semibold text-ink-2 shadow-card disabled:opacity-50"
-            onClick={() => duplicateWizardAgent()}
+            onClick={() => navigate('/connect')}
           >
-            Duplicate Procurement-Bot
-          </button>
-          <button
-            data-testid="add-sample-agent-button"
-            disabled={sweepRunning}
-            className="rounded-md border border-line bg-panel px-3.5 py-2 text-xs font-semibold text-ink-2 shadow-card disabled:opacity-50"
-            onClick={() => {
-              const spec = remainingImportSpecs(useStore.getState())[0];
-              if (spec) {
-                prepareImportedAgent(spec.id);
-                enrollAgent(spec.id);
-              }
-            }}
-          >
-            Add sample agent
+            Add agent
           </button>
           <button
             data-testid="import-fleet-csv-button"
@@ -338,16 +327,24 @@ export default function Fleet() {
                         <button
                           data-testid={`row-menu-${agent.id}`}
                           className="rounded px-1.5 text-md font-bold text-muted hover:bg-line-soft"
-                          onClick={() => setMenuFor(menuFor === agent.id ? null : agent.id)}
+                          onClick={(e) => {
+                            if (menuFor?.id === agent.id) {
+                              setMenuFor(null);
+                              return;
+                            }
+                            const r = e.currentTarget.getBoundingClientRect();
+                            setMenuFor({ id: agent.id, x: r.right, y: r.bottom });
+                          }}
                           aria-label={`Row menu for ${agent.name}`}
                         >
                           ⋯
                         </button>
                       )}
-                      {menuFor === agent.id && !terminated && (
+                      {menuFor?.id === agent.id && !terminated && (
                         <DeEnrollMenu
                           agent={agent}
                           enrollment={enrollment}
+                          anchor={menuFor}
                           onClose={() => setMenuFor(null)}
                         />
                       )}

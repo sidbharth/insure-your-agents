@@ -198,14 +198,16 @@ export default function GetStarted() {
 
         {/* How it works: the three-step journey */}
         <h2 className="mt-12 text-lg font-semibold text-ink">How it works</h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3" data-testid="step-strip">
+        <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-3" data-testid="step-strip">
           {STEPS.map((step) => (
-            <div key={step.n} className="rounded-card border border-line bg-panel p-5 shadow-card">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent-ink">
+            <div key={step.n} className="flex gap-3">
+              <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent-ink">
                 {step.n}
               </span>
-              <div className="mt-3 text-md font-semibold text-ink">{step.title}</div>
-              <p className="mt-1.5 text-sm text-muted">{step.body}</p>
+              <div>
+                <div className="text-sm font-semibold text-ink">{step.title}</div>
+                <p className="mt-1 text-sm text-muted">{step.body}</p>
+              </div>
             </div>
           ))}
         </div>
