@@ -8,9 +8,14 @@
  * Notify → Contain → Evidence → Clocks & decision → Outcome.
  */
 import { useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { CLAIM_EMPTY_STATE } from '../data/copy';
-import { buildEvidenceChecklist, SCENARIOS } from '../data/incidents';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { CLAIM_DEMO_COPY, CLAIM_EMPTY_STATE, CLAIM_HISTORY_COPY } from '../data/copy';
+import {
+  buildAdjudicationInput,
+  openClaimForIncident,
+  SCENARIOS,
+} from '../data/incidents';
+import { adjudicate } from '../lib/claims';
 import { formatUsd } from '../lib/money';
 import { useStore } from '../store';
 import type { Claim as ClaimType, Incident } from '../store/types';
@@ -19,7 +24,7 @@ import Contain from './steps/Contain';
 import Evidence from './steps/Evidence';
 import Notify from './steps/Notify';
 import Outcome from './steps/Outcome';
-import { ClaimChrome, claimRef, STEP_LABELS } from './steps/shared';
+import { ClaimChrome, claimRef, fmtUtcDateLong, STEP_LABELS } from './steps/shared';
 
 // ---------------------------------------------------------------------------
 // Empty state / incident inbox
@@ -37,10 +42,6 @@ function EmptyState() {
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Claim">
       <h1 className="text-lg font-bold tracking-tight text-ink">File a claim</h1>
-      <p className="mt-1 max-w-2xl text-sm text-muted">
-        Claims are decided on the attested record, on published clocks. A
-        claim follows this route:
-      </p>
       <div className="mt-6 flex flex-col overflow-hidden rounded-card border border-line bg-panel shadow-card sm:flex-row">
         {PROCESS_MAP.map((step, i) => (
           <div
@@ -60,6 +61,15 @@ function EmptyState() {
       <p className="mt-8 text-center text-sm text-muted" data-testid="claim-empty-state">
         {CLAIM_EMPTY_STATE}
       </p>
+      <div className="mt-4 flex justify-center">
+        <Link
+          to="/claim/demo"
+          data-testid="start-claim-demo"
+          className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-ink"
+        >
+          {`${CLAIM_DEMO_COPY.entry} →`}
+        </Link>
+      </div>
     </div>
   );
 }
@@ -67,79 +77,206 @@ function EmptyState() {
 function IncidentInbox({ incidents }: { incidents: Incident[] }) {
   const claims = useStore((s) => s.claims);
   const agents = useStore((s) => s.agents);
-  const openClaim = useStore((s) => s.openClaim);
-  const updateClaim = useStore((s) => s.updateClaim);
-  const setClockState = useStore((s) => s.setClockState);
   const navigate = useNavigate();
+  const [tab, setTab] = useState<'incidents' | 'history'>('incidents');
 
+  // Checklist population + near-miss window handling live in
+  // openClaimForIncident, shared with the claim demo's detection screen.
   const open = (incident: Incident) => {
-    const existing = claims.find((c) => c.incidentId === incident.id);
-    if (existing !== undefined) {
-      navigate(`/claim/${existing.id}`);
-      return;
-    }
-    const claimId = openClaim(incident.id);
-    // Populate the 12-item checklist from the applicability matrix (§5d) —
-    // auto items pre-stamped, uploadables missing, the rest notApplicable.
-    updateClaim(claimId, { evidence: buildEvidenceChecklist(incident.scenarioId) });
-    if (SCENARIOS[incident.scenarioId].nearMiss) {
-      // Near-miss claims run on the 7-day notify window (GT-5).
-      setClockState(claimId, {
-        phase: 'Draft',
-        anchors: { discoveredAt: incident.discoveredAt },
-        nearMiss: true,
-      });
-    }
-    navigate(`/claim/${claimId}`);
+    navigate(`/claim/${openClaimForIncident(useStore.getState(), incident)}`);
   };
+
+  const tabClass = (active: boolean) =>
+    `rounded-md px-3 py-1.5 text-xs font-semibold ${
+      active ? 'bg-ink text-white' : 'text-muted'
+    }`;
 
   return (
     <div className="mx-auto max-w-shell px-6 py-8" data-testid="screen-Claim">
-      <h1 className="text-lg font-bold tracking-tight text-ink">File a claim</h1>
-      <p className="mt-1 max-w-2xl text-sm text-muted">
-        Incidents on your fleet. Each incident arrives with its own records
-        (logs, chain data, attestations), so most of the evidence package
-        attaches automatically.
-      </p>
-      <div className="mt-5 flex flex-col gap-2.5" data-testid="incident-inbox">
-        {incidents.map((incident) => {
-          const agent = agents.find((a) => a.id === incident.agentId);
-          const claim = claims.find((c) => c.incidentId === incident.id);
-          const meta = SCENARIOS[incident.scenarioId];
-          return (
-            <div
-              key={incident.id}
-              className="flex items-center gap-4 rounded-card border border-line bg-panel px-4 py-3.5 shadow-card"
-            >
-              <span className="num flex-none font-mono text-xs font-bold text-accent-ink">
-                {incident.scenarioId}
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm font-semibold text-ink">
-                  {meta.title} ({agent?.name ?? incident.agentId})
-                </div>
-                <div className="text-xs text-muted">
-                  {incident.lossGrossUsd > 0
-                    ? `Gross loss ${formatUsd(incident.lossGrossUsd)}`
-                    : `Near-miss with ${formatUsd(incident.investigationCostUsd ?? 0)} in investigation costs`}
-                </div>
-              </div>
-              <button
-                type="button"
-                data-testid={`open-claim-${incident.id}`}
-                onClick={() => open(incident)}
-                className={`flex-none rounded-lg px-3.5 py-2 text-sm font-semibold ${
-                  claim !== undefined
-                    ? 'border border-line text-ink'
-                    : 'bg-accent text-ink'
-                }`}
-              >
-                {claim !== undefined ? `Open claim ${claimRef(claim.id)}` : 'File a claim →'}
-              </button>
-            </div>
-          );
-        })}
+      <div className="flex flex-wrap items-start justify-between gap-5">
+        <div>
+          <h1 className="text-lg font-bold tracking-tight text-ink">File a claim</h1>
+        </div>
+        <Link
+          to="/claim/demo"
+          data-testid="start-claim-demo"
+          className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-ink shadow-card"
+        >
+          {CLAIM_DEMO_COPY.entry}
+        </Link>
       </div>
+      <div
+        className="mt-5 flex w-fit gap-1 rounded-lg border border-line bg-panel p-1"
+        role="tablist"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'incidents'}
+          data-testid="claims-tab-incidents"
+          onClick={() => setTab('incidents')}
+          className={tabClass(tab === 'incidents')}
+        >
+          {CLAIM_HISTORY_COPY.tabIncidents}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'history'}
+          data-testid="claims-tab-history"
+          onClick={() => setTab('history')}
+          className={tabClass(tab === 'history')}
+        >
+          {CLAIM_HISTORY_COPY.tabHistory}
+        </button>
+      </div>
+      {tab === 'history' ? (
+        <ClaimHistory />
+      ) : (
+        <div className="mt-3 flex flex-col gap-2.5" data-testid="incident-inbox">
+          {incidents.map((incident) => {
+            const agent = agents.find((a) => a.id === incident.agentId);
+            const claim = claims.find((c) => c.incidentId === incident.id);
+            const meta = SCENARIOS[incident.scenarioId];
+            return (
+              <div
+                key={incident.id}
+                className="flex items-center gap-4 rounded-card border border-line bg-panel px-4 py-3.5 shadow-card"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold text-ink">
+                    {meta.title} ({agent?.name ?? incident.agentId})
+                  </div>
+                  <div className="text-xs text-muted">
+                    {incident.lossGrossUsd > 0
+                      ? `Gross loss ${formatUsd(incident.lossGrossUsd)}`
+                      : `Near-miss with ${formatUsd(incident.investigationCostUsd ?? 0)} in investigation costs`}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  data-testid={`open-claim-${incident.id}`}
+                  onClick={() => open(incident)}
+                  className={`flex-none rounded-lg px-3.5 py-2 text-sm font-semibold ${
+                    claim !== undefined
+                      ? 'border border-line text-ink'
+                      : 'bg-accent text-ink'
+                  }`}
+                >
+                  {claim !== undefined ? `Open claim ${claimRef(claim.id)}` : 'File a claim →'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// History tab: every claim attempt with its live status
+// ---------------------------------------------------------------------------
+
+interface HistoryRow {
+  claim: ClaimType;
+  incident: Incident;
+  agentName: string;
+  status: { label: string; cls: string };
+}
+
+function ClaimHistory() {
+  const claims = useStore((s) => s.claims);
+  const incidents = useStore((s) => s.incidents);
+  const agents = useStore((s) => s.agents);
+  const mandates = useStore((s) => s.mandates);
+  const enrollments = useStore((s) => s.enrollments);
+  const operator = useStore((s) => s.operator);
+  const priceFeed = useStore((s) => s.priceFeed);
+  const navigate = useNavigate();
+
+  const rows: HistoryRow[] = useMemo(() => {
+    const list = claims.flatMap((claim) => {
+      const incident = incidents.find((i) => i.id === claim.incidentId);
+      if (incident === undefined) return [];
+      const agentName =
+        agents.find((a) => a.id === incident.agentId)?.name ?? incident.agentId;
+      const anchors = claim.clockState.anchors;
+      let status: HistoryRow['status'];
+      if (anchors.paidAt !== undefined) {
+        status = {
+          label: CLAIM_HISTORY_COPY.statusPaid,
+          cls: 'border-good-line bg-good-bg text-good',
+        };
+      } else if (anchors.determinedAt !== undefined) {
+        // Unpaid determinations are always recomputed live (AC-13), the same
+        // way the Outcome step renders them.
+        const result = adjudicate(
+          buildAdjudicationInput(
+            { agents, mandates, enrollments, operator },
+            incident,
+            priceFeed.usdPerN,
+          ),
+        );
+        status = result.eligibility.covered
+          ? {
+              label: CLAIM_HISTORY_COPY.statusApproved,
+              cls: 'border-accent-line bg-accent-soft text-accent-ink',
+            }
+          : {
+              label: CLAIM_HISTORY_COPY.statusDenied,
+              cls: 'border-bad-line bg-bad-bg text-bad',
+            };
+      } else {
+        status = {
+          label: CLAIM_HISTORY_COPY.statusInProgress,
+          cls: 'border-line bg-canvas text-muted',
+        };
+      }
+      return [{ claim, incident, agentName, status }];
+    });
+    return list.reverse(); // newest first
+  }, [claims, incidents, agents, mandates, enrollments, operator, priceFeed.usdPerN]);
+
+  if (rows.length === 0) {
+    return (
+      <p className="mt-8 text-center text-sm text-muted" data-testid="claim-history-empty">
+        {CLAIM_HISTORY_COPY.empty}
+      </p>
+    );
+  }
+
+  return (
+    <div className="mt-3 flex flex-col gap-2.5" data-testid="claim-history">
+      {rows.map(({ claim, incident, agentName, status }) => (
+        <button
+          key={claim.id}
+          type="button"
+          data-testid={`history-row-${claim.id}`}
+          onClick={() => navigate(`/claim/${claim.id}`)}
+          className="flex w-full items-center gap-4 rounded-card border border-line bg-panel px-4 py-3.5 text-left shadow-card"
+        >
+          <span className="num flex-none font-mono text-xs font-bold text-accent-ink">
+            {claimRef(claim.id)}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm font-semibold text-ink">
+              {SCENARIOS[incident.scenarioId].title} ({agentName})
+            </div>
+            <div className="text-xs text-muted">
+              {CLAIM_HISTORY_COPY.opened(
+                fmtUtcDateLong(claim.clockState.anchors.discoveredAt),
+              )}
+            </div>
+          </div>
+          <span
+            data-testid={`history-status-${claim.id}`}
+            className={`flex-none rounded border px-2 py-0.5 text-2xs font-semibold ${status.cls}`}
+          >
+            {status.label}
+          </span>
+        </button>
+      ))}
     </div>
   );
 }
@@ -162,19 +299,10 @@ function ClaimFlow({ claim, incident }: { claim: ClaimType; incident: Incident }
   const agent = agents.find((a) => a.id === incident.agentId);
   const meta = SCENARIOS[incident.scenarioId];
 
-  const crumb = `${agent?.name ?? incident.agentId}, incident ${incident.scenarioId} (${meta.title.toLowerCase()})`;
-  const subtitles: Record<number, string> = {
-    1: 'A claim is decided on the attested record, on published clocks. First: what happened, and when did you discover it?',
-    2: 'Containment is immediate and unconditional. Confirm the four duties before evidence.',
-    3: 'The twelve-item evidence package. A compliant stack already holds most of it.',
-    4: 'Published clocks, tracked as live state. Every deadline is visible while it runs.',
-    5: claim.adjudication?.eligibility.covered === false
-      ? 'Determination: not covered. A denial is a reasoned, referenced decision, delivered on the same clocks as a payment.'
-      : 'Determination: covered. The payout is recomputed from this incident\u2019s own parameters. Every line opens under \u201cShow the math.\u201d',
-  };
+  const crumb = `${agent?.name ?? incident.agentId}, ${meta.title.toLowerCase()}`;
 
   return (
-    <ClaimChrome crumbRef={claimRef(claim.id)} crumb={crumb} subtitle={subtitles[step] ?? ''} step={step}>
+    <ClaimChrome crumbRef={claimRef(claim.id)} crumb={crumb} subtitle="" step={step}>
       {step === 1 && (
         <Notify claim={claim} incident={incident} onNext={() => setStep(2)} />
       )}

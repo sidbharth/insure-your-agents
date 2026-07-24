@@ -124,7 +124,7 @@ describe('empty state and inbox', () => {
     renderAt('/claim');
     fireEvent.click(screen.getByTestId(`open-claim-${incident.id}`));
     expect(useStore.getState().claims[0].clockState.nearMiss).toBe(true);
-    expect(screen.getByText('The 7-day rule (near-miss)')).toBeInTheDocument();
+    expect(screen.getByText('Notification window, 7 days')).toBeInTheDocument();
   });
 });
 

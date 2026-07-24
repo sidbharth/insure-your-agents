@@ -3,7 +3,7 @@
  * cards, tooltips, denial-letter templates. Text quoted from the PRD
  * (§7.6, §7.11, GT-4, D1/D4) wherever the PRD quotes it.
  */
-import type { CoverageRoute } from '../store/types';
+import type { CoverageRoute, ScenarioId } from '../store/types';
 
 // ---------------------------------------------------------------------------
 // Positioning / shell
@@ -213,12 +213,6 @@ export const ADVANCED_PRICING_COPY = [
 // Claims copy
 // ---------------------------------------------------------------------------
 
-export const NOTIFY_RULE_COPY =
-  'Notification is due within 48 hours of discovery (near-misses: 7 days). Discovery is measured from when any responsible party knew, or should have known from an alert.';
-
-export const CONTAINMENT_RULE_COPY =
-  'Containment is immediate and unconditional. Losses attributable to delayed containment are borne by the insured.';
-
 export const EVIDENCE_RING_COPY =
   'The determination clock starts when the package is complete.';
 
@@ -308,3 +302,140 @@ export const ACTIVATION_CEREMONY_LINE =
 
 export const POLICY_SCHEDULE_CAPTION =
   'This enrollment record constitutes the policy schedule.';
+
+// ---------------------------------------------------------------------------
+// Claim demo (screens /claim/demo and /claim/demo/:incidentId)
+//
+// Self-serve walkthrough of the claims flow: pick a simulated incident, watch
+// detection and containment land on the record, then file the claim through
+// the standard five-step flow. All user-facing demo strings live here so the
+// claim-demo copy test can enforce the punctuation rules (no colons,
+// semicolons, or dashes of any kind in this copy).
+// ---------------------------------------------------------------------------
+
+export const CLAIM_DEMO_COPY = {
+  entry: 'Start claim demo',
+  title: 'Claim demo',
+  coverTitle: 'Cover is not active for the sample agent',
+  coverBody: (agentName: string) =>
+    `A claim pays only if cover was in force when the event happened. Activate simulated cover for ${agentName} to run the demo, or complete the purchase flow first.`,
+  activate: 'Activate cover',
+  activationTitle: 'Activating simulated cover',
+  activationSteps: [
+    'Countersigning the mandate…',
+    'Pricing the controls…',
+    'Collecting the annual premium…',
+    'Activating cover…',
+  ],
+  run: 'Run this incident →',
+  pickerLossFigure: (amount: string) => `Gross loss ${amount}`,
+  pickerNearMissFigure: (amount: string) =>
+    `${amount} in investigation costs with no loss`,
+  detectionTitle: 'Incident detected',
+  feedTitle: 'Monitoring record',
+  alertLine: 'Anomaly monitoring raised the first alert.',
+  killLine: 'Kill switch engaged. The agent halted.',
+  freezeLine: 'Affected whitelist entries frozen.',
+  rotateLine: 'Implicated signing credentials rotated.',
+  lossLine: (amount: string) => `Gross loss quantified at ${amount}.`,
+  investigationLine: (amount: string) =>
+    `No value moved. Investigation costs recorded at ${amount}.`,
+  recordLine: 'Incident record assembled and preserved.',
+  fileClaim: 'File the claim →',
+  chooseAnother: 'Choose a different incident',
+  summaryLabels: {
+    agent: 'Agent',
+    eventTime: 'Event time',
+    grossLoss: 'Gross loss',
+    investigation: 'Investigation costs',
+  },
+} as const;
+
+// ---------------------------------------------------------------------------
+// Claims page tabs + appeal (screen 7.11 additions)
+// ---------------------------------------------------------------------------
+
+export const CLAIM_HISTORY_COPY = {
+  tabIncidents: 'Incidents',
+  tabHistory: 'History',
+  empty: 'No claims yet. Claims you open appear here with their status.',
+  opened: (date: string) => `Opened ${date}`,
+  statusPaid: 'Paid',
+  statusDenied: 'Denied',
+  statusApproved: 'Approved',
+  statusInProgress: 'In progress',
+} as const;
+
+export const APPEAL_COPY = {
+  action: 'Appeal claim',
+  formTitle: 'Appeal this determination',
+  formBody:
+    'Set out why the determination should be reviewed. Attach any records that support the appeal.',
+  groundsLabel: 'Grounds for appeal',
+  attach: 'Attach a document',
+  submit: 'Submit appeal →',
+  cancel: 'Cancel',
+  submittedTitle: 'Appeal received',
+  submittedBody:
+    'The committee acknowledges appeals within 2 business days and replies with a reasoned decision on the same record.',
+} as const;
+
+export interface ClaimDemoScenarioCopy {
+  scenarioId: ScenarioId;
+  title: string;
+  summary: string;
+  outcome: string;
+  outcomeKind: 'paid' | 'nearMiss' | 'denied';
+}
+
+export const CLAIM_DEMO_SCENARIOS: ClaimDemoScenarioCopy[] = [
+  {
+    scenarioId: 'S-03',
+    title: 'Cap module failure',
+    summary:
+      'A transfer cleared above the cap because the cap check failed to fire. The policy pays the slice the guardrail should have stopped, and the deductible is waived because the guardrail had passed its latest test.',
+    outcome: 'Pays under Coverage D',
+    outcomeKind: 'paid',
+  },
+  {
+    scenarioId: 'S-09',
+    title: 'Prompt injection',
+    summary:
+      'A poisoned catalogue page steered the agent into paying an attacker while it stayed inside every limit. Attested records prove the manipulation, so the compromise is covered.',
+    outcome: 'Pays under Coverage B',
+    outcomeKind: 'paid',
+  },
+  {
+    scenarioId: 'S-17',
+    title: 'Blocked injection attempt',
+    summary:
+      'An injection attempt was caught and refused before any value moved. Nothing was lost, the event is reportable, and the investigation costs are covered.',
+    outcome: 'Near miss under Coverage F',
+    outcomeKind: 'nearMiss',
+  },
+  {
+    scenarioId: 'S-18',
+    title: 'Key exfiltration',
+    summary:
+      'Stolen session credentials moved funds without the agent acting at all. The loss is covered, and tracing later claws part of it back.',
+    outcome: 'Pays under Coverage C',
+    outcomeKind: 'paid',
+  },
+  {
+    scenarioId: 'S-24',
+    title: 'Hallucinated invoice',
+    summary:
+      'The agent paid an invoice that only ever existed in its own output. Clean attested inputs prove nothing tricked it, so the loss is excluded as model conduct.',
+    outcome: 'Ends in a denial',
+    outcomeKind: 'denied',
+  },
+];
+
+/** Opening feed line of the detection playback, per scenario. */
+export const CLAIM_DEMO_FEED_EVENT: Record<ScenarioId, string> = {
+  'S-03': 'The agent initiated a transfer above the cap and the cap check did not fire.',
+  'S-09': 'The agent paid a spoofed payee after processing a poisoned catalogue page.',
+  'S-17': 'An inbound attachment carried a crafted instruction. The input filter refused the tool call.',
+  'S-18': 'Transfers signed with stolen session credentials began leaving controlled addresses.',
+  'S-24': 'The agent paid an invoice for goods that were never ordered.',
+};

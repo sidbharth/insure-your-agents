@@ -3,7 +3,6 @@
  * Injected narrative pre-fill, discovery timestamp, first loss transaction,
  * and the 48-hour rule rail (near-misses: 7 days).
  */
-import { NOTIFY_RULE_COPY } from '../../data/copy';
 import { formatUsd } from '../../lib/money';
 import {
   NEAR_MISS_NOTIFY_WINDOW_MS,
@@ -13,7 +12,7 @@ import {
 import { demoNow } from '../../lib/demoClock';
 import { useStore } from '../../store';
 import type { Claim, Incident } from '../../store/types';
-import { Callout, fmtRemaining, fmtUtcDateTime, fmtUtcTime } from './shared';
+import { fmtRemaining, fmtUtcDateTime, fmtUtcTime } from './shared';
 
 export interface NotifyProps {
   claim: Claim;
@@ -48,7 +47,7 @@ export default function Notify({ claim, incident, onNext }: NotifyProps) {
           {incident.narrative}
         </p>
         <span className="mt-2 inline-flex items-center rounded-md border border-accent-line bg-accent-soft px-2 py-0.5 text-2xs font-semibold text-accent-ink">
-          Pre-filled from incident record {incident.scenarioId}
+          Pre-filled from the incident record
         </span>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -102,9 +101,8 @@ export default function Notify({ claim, incident, onNext }: NotifyProps) {
       <div className="flex flex-col gap-3.5">
         <div className="rounded-card border border-line bg-panel p-4 shadow-card">
           <h3 className="text-sm font-bold text-ink">
-            {nearMiss ? 'The 7-day rule (near-miss)' : 'The 48-hour rule'}
+            {nearMiss ? 'Notification window, 7 days' : 'Notification window, 48 hours'}
           </h3>
-          <p className="mt-1.5 text-xs text-muted">{NOTIFY_RULE_COPY}</p>
           <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-line-soft">
             <div
               className="h-full rounded-full bg-gradient-to-r from-good to-good"
@@ -118,10 +116,6 @@ export default function Notify({ claim, incident, onNext }: NotifyProps) {
             </span>
           </div>
         </div>
-        <Callout title="Why the clock starts at discovery">
-          Discovery is measured from when any responsible party knew, or should
-          have known from an alert. Fast notice makes fast adjustment possible.
-        </Callout>
       </div>
     </div>
   );

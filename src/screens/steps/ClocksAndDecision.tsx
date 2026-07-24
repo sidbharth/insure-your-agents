@@ -15,7 +15,7 @@ import { advance, deadlines } from '../../lib/clocks';
 import { demoNow } from '../../lib/demoClock';
 import { useStore } from '../../store';
 import type { AdjudicationResult, Claim, Incident, Timestamp } from '../../store/types';
-import { Callout, claimRef, fmtUtcDayTime, fmtUtcTime } from './shared';
+import { claimRef, fmtUtcDayTime, fmtUtcTime } from './shared';
 
 const MIN_MS = 60_000;
 
@@ -139,7 +139,7 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
         </div>
       )}
 
-      <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]">
+      <div>
         <div className="rounded-card border border-line bg-panel p-5 shadow-card">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="text-md font-bold text-ink">
@@ -234,13 +234,7 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
                 </span>
               </div>
             </>
-          ) : (
-            <p className="mt-4 text-sm text-muted">
-              The determination can issue immediately: the failed condition is decisive,
-              whatever the rest of the record shows. Denials arrive on the same clocks,
-              with the same care, as payments.
-            </p>
-          )}
+          ) : null}
 
           <div className="mt-4 flex items-center justify-between border-t border-line pt-4">
             <button
@@ -271,19 +265,6 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
               </button>
             )}
           </div>
-        </div>
-
-        <div className="flex flex-col gap-3.5">
-          <Callout title="Why publish clocks at all?">
-            Published deadlines serve loss-adjustment economics as much as
-            customer experience: evidence-first claims are fast and inexpensive
-            to adjust.
-          </Callout>
-          <Callout title="What happens next">
-            {conditionsPass
-              ? 'A complete package starts the 30-day determination clock at the package-check pass. Payment follows within 10 days of determination.'
-              : 'The determination letter names the failed condition and the forward-looking action that protects future events.'}
-          </Callout>
         </div>
       </div>
     </div>

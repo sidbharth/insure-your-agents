@@ -5,9 +5,8 @@
  * (manual Confirm). Continue is disabled until all four are confirmed.
  */
 import { useState } from 'react';
-import { CONTAINMENT_RULE_COPY } from '../../data/copy';
 import type { Claim, Incident } from '../../store/types';
-import { Callout, fmtUtcTimeSec } from './shared';
+import { fmtUtcTimeSec } from './shared';
 
 const MIN_MS = 60_000;
 
@@ -71,7 +70,7 @@ export default function Contain({ claim, incident, onBack, onNext }: ContainProp
   const next = () => onNext();
 
   return (
-    <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]" data-testid="claim-step-contain">
+    <div data-testid="claim-step-contain">
       <div className="rounded-card border border-line bg-panel p-5 shadow-card">
         <div className="flex items-center justify-between">
           <h2 className="text-md font-bold text-ink">Containment checklist</h2>
@@ -143,17 +142,6 @@ export default function Contain({ claim, incident, onBack, onNext }: ContainProp
             Continue to evidence →
           </button>
         </div>
-      </div>
-
-      <div className="flex flex-col gap-3.5">
-        <div className="rounded-card border border-warn-line bg-warn-bg p-4">
-          <h3 className="text-sm font-bold text-warn">The hard rule</h3>
-          <p className="mt-1.5 text-xs text-[#7a4c10]">{CONTAINMENT_RULE_COPY}</p>
-        </div>
-        <Callout title="Why image before rebuild?">
-          The claim is decided on the attested record. An imaged system is evidence;
-          a rebuilt one is a story.
-        </Callout>
       </div>
     </div>
   );

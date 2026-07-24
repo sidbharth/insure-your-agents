@@ -28,6 +28,7 @@ import type {
   Mandate,
   MockArtifact,
   Operator,
+  RootState,
   ScenarioId,
   Timestamp,
 } from '../store/types';
@@ -399,6 +400,73 @@ export function buildIncident(
     investigationCostUsd: meta.investigationCostUsd,
     guardrailPassedVerification: meta.guardrailPassedVerification,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Incident landing + claim opening (shared by the presenter panel's
+// injectIncident action and the self-serve claim demo)
+// ---------------------------------------------------------------------------
+
+/**
+ * Build an incident and land it on the fleet: add it to the claims slice and,
+ * for S-17, record the near-miss feed entry + renewal data credit
+ * (REQ-7.9.3, AC-11). Arming the dashboard "Simulate incident" affordance is
+ * presenter-only and deliberately NOT done here, so the self-serve claim demo
+ * never leaks presenter chrome.
+ */
+export function landIncident(
+  state: Pick<RootState, 'agents' | 'addIncident' | 'addNearMiss' | 'addCredit'>,
+  scenarioId: ScenarioId,
+  agentId: string,
+  lossUsd?: number,
+): Incident | undefined {
+  const agent = state.agents.find((a) => a.id === agentId);
+  if (agent === undefined) return undefined;
+
+  const incident = buildIncident(scenarioId, agent, lossUsd);
+  state.addIncident(incident);
+
+  if (scenarioId === 'S-17') {
+    // Near-miss: feed entry + data credit at renewal (REQ-7.9.3, AC-11).
+    state.addNearMiss({
+      id: `nm-${incident.id}`,
+      type: 'blocked-injection',
+      at: incident.discoveredAt,
+      creditTag: '+ data credit at renewal',
+      creditPoints: 0.01,
+      description: 'Injection attempt blocked — reported',
+    });
+    state.addCredit(agentId, {
+      type: 'near-miss',
+      at: incident.discoveredAt,
+      points: 0.01,
+    });
+  }
+  return incident;
+}
+
+/**
+ * Open (or return the existing) claim for an incident: create the claim,
+ * populate the 12-item checklist from the applicability matrix (§5d), and put
+ * near-miss claims on the 7-day notify window (GT-5).
+ */
+export function openClaimForIncident(
+  state: Pick<RootState, 'claims' | 'openClaim' | 'updateClaim' | 'setClockState'>,
+  incident: Incident,
+): string {
+  const existing = state.claims.find((c) => c.incidentId === incident.id);
+  if (existing !== undefined) return existing.id;
+
+  const claimId = state.openClaim(incident.id);
+  state.updateClaim(claimId, { evidence: buildEvidenceChecklist(incident.scenarioId) });
+  if (SCENARIOS[incident.scenarioId].nearMiss) {
+    state.setClockState(claimId, {
+      phase: 'Draft',
+      anchors: { discoveredAt: incident.discoveredAt },
+      nearMiss: true,
+    });
+  }
+  return claimId;
 }
 
 // ---------------------------------------------------------------------------

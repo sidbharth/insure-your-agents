@@ -11,12 +11,13 @@
  * letter with the Coverage-B counterfactual (AC-10); condition-precedent
  * denials carry the forward-looking "Complete verification" action (AC-13).
  */
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { priceFeedMode } from '../../components/helpers';
 import { MathValue } from '../../components/MathValue';
 import { SimulatedBadge } from '../../components/SimulatedBadge';
 import {
+  APPEAL_COPY,
   DENIAL_CONDITION_PRECEDENT,
   DENIAL_MODEL_CONDUCT,
   RECOVERY_WATERFALL_COPY,
@@ -29,7 +30,7 @@ import { executePayment, PaymentAbortedError } from '../../lib/payments';
 import { demoNow } from '../../lib/demoClock';
 import { useStore } from '../../store';
 import type { AdjudicationResult, Claim, Incident } from '../../store/types';
-import { Callout, claimRef, fmtUtcDateLong } from './shared';
+import { claimRef, fmtUtcDateLong } from './shared';
 
 export interface OutcomeProps {
   claim: Claim;
@@ -269,13 +270,6 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
           </div>
         )}
 
-        <Callout title="Why the payout is what it is">
-          The retention is the deductible every event bears
-          {math.retentionWaived ? ' (waived here)' : ''}. Coinsurance applies only where a
-          skipped tier-2 control governs the loss: the control was skipped, so the
-          insured shares the loss it would have prevented.
-        </Callout>
-
         {paid ? (
           <div
             data-testid="payment-accepted"
@@ -381,18 +375,13 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
                 data-testid="condition-forward-action"
                 className="rounded-lg border border-[#b2f0d6] bg-[#e4fbf1] px-4 py-3 text-xs text-[#0b7a52]"
               >
-                <b>The forward-looking fix:</b> conditions precedent are evaluated at
-                each event&rsquo;s own time. Restoring the condition now protects every
-                future event.
-                <div className="mt-2">
-                  <Link
-                    to="/verify"
-                    data-testid="complete-verification-action"
-                    className="inline-block rounded-lg bg-[#0b7a52] px-3 py-1.5 font-semibold text-white"
-                  >
-                    {DENIAL_CONDITION_PRECEDENT.forwardAction}
-                  </Link>
-                </div>
+                <Link
+                  to="/verify"
+                  data-testid="complete-verification-action"
+                  className="inline-block rounded-lg bg-[#0b7a52] px-3 py-1.5 font-semibold text-white"
+                >
+                  {DENIAL_CONDITION_PRECEDENT.forwardAction}
+                </Link>
               </div>
             </>
           ) : modelConduct ? (
@@ -452,7 +441,7 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
           <p>
             Respectfully,
             <br />
-            <b className="text-ink">Claims Determination, AgentConnect Insurance</b>
+            <b className="text-ink">Claims Committee, AgentConnect Insurance</b>
           </p>
           <p className="border-t border-line pt-3 text-2xs text-faint">
             You may request a fast-track review of this determination within 30
@@ -498,18 +487,13 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
           </dl>
         </div>
 
-        <Callout title="Why a denial gets a full letter">
-          Disciplined refusal is half of what makes an insurance programme
-          credible. The boundary is published, reasoned, and delivered with the
-          same care as a payment.
-        </Callout>
-
         <button
           type="button"
           className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-ink"
         >
           Request fast-track review
         </button>
+        <AppealPanel />
         {bExcluded && (
           <p className="text-2xs text-faint">
             {verdictLabel}: {result.eligibility.reason}
@@ -521,6 +505,131 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
           className="rounded-lg border border-line px-3.5 py-2 text-sm font-semibold text-muted"
         >
           Back to clocks
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Appeal (simulated submission; screen-local by design — the frozen Claim
+// shape has no field for appeals, same precedent as the imaging confirm)
+// ---------------------------------------------------------------------------
+
+function AppealPanel() {
+  const [mode, setMode] = useState<'idle' | 'form' | 'submitted'>('idle');
+  const [grounds, setGrounds] = useState('');
+  const [attachments, setAttachments] = useState<string[]>([]);
+  const fileInput = useRef<HTMLInputElement>(null);
+
+  if (mode === 'idle') {
+    return (
+      <button
+        type="button"
+        data-testid="appeal-claim"
+        onClick={() => setMode('form')}
+        className="rounded-lg border border-line bg-panel px-3.5 py-2 text-sm font-semibold text-ink"
+      >
+        {APPEAL_COPY.action}
+      </button>
+    );
+  }
+
+  if (mode === 'submitted') {
+    return (
+      <div
+        data-testid="appeal-submitted"
+        className="rounded-card border border-good-line bg-good-bg px-4 py-3.5"
+      >
+        <div className="flex items-center gap-2 text-sm font-semibold text-good">
+          ✓ {APPEAL_COPY.submittedTitle} <SimulatedBadge />
+        </div>
+        <p className="mt-1 text-xs text-muted">{APPEAL_COPY.submittedBody}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      data-testid="appeal-form"
+      className="rounded-card border border-line bg-panel p-4 shadow-card"
+    >
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-ink">{APPEAL_COPY.formTitle}</h3>
+        <SimulatedBadge />
+      </div>
+      <p className="mt-1 text-xs text-muted">{APPEAL_COPY.formBody}</p>
+      <label className="mt-3 block text-2xs font-bold uppercase tracking-wider text-faint">
+        {APPEAL_COPY.groundsLabel}
+        <textarea
+          data-testid="appeal-grounds"
+          value={grounds}
+          onChange={(e) => setGrounds(e.target.value)}
+          rows={4}
+          className="mt-1.5 w-full rounded-lg border border-line bg-canvas px-3 py-2 text-xs font-normal normal-case tracking-normal text-body outline-none focus:border-accent"
+        />
+      </label>
+      <div className="mt-2.5">
+        <input
+          ref={fileInput}
+          type="file"
+          multiple
+          data-testid="appeal-file-input"
+          className="hidden"
+          onChange={(e) => {
+            const names = Array.from(e.target.files ?? []).map((f) => f.name);
+            if (names.length > 0) setAttachments((prev) => [...prev, ...names]);
+            e.target.value = '';
+          }}
+        />
+        <button
+          type="button"
+          data-testid="appeal-attach"
+          onClick={() => fileInput.current?.click()}
+          className="rounded-md border border-line bg-panel px-2.5 py-1.5 text-xs font-semibold text-ink-2 shadow-card"
+        >
+          {APPEAL_COPY.attach}
+        </button>
+        {attachments.length > 0 && (
+          <ul className="mt-2 flex flex-wrap gap-1.5" data-testid="appeal-attachments">
+            {attachments.map((name, i) => (
+              <li
+                key={`${name}-${i}`}
+                className="inline-flex items-center gap-1.5 rounded border border-line bg-canvas px-2 py-0.5 text-2xs font-semibold text-muted"
+              >
+                {name}
+                <button
+                  type="button"
+                  aria-label={`Remove ${name}`}
+                  onClick={() =>
+                    setAttachments((prev) => prev.filter((_, j) => j !== i))
+                  }
+                  className="text-faint"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="mt-3.5 flex items-center justify-between border-t border-line-soft pt-3">
+        <button
+          type="button"
+          data-testid="appeal-cancel"
+          onClick={() => setMode('idle')}
+          className="text-xs font-semibold text-muted"
+        >
+          {APPEAL_COPY.cancel}
+        </button>
+        <button
+          type="button"
+          data-testid="appeal-submit"
+          disabled={grounds.trim().length === 0}
+          onClick={() => setMode('submitted')}
+          className="rounded-lg bg-accent px-3.5 py-2 text-xs font-semibold text-ink disabled:opacity-40"
+        >
+          {APPEAL_COPY.submit}
         </button>
       </div>
     </div>

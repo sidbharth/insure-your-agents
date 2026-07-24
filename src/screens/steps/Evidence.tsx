@@ -19,7 +19,6 @@ import { phaseFromAnchors } from '../../lib/clocks';
 import { demoNow } from '../../lib/demoClock';
 import { useStore } from '../../store';
 import type { Claim, EvidenceItem, Incident } from '../../store/types';
-import { Callout } from './shared';
 
 export interface EvidenceProps {
   claim: Claim;
@@ -215,12 +214,6 @@ export default function Evidence({ claim, onBack, onNext }: EvidenceProps) {
             . {EVIDENCE_RING_COPY}
           </p>
         </div>
-        <Callout title="Why so much attached itself">
-          You run the required tier-1 logging, so your systems already produced
-          the mandate version, hash chain, action-log extract, containment
-          record, and valuation inputs. Compliant stacks make claims fast and
-          inexpensive to adjust.
-        </Callout>
       </div>
     </div>
   );

@@ -23,6 +23,7 @@ import { saveSession } from './lib/sessionSave';
 import { getWizardAgentId } from './screens/wizard/wizardAgent';
 import { useStore } from './store';
 import Claim from './screens/Claim';
+import ClaimDemo from './screens/ClaimDemo';
 import ConnectAgent from './screens/ConnectAgent';
 import Controls from './screens/Controls';
 import Coverage from './screens/Coverage';
@@ -215,6 +216,8 @@ export function AppShell() {
           <Route path="/dashboard" element={<ProgrammeDashboard />} />
           <Route path="/coverage" element={<Coverage />} />
           <Route path="/claim" element={<Claim />} />
+          <Route path="/claim/demo" element={<ClaimDemo />} />
+          <Route path="/claim/demo/:incidentId" element={<ClaimDemo />} />
           <Route path="/claim/:claimId" element={<Claim />} />
         </Routes>
       </main>

@@ -139,7 +139,9 @@ export function ClaimChrome({ crumbRef, crumb, subtitle, step, children }: Claim
             Claim {crumbRef}
           </h1>
           <p className="mt-0.5 text-sm text-muted">{crumb}</p>
-          <p className="mt-1 max-w-2xl text-sm text-muted">{subtitle}</p>
+          {subtitle !== '' && (
+            <p className="mt-1 max-w-2xl text-sm text-muted">{subtitle}</p>
+          )}
         </div>
         <span className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md border border-line bg-[#f6f8f7] px-2 py-0.5 text-2xs font-semibold text-faint">
           Incident record <SimulatedBadge />
