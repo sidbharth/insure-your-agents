@@ -138,7 +138,7 @@ function PolicySchedule({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-md">Policy schedule (enrollment record)</h2>
+          <h2 className="text-md">Policy schedule</h2>
           <button className="text-sm text-muted" onClick={onClose} data-testid="close-schedule">
             Close
           </button>
@@ -471,7 +471,7 @@ export default function Pay() {
                 }`}
                 onClick={() => setPlan('annual')}
               >
-                Annual (pay once)
+                Annual
               </button>
               <button
                 data-testid="plan-quarterly"

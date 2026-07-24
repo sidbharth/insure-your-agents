@@ -17,7 +17,6 @@ const ROLES: {
   key: EnrollmentRole;
   title: string;
   definition: string;
-  journey: string;
   cta: string;
   testId: string;
   highlight?: boolean;
@@ -27,7 +26,6 @@ const ROLES: {
     title: 'Operator',
     definition:
       'You build and run the agents. You choose the model, design the harness, manage the keys, and are responsible for uptime and updates. The Operator takes out the policy and manages it.',
-    journey: 'Full enrollment: verify, register agents, set mandates, and pay.',
     cta: 'Continue as Operator',
     testId: 'get-started',
     highlight: true,
@@ -37,7 +35,6 @@ const ROLES: {
     title: 'Principal',
     definition:
       'Agents run by an Operator spend your funds. You delegate authority to them and define what they may do. As an enrolled Principal you are an insured under the policy, and your losses are paid directly to you.',
-    journey: 'Short journey: verify, review the mandate, and countersign it.',
     cta: 'Continue as Principal',
     testId: 'role-principal',
   },
@@ -46,7 +43,6 @@ const ROLES: {
     title: 'Operator and Principal',
     definition:
       'One organization builds the agents and owns the funds they spend. You complete the full enrollment and countersign the mandate through your own authorized officer.',
-    journey: 'Full enrollment with in-house countersignature.',
     cta: 'Continue as both',
     testId: 'role-both',
   },
@@ -196,7 +192,6 @@ export default function GetStarted() {
                 )}
               </div>
               <p className="mt-2 flex-1 text-sm text-muted">{r.definition}</p>
-              <p className="mt-2 text-xs text-faint">{r.journey}</p>
               <button
                 type="button"
                 data-testid={r.testId}

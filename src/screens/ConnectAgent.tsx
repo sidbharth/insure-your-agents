@@ -319,8 +319,7 @@ export default function ConnectAgent() {
                   className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-accent-ink"
                 >
                   <span>{manifestOpen ? '▲' : '▼'}</span>
-                  Tool manifest ({activeAgent.toolManifest.length} tools,
-                  frozen into the record)
+                  Tool manifest ({activeAgent.toolManifest.length})
                 </button>
                 {manifestOpen && (
                   <div className="mt-2 overflow-hidden rounded-md border border-line" data-testid="tool-manifest">
