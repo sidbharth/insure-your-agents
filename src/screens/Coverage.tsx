@@ -90,10 +90,10 @@ export default function Coverage() {
             )}
           </h1>
           <p className="mt-1 max-w-xl text-sm text-muted">
-            Six coverage families apply to{' '}
+            Six coverages, A through F, apply to{' '}
             {postPurchase ? 'this agent’s' : 'the quoted'}{' '}
-            <b className="num text-ink">{formatUsd(capUsd)}</b> cap. Coverage is
-            determined by the controls in place, not selected from a menu.
+            <b className="num text-ink">{formatUsd(capUsd)}</b> cap. Active
+            coverages follow from the controls in place.
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
@@ -109,7 +109,7 @@ export default function Coverage() {
               data-testid="coverage-quote-stage"
               className="rounded-md border border-line bg-canvas px-2.5 py-1 text-2xs font-semibold text-muted"
             >
-              Quote stage: amounts shown at the quoted cap
+              Amounts shown at the quoted cap
             </span>
           )}
           <Link

@@ -37,17 +37,17 @@ export const COVERAGE_CARDS: CoverageCardCopy[] = [
     title: 'Unauthorized agent transaction',
     shortTitle: 'Unauthorized transaction',
     oneLiner:
-      'Covers net asset losses when the agent acts outside its mandate. No attacker required.',
+      'Covers net asset losses when the agent acts outside its mandate. Proof of an attacker is not required.',
     whatItPays:
-      'Net assets that left when the agent acted outside its mandate: wrong payee, amount over cap, wrong asset or chain, or an undelegated action.',
-    keyCondition: 'The countersigned mandate defines "outside the rules."',
+      'Net assets that left when the agent acted outside its mandate, whether a wrong payee, an amount over the cap, a wrong asset or chain, or an undelegated action.',
+    keyCondition: 'The countersigned mandate defines the permitted actions.',
   },
   {
     route: 'B',
     title: 'Agent compromise',
     shortTitle: 'Agent compromise',
     oneLiner:
-      'Pays when an attacker tricked the agent while it stayed inside the rules.',
+      'Pays when an attacker manipulated the agent while it stayed inside its limits.',
     whatItPays:
       'Losses from prompt injection, poisoned data, a compromised tool, a spoofed instruction channel, or a deepfaked approval.',
     keyCondition:
@@ -60,7 +60,7 @@ export const COVERAGE_CARDS: CoverageCardCopy[] = [
     oneLiner:
       'Pays when signing credentials inside the disclosed setup are stolen or misused.',
     whatItPays:
-      'Money that moved without the agent or Principal initiating it, signed with stolen credentials from the disclosed key map.',
+      'Funds moved without the agent or the Principal initiating them, signed with stolen credentials from the disclosed key map.',
     keyCondition:
       'Only credentials in the disclosed key map are covered. Credentials held outside the disclosed setup are not.',
   },
@@ -69,40 +69,41 @@ export const COVERAGE_CARDS: CoverageCardCopy[] = [
     title: 'Guardrail failure',
     shortTitle: 'Guardrail failure',
     oneLiner:
-      'Pays the slice of loss a correctly-working scheduled guardrail would have stopped.',
+      'Pays the portion of a loss that a scheduled guardrail would have stopped had it operated as specified.',
     whatItPays:
-      'The amount over a cap the cap-checker let through, the amount a timelock should have held, everything after a kill switch was pressed but ignored.',
+      'The amount over a cap that the cap check let through, the amount a timelock should have held, or losses after a kill switch was activated but not honored.',
     keyCondition:
-      'The deductible is waived if that guardrail had passed its latest scheduled test.',
+      'The deductible is waived if that guardrail had passed its latest scheduled verification.',
   },
   {
     route: 'E',
     title: 'Counterparty liability',
     shortTitle: 'Counterparty liability',
     oneLiner:
-      "Pays damages and defense costs when a third party claims your agent's covered failure hurt them.",
+      'Pays damages and defense costs when a third party claims a covered failure of your agent caused them loss.',
     whatItPays:
-      "Damages and defense costs when a merchant, wallet, solver, or another agent's owner claims your agent's covered failure hurt them.",
-    keyCondition: 'Defense costs eat into the limit. Per-event limit: 50% of the cap.',
+      "Damages and defense costs claimed by a merchant, wallet, solver, or another agent's owner for a covered failure of your agent.",
+    keyCondition:
+      'Defense costs reduce the limit. The limit for each event is 50% of the cap.',
   },
   {
     route: 'F',
     title: 'Incident response and recovery',
     shortTitle: 'Response & recovery',
     oneLiner:
-      'Covers investigation, tracing, bounties, freezes, and key rotation, including qualifying near-miss investigations.',
+      'Covers investigation, tracing, bounties, freezes, and key rotation, including qualifying near miss investigations.',
     whatItPays:
       'Investigation, on-chain tracing, approved white-hat bounties, legal freezes, emergency key rotation.',
     keyCondition:
-      'Per-event limit: 15% of the cap, with recovery and bounty costs capped at 10%. Reported near-misses earn renewal credits.',
+      'The limit for each event is 15% of the cap, with recovery and bounty costs capped at 10%. Reported near misses earn renewal credits.',
   },
 ];
 
 export const COVERAGE_PANEL_TOOLTIP =
-  'Coverage is derived from the controls you run. It is not selected separately.';
+  'Coverage is derived from the controls you run.';
 
 export const COVERAGE_B_GREY_REASON =
-  'Coverage B (agent compromise) is excluded: without attested inputs, manipulation cannot be proven.';
+  'Coverage B (agent compromise) is excluded because manipulation cannot be proven without attested inputs.';
 
 // ---------------------------------------------------------------------------
 // Exclusion wall (PRD §7.6.3 / GT-4) — never collapsible by default
