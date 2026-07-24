@@ -121,10 +121,21 @@ export default function Fleet() {
 
   // The wizard agent arrives from 7.6 priced but possibly not yet enrolled on
   // the book: enroll it first so its row exists and the Appendix-B
-  // concentration arithmetic starts from 38.6% (plan §7).
+  // concentration arithmetic starts from 38.6% (plan §7). The wizard leaves
+  // the agent 'Quoted' (7.3 connect) — enroll whenever there is no live
+  // enrollment yet, except after an explicit decline or de-enroll.
   useEffect(() => {
-    const wizard = useStore.getState().agents.find((a) => a.id === WIZARD_AGENT.id);
-    if (wizard && wizard.status === 'Draft') {
+    const s = useStore.getState();
+    const wizard = s.agents.find((a) => a.id === WIZARD_AGENT.id);
+    const enrolled = s.enrollments.some(
+      (e) => e.agentId === WIZARD_AGENT.id && e.terminatedAt === undefined,
+    );
+    if (
+      wizard &&
+      !enrolled &&
+      wizard.status !== 'De-enrolled' &&
+      wizard.status !== 'Declined'
+    ) {
       prepareImportedAgent(wizard.id);
       enrollAgent(wizard.id);
     }

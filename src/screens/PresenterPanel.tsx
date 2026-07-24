@@ -18,6 +18,7 @@ import type { ScenarioId } from '../store/types';
 
 const SEED_HELIOS_EXTERNAL_USD = 2_090_000;
 const FORCED_HELIOS_EXTERNAL_USD = 3_400_000; // pushes the share above 40%
+const DROPPED_HELIOS_EXTERNAL_USD = 500_000; // drops the share below 40% (AC-6)
 
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -110,6 +111,7 @@ export default function PresenterPanel() {
     book.components.find((c) => c.harness === HELIOS)?.externalCapsUsd ??
     SEED_HELIOS_EXTERNAL_USD;
   const concentrationForced = heliosExternal >= FORCED_HELIOS_EXTERNAL_USD;
+  const concentrationDropped = heliosExternal <= DROPPED_HELIOS_EXTERNAL_USD;
   const hasOverdue = enrollments.some(
     (e) =>
       e.agentId === targetAgentId &&
@@ -188,6 +190,15 @@ export default function PresenterPanel() {
     setBookComponentCaps(
       HELIOS,
       concentrationForced ? SEED_HELIOS_EXTERNAL_USD : FORCED_HELIOS_EXTERNAL_USD,
+    );
+  };
+
+  /** AC-6: drop the fictional book so the Helios share falls below 40% —
+   *  frozen tags persist; only enrollments made after the drop lapse. */
+  const toggleBookDrop = () => {
+    setBookComponentCaps(
+      HELIOS,
+      concentrationDropped ? SEED_HELIOS_EXTERNAL_USD : DROPPED_HELIOS_EXTERNAL_USD,
     );
   };
 
@@ -396,6 +407,16 @@ export default function PresenterPanel() {
           >
             Book concentration <b className="text-[#f2d06b]">ABOVE 40%</b>{' '}
             <span className="text-[10.5px] text-[#8b909c]">({HELIOS})</span>
+          </SwitchRow>
+          <SwitchRow
+            on={concentrationDropped}
+            onToggle={toggleBookDrop}
+            testId="drop-book"
+          >
+            Drop book <b className="text-[#f2d06b]">BELOW 40%</b>{' '}
+            <span className="text-[10.5px] text-[#8b909c]">
+              (frozen tags persist · later enrollments lapse)
+            </span>
           </SwitchRow>
           <SwitchRow
             on={hasOverdue}

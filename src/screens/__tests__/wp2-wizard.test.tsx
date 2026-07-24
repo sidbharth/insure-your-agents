@@ -295,6 +295,11 @@ describe('7.4 edit mode (/mandate?edit=:agentId)', () => {
     await waitFor(() =>
       expect(screen.getByTestId('edit-applied')).toBeInTheDocument(),
     );
+    // The success copy names the version that was actually closed (v1.0),
+    // not the just-applied one (regression: `live` re-derives after commit).
+    expect(screen.getByTestId('edit-applied').textContent).toContain(
+      'previous version (v1.0)',
+    );
     const versions = useStore.getState().mandates[AGENT_ID];
     const latest = versions[versions.length - 1];
     expect(latest.version).toBe('1.1');
@@ -302,5 +307,30 @@ describe('7.4 edit mode (/mandate?edit=:agentId)', () => {
     // previous version closed
     expect(versions[versions.length - 2].inForceTo).toBeDefined();
     expect(useStore.getState().pendingEdits[AGENT_ID]).toBeUndefined();
+  });
+
+  it('pay difference re-prices the live enrollment (dashboard premium updates)', async () => {
+    const { prepareImportedAgent, enrollAgent } = await import('../purchase/enroll');
+    prepareImportedAgent(AGENT_ID);
+    enrollAgent(AGENT_ID);
+    expect(
+      useStore.getState().enrollments.find((e) => e.agentId === AGENT_ID)?.premiumUsd,
+    ).toBe(300); // 0.6% × $50,000
+
+    renderAt(`/mandate?edit=${AGENT_ID}`);
+    fireEvent.change(screen.getByTestId('edit-cap-perTx'), {
+      target: { value: '100000' },
+    });
+    fireEvent.click(screen.getByTestId('save-reprice'));
+    fireEvent.click(screen.getByTestId('pay-difference'));
+    await waitFor(() =>
+      expect(screen.getByTestId('edit-applied')).toBeInTheDocument(),
+    );
+
+    const enrollment = useStore
+      .getState()
+      .enrollments.find((e) => e.agentId === AGENT_ID && e.terminatedAt === undefined);
+    expect(enrollment?.premiumUsd).toBe(600); // 0.6% × $100,000
+    expect(enrollment?.mandateVersion).toBe('1.1');
   });
 });

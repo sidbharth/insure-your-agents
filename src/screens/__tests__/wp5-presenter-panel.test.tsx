@@ -181,6 +181,20 @@ describe('force states', () => {
       .book.components.find((c) => c.harness === HELIOS)!;
     expect(restored.externalCapsUsd).toBe(2_090_000);
   });
+
+  it('drop-book switch pushes the Helios external caps below 40% and back (AC-6)', () => {
+    renderPanel();
+    fireEvent.click(screen.getByTestId('drop-book'));
+    const dropped = useStore
+      .getState()
+      .book.components.find((c) => c.harness === HELIOS)!;
+    expect(dropped.externalCapsUsd).toBe(500_000);
+    fireEvent.click(screen.getByTestId('drop-book'));
+    const restored = useStore
+      .getState()
+      .book.components.find((c) => c.harness === HELIOS)!;
+    expect(restored.externalCapsUsd).toBe(2_090_000);
+  });
 });
 
 describe('panel reset (AC-16)', () => {

@@ -170,6 +170,9 @@ export function enrollAgent(agentId: string): EnrollOutcome {
     paymentPlan: 'annual',
     paymentHistory: [],
     effectiveAt: 0, // stamped by activateEnrollments at payment (AC-7)
+    // Provisional renewal estimate for pre-payment previews (e.g. the Fleet
+    // de-enroll pro-rata refund, REQ-7.7.4); re-anchored to effectiveAt +
+    // 1yr by activateEnrollments once payment lands (AC-7).
     renewalAt: now + YEAR_MS,
     credits: [],
   });

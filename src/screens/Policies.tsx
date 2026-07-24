@@ -519,7 +519,7 @@ function PolicyRowCard({
       data-testid={`policy-row-${agent.id}`}
       className="rounded-card border border-line bg-panel px-4 py-3.5 shadow-card"
     >
-      <div className="grid grid-cols-[170px_minmax(0,1fr)_105px_92px_105px_118px_95px] items-center gap-2">
+      <div className="grid grid-cols-[150px_minmax(85px,1fr)_95px_82px_95px_100px_85px] items-center gap-2">
         <div>
           <div className="text-sm font-semibold text-ink">{agent.name}</div>
           <span className="rounded border border-line bg-canvas px-1.5 font-mono text-2xs text-muted">

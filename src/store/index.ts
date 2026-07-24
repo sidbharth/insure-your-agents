@@ -10,6 +10,7 @@ import { create } from 'zustand';
 import { createSeedState } from '../data/seed';
 import { demoNow, registerOffsetProvider } from '../lib/demoClock';
 import { registerPaymentPorts } from '../lib/payments';
+import { resetWizardAgentId } from '../screens/wizard/wizardAgent';
 import { resetClaimCounter, createClaimsSlice } from './claims';
 import { createPresenterSlice } from './presenter';
 import { createPriceFeedSlice, startPriceFeed } from './priceFeed';
@@ -31,6 +32,7 @@ export const useStore = create<RootState>()((set, get, api) => ({
 
   reset: () => {
     resetClaimCounter();
+    resetWizardAgentId(); // wizard-local module state resets with the world (AC-16)
     const seed = createSeedState();
     set({
       operator: seed.operator,

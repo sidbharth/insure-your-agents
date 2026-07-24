@@ -4,8 +4,11 @@
  * never overwrite booleans (plan §5b).
  */
 import type { StateCreator } from 'zustand';
-import { createSeedState } from '../data/seed';
+import { createSeedState, DAY_MS } from '../data/seed';
 import { demoNow } from '../lib/demoClock';
+
+/** One policy year, matching purchase/enroll.ts YEAR_MS (365 days). */
+const YEAR_MS = 365 * DAY_MS;
 import type {
   Agent,
   Interval,
@@ -235,6 +238,15 @@ export const createSessionSlice: StateCreator<RootState, [], [], SessionSlice> =
     addEnrollment: (enrollment) =>
       set((s) => ({ enrollments: [...s.enrollments, enrollment] })),
 
+    updateEnrollment: (agentId, patch) =>
+      set((s) => ({
+        enrollments: s.enrollments.map((e) =>
+          e.agentId === agentId && e.terminatedAt === undefined
+            ? { ...e, ...patch }
+            : e,
+        ),
+      })),
+
     appendPaymentItem: (agentId, item) =>
       set((s) => ({
         enrollments: s.enrollments.map((e) =>
@@ -278,6 +290,7 @@ export const createSessionSlice: StateCreator<RootState, [], [], SessionSlice> =
             ? {
                 ...e,
                 effectiveAt: at,
+                renewalAt: at + YEAR_MS,
                 conversionRateAtPayment: receipt.rateUsed,
               }
             : e,

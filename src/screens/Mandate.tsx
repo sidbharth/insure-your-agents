@@ -509,6 +509,7 @@ function MandateEdit({ agentId }: { agentId: string }) {
   const setPendingEdit = useStore((s) => s.setPendingEdit);
   const clearPendingEdit = useStore((s) => s.clearPendingEdit);
   const commitMandateEdit = useStore((s) => s.commitMandateEdit);
+  const updateEnrollment = useStore((s) => s.updateEnrollment);
   const verificationHistory = useStore((s) => s.operator.verificationHistory);
   const usdPerN = useStore((s) => s.priceFeed.usdPerN);
   useStore((s) => s.presenter.timeOffsetMs);
@@ -523,7 +524,9 @@ function MandateEdit({ agentId }: { agentId: string }) {
   );
   const [sheetOpen, setSheetOpen] = useState(pendingEdit !== undefined);
   const [paying, setPaying] = useState(false);
-  const [paid, setPaid] = useState(false);
+  // The mandate version that was superseded — captured at pay time, because
+  // after commitMandateEdit `live` re-derives to the just-applied draft.
+  const [paid, setPaid] = useState<{ closedVersion: string } | null>(null);
 
   const operatorVerified = isOperatorVerifiedNow(verificationHistory);
 
@@ -570,10 +573,30 @@ function MandateEdit({ agentId }: { agentId: string }) {
     setPaying(true);
     // Refetch-first payment through the centralized helper (§7a), then the
     // separate store transition closes old inForceTo and applies the draft.
+    const closedVersion = live.version;
     await executePayment('delta', delta.deltaUsd, { agentIds: [agentId] });
     commitMandateEdit(agentId);
+    // Re-price the live enrollment so the dashboard row shows the new
+    // premium/version — the frozen concentration loading is preserved.
+    const hadConcentration =
+      enrollment?.loadings.some((l) =>
+        l.label.toLowerCase().includes('concentration'),
+      ) ?? false;
+    const repriced = priceAgent(
+      buildPricingInput(agent, draft, operatorVerified, {
+        concentrationLoading: hadConcentration,
+      }),
+    );
+    if (repriced.kind === 'quoted') {
+      updateEnrollment(agentId, {
+        mandateVersion: draft.version,
+        rateBreakdown: repriced.breakdown.filter((l) => l.group === 'ladder'),
+        loadings: repriced.breakdown.filter((l) => l.group === 'loading'),
+        premiumUsd: repriced.premiumUsd,
+      });
+    }
     setPaying(false);
-    setPaid(true);
+    setPaid({ closedVersion });
   };
 
   const discard = () => {
@@ -606,8 +629,8 @@ function MandateEdit({ agentId }: { agentId: string }) {
             Mandate v{draft.version} is now in force ✓
           </div>
           <p className="mt-1 text-xs text-good">
-            The previous version (v{live.version}) was closed at the moment of
-            payment; new events are governed by v{draft.version}.
+            The previous version (v{paid.closedVersion}) was closed at the
+            moment of payment; new events are governed by v{draft.version}.
           </p>
           <button
             type="button"

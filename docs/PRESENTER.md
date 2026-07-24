@@ -84,8 +84,15 @@ concentration, which is book-level):
   suspends ("premium >15 days overdue").
 - **Book concentration ABOVE 40%** — forces the Helios v2.3 external caps to
   $3.4 M (share above 40%); toggle off restores the seed $2.09 M.
+- **Drop book BELOW 40%** — forces the Helios external caps to $0.5 M so the
+  share falls well below 40%. Frozen +0.1% tags on already-enrolled agents
+  **persist** (the loading is frozen at enrollment), but *subsequent* new
+  Helios enrollments carry no concentration loading (AC-6, second half).
+  Toggle off restores the seed $2.09 M.
 - **Mark installment overdue** — the overdue payment item alone, without the
-  suspension.
+  suspension. Conditions precedent read it at event time: an incident injected
+  against that agent afterwards denies with "premium more than 15 days overdue
+  at event time."
 
 ### 6. Full reset
 
@@ -116,3 +123,54 @@ Other rehearsed beats:
   pipeline recomputes from the incident's own parameters (REQ-7.11.3).
 - **Clocks:** file, notify, submit the package, then fast-forward from the
   claim's step 4 — each jump fills the next insurer anchor as real state.
+
+## Acceptance-criteria checklist (PRD §13 — verified in-browser)
+
+Every criterion below was walked end-to-end in a browser against the built
+app. Where a criterion has several legs, each leg was exercised.
+
+- [x] **AC-1** Wizard 7.1→7.8 completes with zero dead ends; the skipped-KYB
+  path shows +0.4% and the no-claims-while-unverified rule without blocking.
+- [x] **AC-2** Ownership challenge must pass before the mandate; the config
+  hash registers and displays; "same agent" rename beat works.
+- [x] **AC-3** Attestation off simultaneously (a) adds exactly +0.6%,
+  (b) greys Coverage B with its reason, and (c) resolves the
+  prompt-injection scenario (Scenario Explorer counterfactual toggle **and**
+  a live S-09 claim against an unattested agent) as excluded.
+- [x] **AC-4** Each tier-2 toggle moves the rate by its scheduled points;
+  stacking all of them clamps at 3.0% with the ceiling state shown.
+- [x] **AC-5** Fleet total is the arithmetic sum of per-agent premiums in
+  every state (12 agents · $4,150 seed roll-up); no volume discount.
+- [x] **AC-6** Seeded import crosses 40% at the fifth Helios agent; that
+  agent and every later Helios enrollment carry the frozen +0.1% tag;
+  after **Drop book BELOW 40%**, new enrollments carry no loading while
+  frozen tags persist.
+- [x] **AC-7** Pay blocks with named reasons (no countersignature / tier-1
+  gate off / no payment method); success stamps + displays the effective
+  timestamp; the policy schedule shows both currencies and the rate used.
+- [x] **AC-8** Editing a live mandate shows the delta in both currencies
+  (annualized + pro-rated due-now); the old mandate governs until "Pay
+  difference," visibly labeled; payment closes the old version and
+  re-prices the enrollment on the dashboard.
+- [x] **AC-9** Injected incidents auto-attach ≥6 of 12 evidence items;
+  submission renders the clock timeline; fast-forward advances it; payout
+  = loss − coinsurance − retention (floor 500 N at the displayed price),
+  recomputed from the incident's own parameters.
+- [x] **AC-10** S-24 ends in the polished model-conduct denial with the
+  Coverage-B counterfactual.
+- [x] **AC-11** A reported near-miss lands in the dashboard feed with a
+  renewal-credit tag; the renewal preview reflects it (−0.01%/near-miss).
+- [x] **AC-12** Each suspension trigger flips the agent to Suspended with
+  the cause named; Cure restores Active; other agents unaffected.
+- [x] **AC-13** With verification revoked at event time the claim resolves
+  "Not payable — condition precedent" with a forward-looking verify action;
+  after restore a newly injected event's claim proceeds normally.
+- [x] **AC-14** "Show the math" exposes full arithmetic with clause refs and
+  both currencies on the quote, premiums, re-pricing delta, and claim
+  payout; toggling off hides all expansions; state persists across screens.
+- [x] **AC-15** N price fetched live at session start, refreshed every 60 s,
+  re-fetched before payment, always shown with source + timestamp; outage
+  → "stale" badge with last-known price, all flows still work; presenter
+  pin sets $3.00 exactly.
+- [x] **AC-16** FULL RESET restores the exact seed from any point in any
+  flow, including the unpinned price setting.

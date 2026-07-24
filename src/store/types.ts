@@ -495,6 +495,8 @@ export interface SessionSlice {
 
   // -- enrollments / payments ----------------------------------------------
   addEnrollment: (enrollment: Enrollment) => void;
+  /** Patch the live (non-terminated) enrollment — e.g. re-price after a paid mandate edit (AC-8/AC-14). */
+  updateEnrollment: (agentId: string, patch: Partial<Enrollment>) => void;
   appendPaymentItem: (agentId: string, item: PaymentHistoryItem) => void;
   /** Presenter: mark an installment overdue (unpaid past-due item). */
   markInstallmentOverdue: (agentId: string, at?: Timestamp) => void;

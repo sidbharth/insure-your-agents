@@ -20,10 +20,12 @@ import {
   resetIncidentCounter,
   SCENARIO_IDS,
 } from '../../data/incidents';
+import { WIZARD_AGENT } from '../../data/seed';
 import { testEnrollment, testMandate } from '../../lib/__tests__/fixtures';
 import { adjudicate } from '../../lib/claims';
 import { advance, DAY_MS, phaseFromAnchors } from '../../lib/clocks';
 import { demoNow } from '../../lib/demoClock';
+import { getWizardAgentId, setWizardAgentId } from '../../screens/wizard/wizardAgent';
 import { useStore } from '..';
 import { setPriceFetchFn } from '../priceFeed';
 import type { Incident } from '../types';
@@ -232,5 +234,11 @@ describe('presenter reset (AC-16)', () => {
     expect(
       after.operator.verificationHistory.some((iv) => iv.verified && iv.to === undefined),
     ).toBe(true);
+  });
+
+  it('resets the wizard-local current agent back to the seeded default', () => {
+    setWizardAgentId('legacy-bot');
+    useStore.getState().reset();
+    expect(getWizardAgentId()).toBe(WIZARD_AGENT.id);
   });
 });

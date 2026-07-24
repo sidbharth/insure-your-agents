@@ -63,6 +63,23 @@ describe('7.7 — totals are the exact sum (REQ-7.7.1, AC-5)', () => {
     expect(screen.getByText(/exact sum of 1 per-agent premiums/)).toBeInTheDocument();
   });
 
+  it("auto-enrolls a 'Quoted' wizard agent (post-connect status) on arrival", async () => {
+    // The 7.3 connect flow leaves the wizard agent 'Quoted', not 'Draft' —
+    // Fleet must still enroll it so its row + the $300 total exist (AC-5).
+    useStore.getState().setAgentStatus(WIZARD_AGENT.id, 'Quoted');
+    renderFleet();
+    await waitFor(() =>
+      expect(screen.getByTestId('fleet-total-premium')).toHaveTextContent('$300'),
+    );
+    expect(
+      useStore
+        .getState()
+        .enrollments.some(
+          (e) => e.agentId === WIZARD_AGENT.id && e.terminatedAt === undefined,
+        ),
+    ).toBe(true);
+  });
+
   it('mid-import the total is still the exact running sum', () => {
     prepareImportedAgent(WIZARD_AGENT.id);
     enrollAgent(WIZARD_AGENT.id);
