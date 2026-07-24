@@ -334,7 +334,7 @@ function MandateWizard() {
               <div className="mt-1.5 text-2xs text-faint">
                 The agent can only pay entries on this list. New entries wait
                 through a {mandate.whitelist.coolingHours}h cooling period
-                before they can be paid, the framework's recommended minimum.
+                before they can be paid.
               </div>
             </div>
             <label className="mt-3 flex items-start gap-2 rounded-md border border-line px-3 py-2">
@@ -404,8 +404,8 @@ function MandateWizard() {
             <h2 className="text-md font-semibold text-ink">Principal countersignature</h2>
             <p className="mt-1.5 text-sm text-muted">
               {selfSign
-                ? 'Your organization acts as both Operator and Principal. An authorized officer countersigns the mandate directly through the enrollment flow (Acceptance clause). Cover requires the countersignature (T3.2).'
-                : 'The Principal, whose funds this agent spends, must countersign the mandate. Cover requires the countersignature (framework T3.2).'}
+                ? 'Your organization acts as both Operator and Principal. An authorized officer countersigns the mandate directly through the enrollment flow (Acceptance clause). Cover requires the countersignature.'
+                : 'The Principal, whose funds this agent spends, must countersign the mandate. Cover requires the countersignature.'}
             </p>
             <p className="mt-2 text-xs text-muted" data-testid="s31-note">
               <b>Why the signature matters:</b> {S31_NOTE}
@@ -815,7 +815,7 @@ function MandateEdit({ agentId }: { agentId: string }) {
 
               <p className="mt-3 rounded-md bg-warn-bg px-3 py-2 text-2xs text-warn" data-testid="takes-effect-note">
                 The change takes effect <b>only after payment</b>. Until then
-                the current mandate (v{live.version}) governs cover (T5.2).
+                the current mandate (v{live.version}) governs cover.
               </p>
 
               <div className="mt-3 flex gap-2">

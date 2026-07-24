@@ -34,11 +34,7 @@ export function MathValue({ children, breakdown, className }: MathValueProps) {
             <span className="text-2xs font-bold uppercase tracking-wider text-muted">
               {breakdown.title ?? 'Calculation'}
             </span>
-            {breakdown.clause && (
-              <span className="num whitespace-nowrap text-2xs text-faint">
-                {breakdown.clause}
-              </span>
-            )}
+
           </span>
           {(breakdown.inputs.length > 0 ||
             (breakdown.lines && breakdown.lines.length > 0)) && (
@@ -48,9 +44,7 @@ export function MathValue({ children, breakdown, className }: MathValueProps) {
                   <span className="text-muted">{line.label}</span>
                   <span className="num whitespace-nowrap text-right font-medium text-ink">
                     {line.amount}
-                    {line.clause && (
-                      <span className="ml-1.5 font-normal text-faint">{line.clause}</span>
-                    )}
+
                   </span>
                 </span>
               ))}
@@ -62,9 +56,7 @@ export function MathValue({ children, breakdown, className }: MathValueProps) {
                   <span className="text-muted">{line.label}</span>
                   <span className="num whitespace-nowrap text-right font-medium text-ink">
                     {line.amount}
-                    {line.clause && (
-                      <span className="ml-1.5 font-normal text-faint">{line.clause}</span>
-                    )}
+
                   </span>
                 </span>
               ))}

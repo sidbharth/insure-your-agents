@@ -79,7 +79,7 @@ function DeEnrollMenu({
         Cover for <b>new</b> events ends now. Past events remain claimable.{' '}
         {blocked ? (
           <span data-testid="deenroll-no-refund">
-            No premium is returned: <b>{refund.reason}</b> on this agent (D7 exception).
+            No premium is returned: <b>{refund.reason}</b> on this agent.
           </span>
         ) : (
           <span data-testid="deenroll-refund">

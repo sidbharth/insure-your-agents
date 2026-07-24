@@ -256,7 +256,7 @@ export default function Policies() {
           </span>
           <span>
             <b>Events occurring now cannot be claimed.</b> Complete verification
-            to cover future events. Verification is not retroactive (T3.4).
+            to cover future events. Verification is not retroactive.
           </span>
           <button
             data-testid="dashboard-complete-verification"
@@ -618,7 +618,7 @@ function PolicyRowCard({
         >
           Pending mandate change: {formatUsd(pendingEdit.deltaUsd, { signed: true })} (≈{' '}
           {formatN(pendingEdit.deltaN, { maxFractionDigits: 1 })}) due. The change takes
-          effect after payment. Until then the current mandate governs cover (T5.2).
+          effect after payment. Until then the current mandate governs cover.
         </div>
       )}
 
@@ -745,7 +745,7 @@ function PolicyRowCard({
         </div>
       )}
 
-      {/* de-enroll confirmation (D7 + exception) */}
+      {/* de-enroll confirmation */}
       {deEnrollConfirmOpen && (
         <DeEnrollConfirm
           premiumUsd={enrollment.premiumUsd}
@@ -791,7 +791,7 @@ function DeEnrollConfirm({
       {blocked ? (
         <span data-testid="de-enroll-zero-refund">
           Refund: <b className="num">$0</b>. A claim has been paid or noticed on
-          this agent (D7 exception).
+          this agent.
         </span>
       ) : (
         <span>
@@ -800,7 +800,7 @@ function DeEnrollConfirm({
             {formatUsd(refundUsd)} ≈{' '}
             {formatN(usdToN(refundUsd, usdPerN), { maxFractionDigits: 1 })}
           </b>{' '}
-          (D7).
+         .
         </span>
       )}
       <span className="mt-1.5 flex gap-2">

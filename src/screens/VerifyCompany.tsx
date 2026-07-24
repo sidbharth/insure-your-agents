@@ -95,7 +95,7 @@ export default function VerifyCompany() {
         </h1>
         <p className="mt-2 text-sm text-muted">
           {isPrincipal
-            ? 'Verification identifies you as the enrolled Principal. Claim payments for your losses are made directly to your verified organization (T8.4). This takes about a minute.'
+            ? 'Verification identifies you as the enrolled Principal. Claim payments for your losses are made directly to your verified organization. This takes about a minute.'
             : 'Verification ties the policy to a named legal entity. It enables the programme to pursue recovery on your behalf and stand behind claims. This takes about a minute.'}
         </p>
 

@@ -98,7 +98,7 @@ export default function ProgrammeDashboard() {
             <p className="mt-3 text-xs text-body">
               Agents enrolled before a threshold crossing keep their rate. The
               loading is frozen into each enrollment when it is made and never
-              changes retroactively (5.8.2).
+              changes retroactively.
             </p>
           </div>
         </section>

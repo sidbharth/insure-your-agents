@@ -30,7 +30,7 @@ import { WizardBack, WizardStepper } from './wizard/Stepper';
 type Phase = 'pick' | 'registering' | 'identity' | 'challenging' | 'verified';
 
 const OFF_LIST_TOOLTIP =
-  'A tool not on this list is both uncovered and a configuration breach (D3.4).';
+  'A tool not on this list is both uncovered and a configuration breach.';
 
 function registrationSteps(name: string, toolCount: number) {
   return [

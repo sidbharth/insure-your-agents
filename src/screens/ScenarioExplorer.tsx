@@ -182,8 +182,7 @@ export default function ScenarioExplorer() {
                   Basis for determination
                 </div>
                 <p className="mt-1 text-sm leading-relaxed text-body" data-testid="verdict-reason">
-                  {verdict.reason}{' '}
-                  <span className="text-2xs text-faint">(clause {verdict.clause})</span>
+                  {verdict.reason}
                 </p>
               </div>
               <div className="mt-3 rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-xs text-muted">

@@ -172,21 +172,21 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
                 ? 'Investigation and response costs (Coverage F)'
                 : incident.scenarioId === 'S-03'
                   ? 'Covered quantum: the excess over the mandate cap (Coverage D)'
-                  : `Loss: net assets out (${result.eligibility.clause})`}
+                  : 'Loss: net assets out'}
             </span>
             <span className="num font-mono font-semibold text-ink" data-testid="outcome-loss">
               {formatUsd(math.coveredQuantumUsd, { maxFractionDigits: 2 })}
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-4 text-sm">
-            <span className="text-muted">− Coinsurance (skipped tier-2 controls, 5.5)</span>
+            <span className="text-muted">− Coinsurance (skipped tier-2 controls)</span>
             <span className="num font-mono font-semibold text-ink" data-testid="outcome-coinsurance">
               − {formatUsd(math.coinsuranceUsd, { maxFractionDigits: 2 })}
             </span>
           </div>
           <div className="flex items-baseline justify-between gap-4 text-sm">
             <span className="text-muted">
-              − Retention (after coinsurance, 5.3)
+              − Retention (after coinsurance)
               {math.retentionWaived && (
                 <span className="ml-2 rounded-md border border-good-line bg-good-bg px-1.5 py-0.5 text-2xs font-semibold text-good">
                   waived
@@ -273,7 +273,7 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
           The retention is the deductible every event bears
           {math.retentionWaived ? ' (waived here)' : ''}. Coinsurance applies only where a
           skipped tier-2 control governs the loss: the control was skipped, so the
-          insured shares the loss it would have prevented (5.5).
+          insured shares the loss it would have prevented.
         </Callout>
 
         {paid ? (
@@ -336,11 +336,7 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
     : modelConduct
       ? 'Not covered: model conduct'
       : 'Not covered: Coverage B excluded';
-  const clauseLabel = conditionDenial
-    ? `${DENIAL_CONDITION_PRECEDENT.clause} (condition precedent)`
-    : modelConduct
-      ? '4.9 (model conduct exclusion)'
-      : 'D3.5 (Coverage B exclusion)';
+
 
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[1fr_380px]" data-testid="claim-step-outcome">
@@ -459,8 +455,8 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
             <b className="text-ink">Claims Determination, AgentConnect Insurance</b>
           </p>
           <p className="border-t border-line pt-3 text-2xs text-faint">
-            You may request fast-track review of this determination within 30 days.
-            Reference: {clauseLabel}; Appendix 2 (evidence standard). <SimulatedBadge />
+            You may request a fast-track review of this determination within 30
+            days. <SimulatedBadge />
           </p>
         </div>
       </div>
@@ -479,10 +475,7 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
                 </span>
               </dd>
             </div>
-            <div className="flex justify-between gap-4">
-              <dt className="text-muted">Clause</dt>
-              <dd className="font-mono">{clauseLabel}</dd>
-            </div>
+
             <div className="flex justify-between gap-4">
               <dt className="text-muted">Loss claimed</dt>
               <dd className="num font-mono">{formatUsd(incident.lossGrossUsd)}</dd>

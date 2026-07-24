@@ -160,7 +160,7 @@ describe('AC-8 (read side) — pending mandate edit label', () => {
     const label = screen.getByTestId('pending-edit-label');
     expect(label.textContent).toMatch(/\+\$120/);
     expect(label.textContent).toMatch(/40/);
-    expect(label.textContent).toMatch(/current mandate governs cover \(T5\.2\)/i);
+    expect(label.textContent).toMatch(/current mandate governs cover/i);
   });
 
   it('clearing the pending edit removes the label', () => {
@@ -224,7 +224,7 @@ describe('§9b — de-enroll', () => {
     fireEvent.click(screen.getByTestId('de-enroll'));
     const zero = screen.getByTestId('de-enroll-zero-refund');
     expect(zero.textContent).toMatch(/\$0/);
-    expect(zero.textContent).toMatch(/D7 exception/i);
+    expect(zero.textContent).toMatch(/claim has been paid or noticed/i);
 
     fireEvent.click(screen.getByTestId('de-enroll-confirm-button'));
     expect(screen.getByTestId('de-enroll-note').textContent).toMatch(/\$0/);

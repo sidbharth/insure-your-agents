@@ -158,7 +158,7 @@ describe('7.4 Mandate', () => {
     renderAt('/mandate');
     expect(screen.getByTestId('mandate-continue')).toBeDisabled();
     expect(screen.getByTestId('continue-gate-reason').textContent).toContain(
-      "Cover requires the Principal's countersignature (framework T3.2)",
+      "Cover requires the Principal's countersignature",
     );
     expect(screen.getByTestId('s31-note')).toBeInTheDocument();
 

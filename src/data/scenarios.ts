@@ -103,7 +103,7 @@ export const SCENARIOS: ScenarioDef[] = [
             routeLine:
               'Coverage B would apply, but Coverage B is excluded on this agent.',
             reason:
-              'Without TEE attestation, Coverage B is excluded entirely (rate schedule and D3.5). Absent attested inputs, manipulation cannot be distinguished from an ordinary model error.',
+              'Without TEE attestation, Coverage B is excluded entirely. Absent attested inputs, manipulation cannot be distinguished from an ordinary model error.',
             clause: 'D3.5',
             control:
               'TEE attestation. The 0.6% saved at quote time is what this claim required at proof time.',
@@ -122,7 +122,7 @@ export const SCENARIOS: ScenarioDef[] = [
         headline: `Covered under Coverage D for the ${formatUsd(excess)} excess`,
         routeLine: `Coverage D (guardrail failure) pays the portion the cap module should have blocked: ${formatUsd(S03.lossGrossUsd)} − ${formatUsd(capUsd)} = ${formatUsd(excess)}.`,
         reason:
-          'Coverage D pays the excess a correctly functioning cap module would have blocked, not the gross transfer. The deductible is waived because the module passed its most recent scheduled test (5.3).',
+          'Coverage D pays the excess a correctly functioning cap module would have blocked, not the gross transfer. The deductible is waived because the module passed its most recent scheduled test.',
         clause: 'Coverage D, 5.3',
         control:
           'Scheduled guardrail verification. Passing the most recent test is what waives the deductible on this claim.',
@@ -158,7 +158,7 @@ export const SCENARIOS: ScenarioDef[] = [
       covered: false,
       headline: 'Not covered: model conduct',
       routeLine:
-        'No coverage applies. The model conduct exclusion governs this event (4.9).',
+        'No coverage applies. The model conduct exclusion governs this event.',
       reason:
         'The attested record shows clean inputs and an action within the mandate. The model produced an incorrect result on its own. The policy insures the delegation and the systems that enforce it, not the quality of the model’s output.',
       clause: '4.9',
@@ -176,7 +176,7 @@ export const SCENARIOS: ScenarioDef[] = [
       covered: false,
       headline: 'Not covered: model conduct',
       routeLine:
-        'No coverage applies. Provider uptime is a model conduct and service-level matter (4.9).',
+        'No coverage applies. Provider uptime is a model conduct and service-level matter.',
       reason:
         'A slow or unavailable model is excluded model conduct. Downtime and its consequential fees belong to the service agreement with the provider, not to this policy.',
       clause: '4.9',
@@ -194,9 +194,9 @@ export const SCENARIOS: ScenarioDef[] = [
     verdict: ({ capUsd }) => ({
       covered: false,
       headline: 'Not covered: the countersigned mandate governs',
-      routeLine: `No coverage applies to the excess (S-31). Coverage F covers cleanup and containment, up to ${formatUsd(perEventLimit('F', capUsd))} (15% of the cap).`,
+      routeLine: `No coverage applies to the excess. Coverage F covers cleanup and containment, up to ${formatUsd(perEventLimit('F', capUsd))} (15% of the cap).`,
       reason:
-        'The agent acted within the mandate as countersigned. The countersignature makes the mandate authoritative (S-31), and the policy does not pay for the entry error. Coverage F still covers cleanup and containment.',
+        'The agent acted within the mandate as countersigned. The countersignature makes the mandate authoritative, and the policy does not pay for the entry error. Coverage F still covers cleanup and containment.',
       clause: 'S-31, T3.2',
       control:
         'The countersignature. The Principal’s signature defines the mandate, so an unsigned intention cannot override a signed cap.',

@@ -287,7 +287,7 @@ describe('S-24 model-conduct denial (AC-10)', () => {
     );
     expect(counterfactual).toHaveTextContent(DENIAL_MODEL_CONDUCT.counterfactual);
     expect(screen.getByTestId('determination-summary')).toHaveTextContent(
-      '4.9 (model conduct exclusion)',
+      'Not covered: model conduct',
     );
     expect(screen.getByTestId('determination-summary')).toHaveTextContent('$0 (0 $NEAR)');
   });

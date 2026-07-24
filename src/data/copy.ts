@@ -193,7 +193,7 @@ export const TIER1_DECLINE_COPY = (gateLabel: string) =>
   `The programme declines any agent without ${gateLabel}. Enable the control to restore your quote.`;
 
 export const COUNTERSIGN_GATE_REASON =
-  "Cover requires the Principal's countersignature (framework T3.2).";
+  "Cover requires the Principal's countersignature.";
 
 export const S31_NOTE =
   'If the mandate itself is wrong, for example a cap entered as $500,000 instead of $50,000, the policy does not pay for the error. The countersignature is what makes the mandate authoritative.';
@@ -266,7 +266,7 @@ export const DENIAL_MODEL_CONDUCT = {
     'We reviewed the attested inputs and outputs for this event. They show no adversarial content, no compromised tool, and no spoofed instruction channel: the agent paid a real, whitelisted payee, within its cap, because the model was simply wrong. The policy insures the delegation and its safety machinery, not the model\'s judgment. Model error, downtime, and training quality are excluded model conduct.',
   counterfactual:
     'Had the attested inputs shown crafted adversarial content, this would have been Coverage B.',
-  clause: 'Model Conduct Boundary (4.9)',
+  clause: 'Model Conduct Boundary',
 };
 
 export const DENIAL_CONDITION_PRECEDENT = {

@@ -56,7 +56,7 @@ function LadderRecap({ ladder }: { ladder: RateLine[] }) {
           <div
             key={line.label}
             data-testid="recap-slice"
-            title={`${line.label}: ${formatPct(line.points, { signed: i > 0 })} (${line.clause})`}
+            title={`${line.label}: ${formatPct(line.points, { signed: i > 0 })}`}
             className={`num flex h-full items-center justify-center text-[10.5px] font-bold ${i === 0 ? 'text-[#0b3b28]' : 'text-white'}`}
             style={{
               width: `${(line.points / LADDER_CEILING_PCT) * 100}%`,
@@ -170,15 +170,13 @@ export default function Quote() {
           {loadingLines.length > 0 && (
             <div className="mt-3 space-y-1 border-t border-line-soft pt-2" data-testid="quote-loading-lines">
               <div className="text-2xs font-bold uppercase tracking-wider text-faint">
-                Loadings (applied after the ceiling)
+                Loadings
               </div>
               {loadingLines.map((line) => (
 
                 <div key={line.label} className="flex items-center gap-1.5 text-xs">
                   <span className="h-2 w-2 flex-none rounded-sm border border-warn-line bg-warn-bg" />
-                  <span className="flex-1 text-muted">
-                    {line.label} <span className="text-faint">({line.clause})</span>
-                  </span>
+                  <span className="flex-1 text-muted">{line.label}</span>
                   <b className="num text-warn">{formatPct(line.points, { signed: true })}</b>
                 </div>
               ))}

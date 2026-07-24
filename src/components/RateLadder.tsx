@@ -55,13 +55,14 @@ export function RateLadder({
           >
             3.0% ladder ceiling for skipped controls
           </div>
-          {/* track */}
-          <div className="absolute inset-0 flex flex-col-reverse overflow-hidden rounded-md border border-line-soft bg-[#edf0ee]">
+          {/* track: ladder slices, then loading slices above them. Loadings
+              apply after the ceiling, so they may extend past the dashed line. */}
+          <div className="absolute inset-0 flex flex-col-reverse rounded-md border border-line-soft bg-[#edf0ee]">
             {ladder.map((line, i) => (
               <div
                 key={line.label}
                 data-testid="ladder-slice"
-                title={`${line.label}: ${formatPct(line.points, { signed: i > 0 })} (${line.clause})`}
+                title={`${line.label}: ${formatPct(line.points, { signed: i > 0 })}`}
                 className="num flex items-center justify-center text-2xs font-semibold text-[#0b3b28]"
                 style={{
                   height: Math.max(2, line.points * pxPerPoint),
@@ -69,6 +70,20 @@ export function RateLadder({
                 }}
               >
                 {line.points * pxPerPoint > 14 ? formatPct(line.points, { signed: i > 0 }) : ''}
+              </div>
+            ))}
+            {loadings.map((line) => (
+              <div
+                key={line.label}
+                data-testid="ladder-loading-slice"
+                title={`${line.label}: ${formatPct(line.points, { signed: true })}`}
+                className="num flex items-center justify-center text-2xs font-semibold text-white"
+                style={{
+                  height: Math.max(2, line.points * pxPerPoint),
+                  background: '#d98a1f',
+                }}
+              >
+                {line.points * pxPerPoint > 14 ? formatPct(line.points, { signed: true }) : ''}
               </div>
             ))}
           </div>
@@ -80,18 +95,30 @@ export function RateLadder({
             data-testid="ladder-ceiling-line"
           />
         </div>
-        {/* legend */}
+        {/* legend: mirrors the bar, top slice first */}
         <div className="flex flex-1 flex-col justify-end gap-1.5 text-2xs">
-          {ladder.map((line, i) => (
+          {[...loadings].reverse().map((line) => (
             <div key={line.label} className="flex items-center gap-1.5">
-              <span
-                className="h-2 w-2 flex-none rounded-sm"
-                style={{ background: SLICE_COLORS[Math.min(i, SLICE_COLORS.length - 1)] }}
-              />
+              <span className="h-2 w-2 flex-none rounded-sm" style={{ background: '#d98a1f' }} />
               <span className="flex-1 text-muted">{line.label}</span>
-              <b className="num text-ink">{formatPct(line.points, { signed: i > 0 })}</b>
+              <b className="num text-warn">{formatPct(line.points, { signed: true })}</b>
             </div>
           ))}
+          {[...ladder].reverse().map((line, ri) => {
+            const i = ladder.length - 1 - ri;
+            return (
+              <div key={line.label} className="flex items-center gap-1.5">
+                <span
+                  className="h-2 w-2 flex-none rounded-sm"
+                  style={{ background: SLICE_COLORS[Math.min(i, SLICE_COLORS.length - 1)] }}
+                />
+                <span className="flex-1 text-muted">{line.label}</span>
+                {ladder.length + loadings.length > 1 && (
+                  <b className="num text-ink">{formatPct(line.points, { signed: i > 0 })}</b>
+                )}
+              </div>
+            );
+          })}
           {ceilingReached && (
             <div
               data-testid="ceiling-reached"
@@ -103,27 +130,6 @@ export function RateLadder({
         </div>
       </div>
 
-      {/* post-clamp loadings: separate labeled lines below the ladder */}
-      {loadings.length > 0 && (
-        <div
-          data-testid="ladder-loadings"
-          className="mt-3 space-y-1 border-t border-line-soft pt-2 text-2xs"
-        >
-          <div className="text-2xs font-bold uppercase tracking-wider text-faint">
-            Loadings (applied after the ceiling)
-          </div>
-          {loadings.map((line) => (
-            <div key={line.label} className="flex items-center gap-1.5">
-              <span className="h-2 w-2 flex-none rounded-sm border border-warn-line bg-warn-bg" />
-              <span className="flex-1 text-muted">
-                {line.label}
-                <span className="ml-1 text-faint">({line.clause})</span>
-              </span>
-              <b className="num text-warn">{formatPct(line.points, { signed: true })}</b>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

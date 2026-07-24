@@ -95,8 +95,8 @@ export default function PrincipalReview() {
           <p className="mt-2 text-sm text-muted">
             {operatorName} runs this agent and has taken out the policy. Your
             countersignature confirms that the delegation, its caps, and its
-            autonomy settings are what you intend (D2.5). Without it, no cover
-            attaches to this agent (T3.2).
+            autonomy settings are what you intend. Without it, no cover
+            attaches to this agent.
           </p>
 
           {/* Agent prepared by the Operator */}
@@ -167,12 +167,12 @@ export default function PrincipalReview() {
             <h2 className="text-md font-semibold text-ink">Your position under the policy</h2>
             <ul className="mt-2 space-y-1.5 text-sm text-body">
               <li>
-                You are an insured under this policy, alongside the Operator (T2.2).
+                You are an insured under this policy, alongside the Operator.
               </li>
               <li>
                 Losses to your assets under Coverages A to D and F are paid
                 directly to you at your verified address. That obligation is not
-                affected by the Operator&rsquo;s insolvency (T8.4).
+                affected by the Operator&rsquo;s insolvency.
               </li>
               <li>
                 Liability claims from counterparties are covered jointly with
@@ -218,7 +218,7 @@ export default function PrincipalReview() {
             <p className="mt-3 max-w-2xl text-sm text-body" data-testid="principal-cover-status">
               {coverActive
                 ? 'Cover is active for this agent. Your countersigned mandate is part of the policy schedule.'
-                : 'Your countersignature is recorded. Cover attaches once the Operator completes the safety controls and pays the premium (T2.3).'}
+                : 'Your countersignature is recorded. Cover attaches once the Operator completes the safety controls and pays the premium.'}
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               <Link

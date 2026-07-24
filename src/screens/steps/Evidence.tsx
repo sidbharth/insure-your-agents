@@ -98,7 +98,7 @@ export default function Evidence({ claim, onBack, onNext }: EvidenceProps) {
     <div className="grid items-start gap-4 lg:grid-cols-[1fr_340px]" data-testid="claim-step-evidence">
       <div className="rounded-card border border-line bg-panel p-5 shadow-card">
         <div className="flex items-center justify-between">
-          <h2 className="text-md font-bold text-ink">Evidence package (Appendix 2)</h2>
+          <h2 className="text-md font-bold text-ink">Evidence package</h2>
           <span
             data-testid="evidence-auto-count"
             className="rounded-md border border-accent-line bg-accent-soft px-2 py-0.5 text-2xs font-semibold text-accent-ink"
