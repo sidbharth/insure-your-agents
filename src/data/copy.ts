@@ -213,15 +213,6 @@ export const ADVANCED_PRICING_COPY = [
 // Claims copy
 // ---------------------------------------------------------------------------
 
-export const EVIDENCE_RING_COPY =
-  'The determination clock starts when the package is complete.';
-
-export const SETTLEMENT_CAPTION =
-  'Settled in $NEAR at the day-of-payment rate. Whichever form the insurer elects, the value delivered equals the covered dollar loss.';
-
-export const RECOVERY_WATERFALL_COPY =
-  'Recovered funds repay the insurer first, then your retained slice, then any loss beyond the limits.';
-
 export const INSURER_DELAY_NOTE =
   'Insurer delays do not count against your time limits.';
 
@@ -318,7 +309,7 @@ export const CLAIM_DEMO_COPY = {
   title: 'Claim demo',
   coverTitle: 'Cover is not active for the sample agent',
   coverBody: (agentName: string) =>
-    `A claim pays only if cover was in force when the event happened. Activate simulated cover for ${agentName} to run the demo, or complete the purchase flow first.`,
+    `Activate simulated cover for ${agentName} to run the demo, or complete the purchase flow first.`,
   activate: 'Activate cover',
   activationTitle: 'Activating simulated cover',
   activationSteps: [

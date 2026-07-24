@@ -31,11 +31,11 @@ import { ClaimChrome, claimRef, fmtUtcDateLong, STEP_LABELS } from './steps/shar
 // ---------------------------------------------------------------------------
 
 const PROCESS_MAP: { label: string; note: string }[] = [
-  { label: 'Notify', note: 'within 48h of discovery' },
-  { label: 'Contain', note: 'immediate and unconditional' },
-  { label: 'Evidence', note: '12-item package, mostly auto' },
+  { label: 'Notify', note: 'within 48 hours of discovery' },
+  { label: 'Contain', note: 'kill switch, freeze, rotation, imaging' },
+  { label: 'Evidence', note: 'twelve item package' },
   { label: 'Clocks & decision', note: 'published deadlines' },
-  { label: 'Outcome', note: 'payment or a reasoned denial' },
+  { label: 'Outcome', note: 'payment or denial' },
 ];
 
 function EmptyState() {

@@ -59,8 +59,7 @@ export default function Notify({ claim, incident, onNext }: NotifyProps) {
               {fmtUtcDateTime(incident.discoveredAt)}
             </div>
             <p className="mt-1.5 text-2xs text-faint">
-              Set from the first anomaly alert. Discovery is measured from when
-              any responsible party knew, or should have known from an alert.
+              Set from the first anomaly alert.
             </p>
           </div>
           <div>
@@ -74,8 +73,8 @@ export default function Notify({ claim, incident, onNext }: NotifyProps) {
             </div>
             <p className="mt-1.5 text-2xs text-faint">
               {incident.lossTxRefs.length > 0
-                ? 'Auto-linked from your action log. Sets the 4-hour valuation window.'
-                : `Near-miss: the blocked attempt cost ${formatUsd(incident.investigationCostUsd ?? 0)} to investigate.`}
+                ? 'Auto-linked from your action log.'
+                : `Investigation costs of ${formatUsd(incident.investigationCostUsd ?? 0)} recorded for the blocked attempt.`}
             </p>
           </div>
         </div>

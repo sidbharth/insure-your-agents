@@ -14,7 +14,6 @@ import {
   attachedItems,
   packageComplete,
 } from '../../data/incidents';
-import { EVIDENCE_RING_COPY } from '../../data/copy';
 import { phaseFromAnchors } from '../../lib/clocks';
 import { demoNow } from '../../lib/demoClock';
 import { useStore } from '../../store';
@@ -211,7 +210,6 @@ export default function Evidence({ claim, onBack, onNext }: EvidenceProps) {
             <b className="text-ink">
               {attached.length} of {applicable.length} attached
             </b>
-            . {EVIDENCE_RING_COPY}
           </p>
         </div>
       </div>

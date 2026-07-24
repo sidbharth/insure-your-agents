@@ -217,11 +217,7 @@ export default function ClocksAndDecision({ claim, incident, onBack, onNext }: C
                 })}
               </div>
 
-              <div className="mt-6 flex items-center justify-between border-t border-line pt-3 text-xs text-muted">
-                <span>
-                  <b className="text-ink">Whose clock:</b> notification is yours; everything
-                  after is the insurer&rsquo;s.
-                </span>
+              <div className="mt-6 flex items-center justify-end border-t border-line pt-3 text-xs text-muted">
                 <span
                   data-testid="insurer-delay-note"
                   className={

@@ -20,8 +20,6 @@ import {
   APPEAL_COPY,
   DENIAL_CONDITION_PRECEDENT,
   DENIAL_MODEL_CONDUCT,
-  RECOVERY_WATERFALL_COPY,
-  SETTLEMENT_CAPTION,
 } from '../../data/copy';
 import { buildAdjudicationInput, SCENARIOS } from '../../data/incidents';
 import { adjudicate, recoveryWaterfall } from '../../lib/claims';
@@ -219,7 +217,6 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
             </div>
           </div>
 
-          <p className="border-t border-line pt-3 text-xs text-muted">{SETTLEMENT_CAPTION}</p>
         </div>
       </div>
 
@@ -232,7 +229,6 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
                 {formatUsd(waterfall.recoveredUsd)} recovered by tracing
               </span>
             </div>
-            <p className="mt-1.5 text-xs text-muted">{RECOVERY_WATERFALL_COPY}</p>
             <ul className="mt-3 space-y-2 text-xs">
               <li className="flex items-center justify-between rounded-lg border border-line bg-[#fafbfa] px-3 py-2">
                 <span>
@@ -405,9 +401,7 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
                 data-testid="coverage-b-counterfactual"
                 className="rounded-lg border border-[#b2f0d6] bg-[#e4fbf1] px-4 py-3 text-xs text-[#0b7a52]"
               >
-                <b>The counterfactual:</b>{' '}
-                {DENIAL_MODEL_CONDUCT.counterfactual} Fooled by an attacker is covered and
-                provable; simply wrong is not this policy.
+                {DENIAL_MODEL_CONDUCT.counterfactual}
               </div>
               <p>
                 This determination does not affect your policy&rsquo;s standing, your
@@ -432,9 +426,7 @@ function DenialLetter({ claim, incident, result, conditionDenial, determinedAt, 
                 excluded case of the model simply being wrong.
               </p>
               <div className="rounded-lg border border-[#b2f0d6] bg-[#e4fbf1] px-4 py-3 text-xs text-[#0b7a52]">
-                <b>The forward-looking fix:</b> enabling TEE attestation restores
-                Coverage B for future events. Attestation is what makes manipulation
-                provable.
+                Enabling TEE attestation restores Coverage B for future events.
               </div>
             </>
           )}
