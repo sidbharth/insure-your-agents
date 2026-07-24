@@ -47,6 +47,8 @@ interface ImportState {
   index: number;
   /** Name of the agent whose enrollment crossed the 40% threshold. */
   crossedAt?: string;
+  /** resetGeneration when the sweep started — a reset abandons the sweep. */
+  generation: number;
 }
 
 function DeEnrollMenu({
@@ -177,7 +179,7 @@ export default function Fleet() {
   const startImport = () => {
     const specs = remainingImportSpecs(useStore.getState());
     if (specs.length === 0) return;
-    setImporting({ specs, index: 0 });
+    setImporting({ specs, index: 0, generation: useStore.getState().resetGeneration });
   };
 
   // LatencyTheater re-reads onDone through a ref each render, so this closure
@@ -185,6 +187,12 @@ export default function Fleet() {
   // the setState updater (updaters must stay pure).
   const onAgentImported = () => {
     if (!importing || importing.index >= importing.specs.length) return;
+    // A presenter reset while the sweep's latency theater ran must abandon
+    // the sweep — enrolling now would repopulate a freshly reset store.
+    if (useStore.getState().resetGeneration !== importing.generation) {
+      setImporting(null);
+      return;
+    }
     const spec = importing.specs[importing.index];
     prepareImportedAgent(spec.id);
     const outcome = enrollAgent(spec.id);

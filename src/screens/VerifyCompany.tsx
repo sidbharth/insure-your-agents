@@ -59,7 +59,15 @@ export default function VerifyCompany() {
     setPhase('verified');
   };
   const continueUnverified = () => {
-    if (verifiedNow) revokeVerification();
+    if (verifiedNow) {
+      revokeVerification();
+      // Verification withdrawn is a suspension trigger (REQ-7.9.1): any agent
+      // already Active loses its condition precedent from this moment on.
+      const s = useStore.getState();
+      for (const a of s.agents) {
+        if (a.status === 'Active') s.suspendAgent(a.id, 'verification withdrawn');
+      }
+    }
     navigate('/connect');
   };
 

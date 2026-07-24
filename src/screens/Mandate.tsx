@@ -36,7 +36,7 @@ import {
 import { SEED_PRINCIPAL_NAME } from '../data/seed';
 import { demoNow } from '../lib/demoClock';
 import { formatN, formatUsd, usdToN } from '../lib/money';
-import { executePayment } from '../lib/payments';
+import { executePayment, PaymentAbortedError } from '../lib/payments';
 import { priceAgent, repriceDelta } from '../lib/pricing';
 import { useStore } from '../store';
 import type { ActionFamilies, Mandate as MandateType } from '../store/types';
@@ -512,7 +512,7 @@ function MandateEdit({ agentId }: { agentId: string }) {
   const updateEnrollment = useStore((s) => s.updateEnrollment);
   const verificationHistory = useStore((s) => s.operator.verificationHistory);
   const usdPerN = useStore((s) => s.priceFeed.usdPerN);
-  useStore((s) => s.presenter.timeOffsetMs);
+  const timeOffsetMs = useStore((s) => s.presenter.timeOffsetMs);
 
   const live = versions?.[versions.length - 1];
   const [draft, setDraft] = useState<MandateType | null>(() =>
@@ -540,7 +540,9 @@ function MandateEdit({ agentId }: { agentId: string }) {
       now,
       renewalAt,
     );
-  }, [agent, live, draft, enrollment, operatorVerified]);
+    // timeOffsetMs: demoNow() reads the presenter clock — a fast-forward must
+    // recompute the pro-rated delta, not display a stale one.
+  }, [agent, live, draft, enrollment, operatorVerified, timeOffsetMs]);
 
   if (!agent || !live || !draft) {
     return (
@@ -556,7 +558,16 @@ function MandateEdit({ agentId }: { agentId: string }) {
   const newPremium = newAnnual.kind === 'quoted' ? newAnnual.premiumUsd : 0;
   const annualDiff = newPremium - oldPremium;
 
-  const patchDraft = (fn: (m: MandateType) => MandateType) => setDraft((d) => (d ? fn(d) : d));
+  // Editing the draft AFTER a save invalidates the saved pending edit — the
+  // sheet closes and the stored edit clears, so the payment/commit path can
+  // never charge for one mandate while a diverged draft goes in force.
+  const patchDraft = (fn: (m: MandateType) => MandateType) => {
+    if (sheetOpen || pendingEdit !== undefined) {
+      clearPendingEdit(agentId);
+      setSheetOpen(false);
+    }
+    setDraft((d) => (d ? fn(d) : d));
+  };
 
   const saveAndReprice = () => {
     if (!delta) return;
@@ -569,34 +580,57 @@ function MandateEdit({ agentId }: { agentId: string }) {
   };
 
   const payDifference = async () => {
-    if (!delta) return;
+    // Payment, commit and re-price all consume the SAME immutable stored
+    // pending edit — never the local draft, which could have diverged.
+    const stored = useStore.getState().pendingEdits[agentId];
+    if (!stored || !agent || !live) return;
     setPaying(true);
-    // Refetch-first payment through the centralized helper (§7a), then the
-    // separate store transition closes old inForceTo and applies the draft.
-    const closedVersion = live.version;
-    await executePayment('delta', delta.deltaUsd, { agentIds: [agentId] });
-    commitMandateEdit(agentId);
-    // Re-price the live enrollment so the dashboard row shows the new
-    // premium/version — the frozen concentration loading is preserved.
-    const hadConcentration =
-      enrollment?.loadings.some((l) =>
-        l.label.toLowerCase().includes('concentration'),
-      ) ?? false;
-    const repriced = priceAgent(
-      buildPricingInput(agent, draft, operatorVerified, {
-        concentrationLoading: hadConcentration,
-      }),
-    );
-    if (repriced.kind === 'quoted') {
-      updateEnrollment(agentId, {
-        mandateVersion: draft.version,
-        rateBreakdown: repriced.breakdown.filter((l) => l.group === 'ladder'),
-        loadings: repriced.breakdown.filter((l) => l.group === 'loading'),
-        premiumUsd: repriced.premiumUsd,
-      });
+    const gen = useStore.getState().resetGeneration;
+    try {
+      // Recompute the pro-rated delta at PAY time from demoNow() — a
+      // fast-forward between save and pay changes the remaining term.
+      const now = demoNow();
+      const payDelta = repriceDelta(
+        buildPricingInput(agent, live, operatorVerified),
+        buildPricingInput(agent, stored.draft, operatorVerified),
+        now,
+        enrollment?.renewalAt ?? now + 365 * DAY_MS,
+      );
+      // Refetch-first payment through the centralized helper (§7a), then the
+      // separate store transition closes old inForceTo and applies the draft.
+      const closedVersion = live.version;
+      await executePayment(
+        'delta',
+        payDelta.deltaUsd,
+        { agentIds: [agentId] },
+        { stale: () => useStore.getState().resetGeneration !== gen },
+      );
+      commitMandateEdit(agentId);
+      // Re-price the live enrollment so the dashboard row shows the new
+      // premium/version — the frozen concentration loading is preserved.
+      const hadConcentration =
+        enrollment?.loadings.some((l) =>
+          l.label.toLowerCase().includes('concentration'),
+        ) ?? false;
+      const repriced = priceAgent(
+        buildPricingInput(agent, stored.draft, operatorVerified, {
+          concentrationLoading: hadConcentration,
+        }),
+      );
+      if (repriced.kind === 'quoted') {
+        updateEnrollment(agentId, {
+          mandateVersion: stored.draft.version,
+          rateBreakdown: repriced.breakdown.filter((l) => l.group === 'ladder'),
+          loadings: repriced.breakdown.filter((l) => l.group === 'loading'),
+          premiumUsd: repriced.premiumUsd,
+        });
+      }
+      setPaid({ closedVersion });
+    } catch (err) {
+      if (!(err instanceof PaymentAbortedError)) throw err;
+    } finally {
+      setPaying(false);
     }
-    setPaying(false);
-    setPaid({ closedVersion });
   };
 
   const discard = () => {

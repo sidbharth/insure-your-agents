@@ -481,7 +481,12 @@ export interface SessionSlice {
   /** Cure: open a new interval for the gate. */
   cureGate: (agentId: string, gate: Tier1Gate, at?: Timestamp) => void;
   suspendAgent: (agentId: string, reason: string, at?: Timestamp) => void;
-  unsuspendAgent: (agentId: string, at?: Timestamp) => void;
+  /**
+   * Cause-specific cure: closes only open suspension intervals with the given
+   * reason (all open ones when reason is omitted); the agent derives Active
+   * only when no open suspension remains.
+   */
+  unsuspendAgent: (agentId: string, at?: Timestamp, reason?: string) => void;
   deEnrollAgent: (agentId: string, at?: Timestamp) => void;
 
   // -- mandates -------------------------------------------------------------
@@ -500,6 +505,15 @@ export interface SessionSlice {
   appendPaymentItem: (agentId: string, item: PaymentHistoryItem) => void;
   /** Presenter: mark an installment overdue (unpaid past-due item). */
   markInstallmentOverdue: (agentId: string, at?: Timestamp) => void;
+  /**
+   * Cure: settle any still-unpaid payment-history items by stamping paidAt.
+   * Without this, curing a premium-overdue suspension only closes the
+   * suspension interval — premiumCurrentAt still evaluates the stale unpaid
+   * item and would fail any later claim's conditions precedent forever.
+   */
+  payOverdueInstallments: (agentId: string, at?: Timestamp) => void;
+  /** Stamp the chosen payment plan on live enrollments before paying. */
+  setPaymentPlan: (agentIds: string[], plan: 'annual' | 'quarterly') => void;
   /**
    * Activation transition after an initial-payment receipt: flips agents to
    * Active, stamps effectiveAt + conversionRateAtPayment, opens gate/mandate
@@ -567,6 +581,13 @@ export interface RootActions {
    * is `pinned: false` (plan §6, AC-16). A presenter pin never survives reset.
    */
   reset: () => void;
+  /**
+   * Monotonic token bumped by every reset(). Async workflows (in-flight
+   * payments, import sweeps, latency theater) capture it when they start and
+   * abandon their side effects if it changed — a stale callback must never
+   * mutate a freshly reset store (AC-16).
+   */
+  resetGeneration: number;
 }
 
 export type RootState = PriceFeedSlice &

@@ -132,31 +132,59 @@ export function registerPaymentPorts(p: PaymentPorts): void {
   ports = p;
 }
 
+/** Thrown when a payment is abandoned before any money moves (e.g. reset). */
+export class PaymentAbortedError extends Error {
+  constructor(reason: string) {
+    super(`payment aborted: ${reason}`);
+    this.name = 'PaymentAbortedError';
+  }
+}
+
+export interface PaymentOptions {
+  /**
+   * Checked after the refetch, before anything is recorded: return true to
+   * abandon the payment (throws PaymentAbortedError). Used by the reset
+   * generation token so an in-flight payment never debits a fresh seed.
+   */
+  stale?: () => boolean;
+}
+
 /**
  * Execute a payment: re-fetch the price first, record the payment history
  * item, return the receipt. Never activates anything itself — activation is
  * a separate store transition (`session.activateEnrollments(receipt)`).
+ *
+ * `amountUsd` may be a function of the post-refetch rate — claim settlements
+ * use this because retention (max(500 N × rate, 2% × loss)) makes the dollar
+ * amount itself rate-dependent, and the amount transferred must be the one
+ * computed AFTER the refetch.
  */
 export async function executePayment(
   kind: PaymentKind,
-  amountUsd: number,
+  amountUsd: number | ((rateUsed: number) => number),
   targets: PaymentTargets,
+  opts: PaymentOptions = {},
 ): Promise<PaymentReceipt> {
   if (ports === undefined) {
     throw new Error('payments: registerPaymentPorts() has not been called');
   }
   // 1. Re-fetch the price before ANY payment action (REQ-6.2).
   await ports.refetchNow();
+  if (opts.stale?.()) {
+    throw new PaymentAbortedError('state was reset while the payment was in flight');
+  }
 
   // 2. Convert at the post-refetch rate and record.
   const rateUsed = ports.getUsdPerN();
   const paidAt = ports.now();
+  const resolvedUsd =
+    typeof amountUsd === 'function' ? amountUsd(rateUsed) : amountUsd;
   const receipt: PaymentReceipt = {
     kind,
     rateUsed,
     paidAt,
-    amountUsd,
-    amountN: amountUsd / rateUsed,
+    amountUsd: resolvedUsd,
+    amountN: resolvedUsd / rateUsed,
     targets,
   };
   ports.recordPayment(receipt);

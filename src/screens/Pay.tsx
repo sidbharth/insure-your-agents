@@ -12,7 +12,7 @@
  * session.activateEnrollments transition → activation ceremony → "View your
  * policy schedule" opens the Enrollment record itself (REQ-7.8.2).
  */
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LatencyTheater } from '../components/LatencyTheater';
 import { MathValue } from '../components/MathValue';
@@ -38,6 +38,7 @@ import {
 } from '../lib/money';
 import {
   executePayment,
+  PaymentAbortedError,
   paymentPreflight,
   type NamedBlocker,
   type PaymentReceipt,
@@ -55,7 +56,7 @@ import {
   latestMandate,
 } from './purchase/enroll';
 
-type Phase = 'summary' | 'paying' | 'activated';
+type Phase = 'summary' | 'paying';
 
 /** Build the narrow preflight view from live store state (plan §7a). */
 export function buildPreflightView(
@@ -171,9 +172,15 @@ export default function Pay() {
   const [phase, setPhase] = useState<Phase>('summary');
   const [blockers, setBlockers] = useState<NamedBlocker[]>([]);
   const [receipt, setReceipt] = useState<PaymentReceipt | null>(null);
+  const [ceremonyDone, setCeremonyDone] = useState(false);
   const [scheduleFor, setScheduleFor] = useState<string | null>(null);
+  // In-flight guard independent of rendering state: a second click can never
+  // start a second charge even if the summary re-renders mid-payment.
+  const inFlightRef = useRef(false);
 
-  const enrollments = activeEnrollments(state);
+  // Only enrollments still awaiting their initial payment belong on Pay —
+  // already-Active agents (effectiveAt stamped) must not be chargeable again.
+  const enrollments = activeEnrollments(state).filter((e) => e.effectiveAt === 0);
   const rows = enrollments
     .map((e) => ({ enrollment: e, agent: state.agents.find((a) => a.id === e.agentId) }))
     .filter((r): r is { enrollment: Enrollment; agent: Agent } => r.agent !== undefined);
@@ -182,23 +189,31 @@ export default function Pay() {
   const totalCaps = enrollments.reduce((sum, e) => sum + capUsdFor(state, e.agentId), 0);
   const dueN = usdToN(totalUsd, usdPerN);
   const agentIds = rows.map((r) => r.agent.id);
+  // Quarterly charges one quarter today; the other three become scheduled
+  // installments on the enrollment (created at activation).
+  const dueTodayUsd = plan === 'quarterly' ? totalUsd / 4 : totalUsd;
+  const dueTodayN = plan === 'quarterly' ? dueN / 4 : dueN;
 
   const dueBreakdown: MathBreakdown = {
     title: 'Due today',
     inputs: [
       { label: 'Total annual premium', amount: formatUsd(totalUsd), clause: 'Appendix 3' },
+      ...(plan === 'quarterly'
+        ? [{ label: 'Quarterly plan', amount: `first of 4 installments = ${formatUsd(dueTodayUsd)}` }]
+        : []),
       {
         label: 'N reference price',
         amount: `1 N = $${usdPerN.toFixed(2)} (${feed.pinned ? 'pinned' : feed.stale ? 'stale' : 'live'} · ${formatClockTime(feed.fetchedAt)})`,
       },
     ],
-    formula: `${formatUsd(totalUsd)} ÷ $${usdPerN.toFixed(2)} = ${formatN(dueN, { maxFractionDigits: 2 })} due today`,
+    formula: `${formatUsd(dueTodayUsd)} ÷ $${usdPerN.toFixed(2)} = ${formatN(dueTodayN, { maxFractionDigits: 2 })} due today`,
     clause: 'T5.1',
-    resultUsd: totalUsd,
+    resultUsd: dueTodayUsd,
     rateUsed: usdPerN,
   };
 
   const onPay = () => {
+    if (inFlightRef.current) return; // one charge per click, ever
     const view = buildPreflightView(useStore.getState(), agentIds, methodSelected);
     const pre = paymentPreflight(view, 'initial-premium');
     if (!pre.ok) {
@@ -206,20 +221,43 @@ export default function Pay() {
       return;
     }
     setBlockers([]);
+    inFlightRef.current = true;
     setPhase('paying');
+    const gen = useStore.getState().resetGeneration;
+    // Stamp the chosen plan BEFORE paying so the recorded initial item and
+    // the activation transition both see it (quarterly = one quarter now).
+    useStore.getState().setPaymentPlan(agentIds, plan);
     // executePayment re-fetches the price INSIDE (REQ-6.2), records the
     // payment, and returns the receipt; activation is the separate
     // session transition below (plan §7a).
-    void executePayment('initial', totalUsd, { agentIds }).then((r) => {
-      useStore.getState().activateEnrollments(r);
-      setReceipt(r);
-    });
+    void executePayment(
+      'initial',
+      dueTodayUsd,
+      { agentIds },
+      { stale: () => useStore.getState().resetGeneration !== gen },
+    )
+      .then((r) => {
+        useStore.getState().activateEnrollments(r);
+        setReceipt(r);
+      })
+      .catch((err: unknown) => {
+        inFlightRef.current = false;
+        if (err instanceof PaymentAbortedError) {
+          setPhase('summary'); // reset raced the payment — nothing moved
+          return;
+        }
+        throw err;
+      });
   };
 
-  if (phase === 'activated' && receipt) {
+  // Activated ONLY once BOTH the receipt has landed and the latency ceremony
+  // finished — a fast ceremony with a slow receipt must never fall back to a
+  // summary with a live Pay button (double-payment risk).
+  if (receipt && ceremonyDone) {
+    const paidAgentIds = receipt.targets.agentIds ?? [];
     const activatedRows = useStore
       .getState()
-      .enrollments.filter((e) => agentIds.includes(e.agentId))
+      .enrollments.filter((e) => paidAgentIds.includes(e.agentId) && e.terminatedAt === undefined)
       .map((e) => ({
         enrollment: e,
         agent: useStore.getState().agents.find((a) => a.id === e.agentId),
@@ -243,7 +281,7 @@ export default function Pay() {
             <button
               data-testid="view-policy-schedule"
               className="rounded-md bg-accent px-4 py-2 text-xs font-semibold text-white"
-              onClick={() => setScheduleFor(agentIds[0])}
+              onClick={() => setScheduleFor(paidAgentIds[0])}
             >
               View your policy schedule
             </button>
@@ -312,7 +350,7 @@ export default function Pay() {
             { label: 'Recording premium at today\u2019s reference rate…' },
             { label: 'Binding enrollment…' },
           ]}
-          onDone={() => setPhase('activated')}
+          onDone={() => setCeremonyDone(true)}
         />
       </div>
     );
@@ -407,9 +445,10 @@ export default function Pay() {
             <div className="text-2xs font-bold uppercase tracking-widest text-faint">Due today</div>
             <div className="num mt-1 text-xl font-bold text-ink">
               <MathValue breakdown={dueBreakdown}>
-                {formatN(dueN, { maxFractionDigits: 0 })}{' '}
+                {formatN(dueTodayN, { maxFractionDigits: 0 })}{' '}
                 <span className="text-md font-semibold text-muted">
-                  (≈ {formatUsd(totalUsd)} at <PriceChipInline />)
+                  (≈ {formatUsd(dueTodayUsd)} at <PriceChipInline />)
+                  {plan === 'quarterly' && ' — first of 4 installments'}
                 </span>
               </MathValue>
             </div>

@@ -157,13 +157,25 @@ export const createSessionSlice: StateCreator<RootState, [], [], SessionSlice> =
         })),
       })),
 
-    unsuspendAgent: (agentId, at = demoNow()) =>
+    unsuspendAgent: (agentId, at = demoNow(), reason?: string) =>
       set((s) => ({
-        agents: updateAgent(s.agents, agentId, (a) => ({
-          ...a,
-          status: 'Active',
-          suspensionHistory: closeOpenInterval(a.suspensionHistory, at),
-        })),
+        agents: updateAgent(s.agents, agentId, (a) => {
+          // Cause-specific cure: close only the matching-reason suspension
+          // intervals (all open ones when no reason is given), and derive
+          // Active only when NO open trigger remains — curing one cause must
+          // never mask another still-open suspension (REQ-7.9.1).
+          const suspensionHistory = a.suspensionHistory.map((iv) =>
+            iv.to === undefined && (reason === undefined || iv.reason === reason)
+              ? { ...iv, to: at }
+              : iv,
+          );
+          const stillSuspended = suspensionHistory.some((iv) => iv.to === undefined);
+          return {
+            ...a,
+            status: stillSuspended ? a.status : 'Active',
+            suspensionHistory,
+          };
+        }),
       })),
 
     deEnrollAgent: (agentId, at = demoNow()) =>
@@ -278,6 +290,33 @@ export const createSessionSlice: StateCreator<RootState, [], [], SessionSlice> =
         ),
       })),
 
+    payOverdueInstallments: (agentId, at = demoNow()) =>
+      set((s) => ({
+        enrollments: s.enrollments.map((e) =>
+          e.agentId === agentId
+            ? {
+                ...e,
+                // Settle only items already due — future scheduled quarterly
+                // installments stay open until their own dueAt.
+                paymentHistory: e.paymentHistory.map((item) =>
+                  item.paidAt === undefined && item.dueAt <= at
+                    ? { ...item, paidAt: at }
+                    : item,
+                ),
+              }
+            : e,
+        ),
+      })),
+
+    setPaymentPlan: (agentIds, plan) =>
+      set((s) => ({
+        enrollments: s.enrollments.map((e) =>
+          agentIds.includes(e.agentId) && e.terminatedAt === undefined
+            ? { ...e, paymentPlan: plan }
+            : e,
+        ),
+      })),
+
     activateEnrollments: (receipt) => {
       const at = receipt.paidAt;
       const agentIds = receipt.targets.agentIds ?? [];
@@ -285,16 +324,34 @@ export const createSessionSlice: StateCreator<RootState, [], [], SessionSlice> =
         agents: s.agents.map((a) =>
           agentIds.includes(a.id) ? { ...a, status: 'Active' as const } : a,
         ),
-        enrollments: s.enrollments.map((e) =>
-          agentIds.includes(e.agentId)
-            ? {
-                ...e,
-                effectiveAt: at,
-                renewalAt: at + YEAR_MS,
-                conversionRateAtPayment: receipt.rateUsed,
-              }
-            : e,
-        ),
+        enrollments: s.enrollments.map((e) => {
+          // Idempotent: an enrollment already activated by a previous initial
+          // payment is never re-anchored (its effectiveAt/renewalAt stand).
+          if (!agentIds.includes(e.agentId) || e.effectiveAt !== 0) return e;
+          // Quarterly plan: the first installment was charged today (recorded
+          // by the payment port); the remaining three become due items with
+          // future dueAt so the >15-days-overdue rule works on them naturally.
+          const futureInstallments =
+            e.paymentPlan === 'quarterly'
+              ? [1, 2, 3].map((q) => ({
+                  kind: 'installment' as const,
+                  dueAt: at + Math.round((q * YEAR_MS) / 4),
+                  amountUsd: e.premiumUsd / 4,
+                  amountN: e.premiumUsd / 4 / receipt.rateUsed,
+                  rateUsed: receipt.rateUsed,
+                }))
+              : [];
+          return {
+            ...e,
+            effectiveAt: at,
+            renewalAt: at + YEAR_MS,
+            conversionRateAtPayment: receipt.rateUsed,
+            // Fix: settledN comes from the rate ACTUALLY paid at (the
+            // receipt), not the quote-time feed value.
+            settledN: e.premiumUsd / receipt.rateUsed,
+            paymentHistory: [...e.paymentHistory, ...futureInstallments],
+          };
+        }),
         mandates: Object.fromEntries(
           Object.entries(s.mandates).map(([agentId, versions]) => [
             agentId,

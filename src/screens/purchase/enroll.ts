@@ -19,6 +19,7 @@ import {
   type SeedAgentSpec,
 } from '../../data/seed';
 import { enroll as bookEnroll } from '../../lib/concentration';
+import { verificationCurrentAt } from '../../lib/conditions';
 import { demoNow } from '../../lib/demoClock';
 import { configHash } from '../../lib/hash';
 import { priceAgent, type PricingInput } from '../../lib/pricing';
@@ -51,16 +52,29 @@ export function capUsdFor(state: RootState, agentId: string): number {
   return latestMandate(state, agentId)?.caps.perTx ?? SEED_CAP_USD;
 }
 
-/** Build the frozen pricing input from live agent + mandate state. */
+/**
+ * Build the frozen pricing input from live agent + mandate state. The KYB
+ * tier-2 control mirrors the operator's verification interval at demo-now
+ * (same semantics as the wizard's buildPricingInput, plan §8/7.5): an
+ * unverified operator prices as KYB-skipped (+0.4%) no matter the agent flag.
+ */
 export function pricingInputFor(
+  state: RootState,
   agent: Agent,
   mandate: Mandate | undefined,
   concentrationLoading: boolean,
 ): PricingInput {
+  const operatorVerified = verificationCurrentAt(
+    state.operator.verificationHistory,
+    demoNow(),
+  );
   return {
     capUsd: mandate?.caps.perTx ?? SEED_CAP_USD,
     tier1: { ...agent.controls.tier1 },
-    tier2: { ...agent.controls.tier2 },
+    tier2: {
+      ...agent.controls.tier2,
+      kyb: agent.controls.tier2.kyb && operatorVerified,
+    },
     openSet: mandate?.whitelist.openSet ?? false,
     concentrationLoading,
   };
@@ -150,7 +164,7 @@ export function enrollAgent(agentId: string): EnrollOutcome {
   // Atomic prospective-book decision (plan §4b): the loading is decided as if
   // this enrollment were already on the book, then the book commits.
   const decision = bookEnroll(s.book, component, capUsd);
-  const priced = priceAgent(pricingInputFor(agent, mandate, decision.loadingApplied));
+  const priced = priceAgent(pricingInputFor(s, agent, mandate, decision.loadingApplied));
 
   if (priced.kind === 'declined') {
     s.setAgentStatus(agentId, 'Declined');

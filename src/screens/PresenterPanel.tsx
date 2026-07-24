@@ -83,6 +83,7 @@ export default function PresenterPanel() {
   const suspendAgent = useStore((s) => s.suspendAgent);
   const unsuspendAgent = useStore((s) => s.unsuspendAgent);
   const markInstallmentOverdue = useStore((s) => s.markInstallmentOverdue);
+  const payOverdueInstallments = useStore((s) => s.payOverdueInstallments);
   const setBookComponentCaps = useStore((s) => s.setBookComponentCaps);
   const setClockState = useStore((s) => s.setClockState);
   const reset = useStore((s) => s.reset);
@@ -162,8 +163,10 @@ export default function PresenterPanel() {
   const toggleLoggingLapse = () => {
     if (target === undefined) return;
     if (loggingTripped) {
+      // Cause-specific cure: reopen the gate (the underlying condition), then
+      // close only this reason's suspension interval.
       cureGate(target.id, 'actionLogging');
-      unsuspendAgent(target.id);
+      unsuspendAgent(target.id, undefined, 'tier-1 logging lapse');
     } else {
       tripGate(target.id, 'actionLogging');
       suspendAgent(target.id, 'tier-1 logging lapse');
@@ -172,17 +175,41 @@ export default function PresenterPanel() {
 
   const toggleHashMismatch = () => {
     if (target === undefined) return;
-    if (hashSuspended) unsuspendAgent(target.id);
+    if (hashSuspended) unsuspendAgent(target.id, undefined, 'configuration hash mismatch');
     else suspendAgent(target.id, 'configuration hash mismatch');
   };
 
   const togglePremiumOverdue = () => {
     if (target === undefined) return;
     if (premiumSuspended) {
-      unsuspendAgent(target.id);
+      // Settle the unpaid item (the underlying condition), then close only
+      // this reason's suspension interval.
+      payOverdueInstallments(target.id);
+      unsuspendAgent(target.id, undefined, 'premium >15 days overdue');
     } else {
       markInstallmentOverdue(target.id);
       suspendAgent(target.id, 'premium >15 days overdue');
+    }
+  };
+
+  /**
+   * REQ-7.9.1: verification withdrawn is a suspension trigger. Revoking the
+   * operator's verified status closes the verification interval AND opens a
+   * per-agent suspension on every Active agent; restore verifies again and
+   * closes only those 'verification withdrawn' intervals.
+   */
+  const revokeAndSuspend = () => {
+    revokeVerification();
+    for (const a of useStore.getState().agents) {
+      if (a.status === 'Active') suspendAgent(a.id, 'verification withdrawn');
+    }
+  };
+  const restoreAndUnsuspend = () => {
+    verifyOperator();
+    for (const a of useStore.getState().agents) {
+      if (a.suspensionHistory.some((iv) => iv.to === undefined && iv.reason === 'verification withdrawn')) {
+        unsuspendAgent(a.id, undefined, 'verification withdrawn');
+      }
     }
   };
 
@@ -293,7 +320,7 @@ export default function PresenterPanel() {
               type="button"
               data-testid="verification-revoke"
               disabled={!verified}
-              onClick={() => revokeVerification()}
+              onClick={revokeAndSuspend}
               className="rounded-md border border-[#5a3a3a] bg-[#1f2127] px-3 py-1.5 text-xs font-semibold text-[#e2a9a0] disabled:opacity-40"
             >
               REVOKE verified status
@@ -302,7 +329,7 @@ export default function PresenterPanel() {
               type="button"
               data-testid="verification-restore"
               disabled={verified}
-              onClick={() => verifyOperator()}
+              onClick={restoreAndUnsuspend}
               className="rounded-md border border-[#33363f] bg-[#1f2127] px-3 py-1.5 text-xs font-semibold text-[#d7dae1] disabled:opacity-40"
             >
               RESTORE

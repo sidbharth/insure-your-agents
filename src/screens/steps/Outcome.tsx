@@ -24,7 +24,7 @@ import {
 import { buildAdjudicationInput, SCENARIOS } from '../../data/incidents';
 import { adjudicate, recoveryWaterfall } from '../../lib/claims';
 import { formatClockTime, formatN, formatUsd } from '../../lib/money';
-import { executePayment } from '../../lib/payments';
+import { executePayment, PaymentAbortedError } from '../../lib/payments';
 import { demoNow } from '../../lib/demoClock';
 import { useStore } from '../../store';
 import type { AdjudicationResult, Claim, Incident } from '../../store/types';
@@ -43,12 +43,18 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
   const operator = useStore((s) => s.operator);
   const priceFeed = useStore((s) => s.priceFeed);
   const setClockState = useStore((s) => s.setClockState);
+  const setAdjudication = useStore((s) => s.setAdjudication);
   const updateClaim = useStore((s) => s.updateClaim);
   const [paying, setPaying] = useState(false);
 
-  // Always recomputed from the incident's own parameters and the interval
-  // histories at event time (REQ-7.11.3, AC-9/AC-13).
-  const result: AdjudicationResult = useMemo(
+  const paid = claim.clockState.anchors.paidAt !== undefined;
+
+  // Unpaid claims always recompute from the incident's own parameters and the
+  // interval histories at event time (REQ-7.11.3, AC-9/AC-13). PAID claims
+  // render the adjudication persisted at payment time — the settled math is
+  // immutable, so later price-feed refreshes never change what a paid claim
+  // displays.
+  const liveResult: AdjudicationResult = useMemo(
     () =>
       adjudicate(
         buildAdjudicationInput(
@@ -59,30 +65,60 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
       ),
     [agents, mandates, enrollments, operator, incident, priceFeed.usdPerN],
   );
+  const result: AdjudicationResult =
+    paid && claim.adjudication !== undefined ? claim.adjudication : liveResult;
 
   const determinedAt = claim.clockState.anchors.determinedAt ?? demoNow();
-  const paid = claim.clockState.anchors.paidAt !== undefined;
 
   const acceptPayment = async () => {
     if (result.math === undefined || paid || paying) return;
     setPaying(true);
+    const gen = useStore.getState().resetGeneration;
     try {
       // Refetch-first day-of-payment conversion; credits the demo wallet.
-      const receipt = await executePayment('claim-settlement', result.math.payoutUsd, {
-        claimId: claim.id,
-      });
+      // The dollar amount is a FUNCTION of the post-refetch rate: retention is
+      // max(500 N × rate, 2% × loss), so the payout itself is rate-dependent
+      // and must be re-adjudicated at the rate actually used for transfer.
+      let settled: AdjudicationResult = result;
+      const receipt = await executePayment(
+        'claim-settlement',
+        (rateUsed) => {
+          const s = useStore.getState();
+          settled = adjudicate(
+            buildAdjudicationInput(
+              {
+                agents: s.agents,
+                mandates: s.mandates,
+                enrollments: s.enrollments,
+                operator: s.operator,
+              },
+              incident,
+              rateUsed,
+            ),
+          );
+          return settled.math?.payoutUsd ?? 0;
+        },
+        { claimId: claim.id },
+        { stale: () => useStore.getState().resetGeneration !== gen },
+      );
+      // Persist the payment-time adjudication so the paid claim renders this
+      // exact math forever, regardless of later feed movement.
+      setAdjudication(claim.id, settled);
       const anchors = { ...claim.clockState.anchors, paidAt: receipt.paidAt };
       setClockState(claim.id, { ...claim.clockState, anchors, phase: 'Paid' });
       const scripted = SCENARIOS[incident.scenarioId].scriptedRecoveryUsd;
-      if (scripted !== undefined) {
-        const retained = result.math.coinsuranceUsd + result.math.retentionUsd;
+      if (scripted !== undefined && settled.math !== undefined) {
+        const retained = settled.math.coinsuranceUsd + settled.math.retentionUsd;
         updateClaim(claim.id, {
           recovery: {
             amountUsd: scripted,
-            waterfall: recoveryWaterfall(scripted, result.math.payoutUsd, retained),
+            waterfall: recoveryWaterfall(scripted, settled.math.payoutUsd, retained),
           },
         });
       }
+    } catch (err) {
+      if (err instanceof PaymentAbortedError) return; // reset raced the payment
+      throw err;
     } finally {
       setPaying(false);
     }

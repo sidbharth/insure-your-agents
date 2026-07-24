@@ -7,6 +7,7 @@
  * price fetch resumes after reset.
  */
 import { create } from 'zustand';
+import { resetIncidentCounter } from '../data/incidents';
 import { createSeedState } from '../data/seed';
 import { demoNow, registerOffsetProvider } from '../lib/demoClock';
 import { registerPaymentPorts } from '../lib/payments';
@@ -30,11 +31,17 @@ export const useStore = create<RootState>()((set, get, api) => ({
   ...createPresenterSlice(set, get, api),
   ...createUiSlice(set, get, api),
 
+  resetGeneration: 0,
+
   reset: () => {
     resetClaimCounter();
+    resetIncidentCounter(); // presenter incident ids restart with the world (AC-16)
     resetWizardAgentId(); // wizard-local module state resets with the world (AC-16)
     const seed = createSeedState();
     set({
+      // Bump the generation token FIRST-class with the seed swap: any async
+      // workflow that captured the old value abandons its side effects.
+      resetGeneration: get().resetGeneration + 1,
       operator: seed.operator,
       agents: seed.agents,
       mandates: seed.mandates,
@@ -71,16 +78,26 @@ registerPaymentPorts({
       return;
     }
     // initial / delta: record one payment-history item per target agent and
-    // debit the demo wallet. The per-agent amount splits the total evenly
-    // for a batch initial payment (each enrollment shows its own premium).
+    // debit the demo wallet only for what was actually recorded. Initial
+    // payments are IDEMPOTENT per enrollment: an already-activated enrollment
+    // (effectiveAt stamped) is skipped, so a repeated initial payment can
+    // never double-charge an Active agent. A quarterly plan charges one
+    // quarter of the premium today (the other three are future installments
+    // created by activateEnrollments).
     const agentIds = receipt.targets.agentIds ?? [];
+    let debitedN = 0;
     for (const agentId of agentIds) {
       const enrollment = state.enrollments.find(
         (e) => e.agentId === agentId && e.terminatedAt === undefined,
       );
+      if (receipt.kind === 'initial') {
+        if (enrollment === undefined || enrollment.effectiveAt !== 0) continue;
+      }
       const amountUsd =
         receipt.kind === 'initial' && enrollment !== undefined
-          ? enrollment.premiumUsd
+          ? enrollment.paymentPlan === 'quarterly'
+            ? enrollment.premiumUsd / 4
+            : enrollment.premiumUsd
           : receipt.amountUsd / Math.max(1, agentIds.length);
       state.appendPaymentItem(agentId, {
         kind: receipt.kind,
@@ -90,8 +107,9 @@ registerPaymentPorts({
         amountN: amountUsd / receipt.rateUsed,
         rateUsed: receipt.rateUsed,
       });
+      debitedN += amountUsd / receipt.rateUsed;
     }
-    state.debitWallet(receipt.amountN);
+    state.debitWallet(debitedN);
   },
 });
 

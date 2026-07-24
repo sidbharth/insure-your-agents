@@ -95,7 +95,7 @@ export default function Quote() {
     ? enrollment.loadings.some((l) => l.label.toLowerCase().includes('concentration'))
     : loadingApplies(state.book, componentKey(agent), capUsd);
 
-  const priced = priceAgent(pricingInputFor(agent, mandate, concentrationLoading));
+  const priced = priceAgent(pricingInputFor(state, agent, mandate, concentrationLoading));
 
   if (priced.kind === 'declined') {
     return (

@@ -141,17 +141,34 @@ export default function Policies() {
   };
 
   // -- suspension cure (REQ-7.9.1, AC-12) -------------------------------------
+  // Cause-specific: resolve the UNDERLYING condition for the displayed
+  // suspension's reason, then close only that reason's interval. The agent
+  // derives Active only when no other open trigger remains.
   const cure = (row: PolicyRow) => {
     const at = demoNow();
-    // Reopen any tier-1 gate whose interval is closed at `at`, then close the
-    // suspension interval — interval writes, never boolean overwrites.
-    for (const gate of TIER1_GATES) {
-      const open = row.agent.gateHistory[gate].some(
-        (iv) => iv.from <= at && (iv.to === undefined || at < iv.to),
-      );
-      if (!open) store().cureGate(row.agent.id, gate, at);
+    const reason = row.suspension?.reason;
+    if (reason === undefined) return;
+    if (reason.includes('premium')) {
+      // A premium-overdue suspension leaves an unpaid item in paymentHistory;
+      // curing must settle it too, or premiumCurrentAt would keep failing any
+      // later claim's conditions precedent forever even though the pill shows
+      // Active again.
+      store().payOverdueInstallments(row.agent.id, at);
+    } else if (reason.includes('verification')) {
+      // Restoring the operator's verified interval is the underlying fix.
+      store().verifyOperator(at);
+    } else {
+      // Gate-driven lapse (logging, transfer caps, hash…): reopen any tier-1
+      // gate whose interval is closed at `at` — interval writes, never
+      // boolean overwrites.
+      for (const gate of TIER1_GATES) {
+        const open = row.agent.gateHistory[gate].some(
+          (iv) => iv.from <= at && (iv.to === undefined || at < iv.to),
+        );
+        if (!open) store().cureGate(row.agent.id, gate, at);
+      }
     }
-    store().unsuspendAgent(row.agent.id, at);
+    store().unsuspendAgent(row.agent.id, at, reason);
   };
 
   // -- adopt a control: interval opens + pro-rata refund (both currencies) ---

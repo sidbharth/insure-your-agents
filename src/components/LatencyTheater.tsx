@@ -31,11 +31,21 @@ export function LatencyTheater({
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
+    // Unmount cancellation: a theater torn down mid-run (navigation, reset)
+    // must never fire onDone or set state on an unmounted component.
+    let cancelled = false;
     void runLatencyTheater(
       steps,
-      (p) => setCompleted(p.completed),
+      (p) => {
+        if (!cancelled) setCompleted(p.completed);
+      },
       totalMs,
-    ).then(() => onDoneRef.current());
+    ).then(() => {
+      if (!cancelled) onDoneRef.current();
+    });
+    return () => {
+      cancelled = true;
+    };
     // Intentionally run-once: steps/totalMs are fixed for a mount.
   }, []);
 
