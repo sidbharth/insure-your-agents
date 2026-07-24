@@ -14,13 +14,10 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LatencyTheater } from '../components/LatencyTheater';
-import { ConcentrationMeter } from '../components/ConcentrationMeter';
 import { MathValue } from '../components/MathValue';
 import { StatusPill } from '../components/StatusPill';
 import { isOperatorVerifiedNow } from '../components/UnverifiedBanner';
 import { NEAR_MISS_CREDIT_HOVER, SUSPENSION_COPY } from '../data/copy';
-import { HELIOS } from '../data/seed';
-import { currentShare } from '../lib/concentration';
 import { demoNow } from '../lib/demoClock';
 import { formatN, formatUsd, usdToN } from '../lib/money';
 import {
@@ -91,7 +88,6 @@ export default function Policies() {
   const mandates = useStore((s) => s.mandates);
   const pendingEdits = useStore((s) => s.pendingEdits);
   const nearMisses = useStore((s) => s.nearMisses);
-  const book = useStore((s) => s.book);
   const operator = useStore((s) => s.operator);
   const armed = useStore((s) => s.presenter.armed);
   const usdPerN = useStore((s) => s.priceFeed.usdPerN);
@@ -111,7 +107,6 @@ export default function Policies() {
 
   const totalCapsUsd = liveRows.reduce((a, r) => a + r.capUsd, 0);
   const totalPremiumUsd = liveRows.reduce((a, r) => a + r.enrollment.premiumUsd, 0);
-  const heliosShare = currentShare(book, HELIOS);
 
   // -- local UI state ---------------------------------------------------------
   const [verifying, setVerifying] = useState(false);
@@ -416,10 +411,6 @@ export default function Policies() {
               ≈ {formatN(usdToN(totalPremiumUsd, usdPerN), { maxFractionDigits: 1 })} at
               1 $NEAR = ${usdPerN.toFixed(2)}
             </div>
-          </div>
-
-          <div className="rounded-card border border-line bg-panel p-4 shadow-card">
-            <ConcentrationMeter component={HELIOS} share={heliosShare} />
           </div>
 
           <div className="rounded-card border border-line bg-panel p-4 shadow-card" data-testid="near-miss-feed">

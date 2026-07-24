@@ -180,9 +180,8 @@ describe('7.7 — concentration loading (REQ-7.7.2, AC-6)', () => {
       () => expect(useStore.getState().enrollments.length).toBe(12),
       { timeout: 5_000 },
     );
-    expect(screen.getByTestId('concentration-crossed-toast')).toHaveTextContent(
-      'Threshold crossed at Settle-Bot',
-    );
+    const settleRow = screen.getByTestId('fleet-row-settle-bot');
+    expect(within(settleRow).getByTestId('concentration-tag')).toBeInTheDocument();
     expect(screen.getByTestId('fleet-total-premium')).toHaveTextContent('$4,150');
   });
 });

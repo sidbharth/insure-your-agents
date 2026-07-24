@@ -31,6 +31,7 @@ import GetStarted from './screens/GetStarted';
 import Mandate from './screens/Mandate';
 import Pay from './screens/Pay';
 import Policies from './screens/Policies';
+import ProgrammeDashboard from './screens/ProgrammeDashboard';
 import PresenterPanel from './screens/PresenterPanel';
 import Quote from './screens/Quote';
 import VerifyCompany from './screens/VerifyCompany';
@@ -77,6 +78,7 @@ const NAV_ITEMS: { to: string; label: string }[] = [
   { to: '/fleet', label: 'Fleet' },
   { to: '/coverage', label: 'Coverage' },
   { to: '/claim', label: 'Claims' },
+  { to: '/dashboard', label: 'Programme' },
 ];
 
 function Header() {
@@ -208,6 +210,7 @@ export function AppShell() {
           <Route path="/fleet" element={<Fleet />} />
           <Route path="/pay" element={<Pay />} />
           <Route path="/policies" element={<Policies />} />
+          <Route path="/dashboard" element={<ProgrammeDashboard />} />
           <Route path="/coverage" element={<Coverage />} />
           <Route path="/claim" element={<Claim />} />
           <Route path="/claim/:claimId" element={<Claim />} />

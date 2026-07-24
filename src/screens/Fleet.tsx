@@ -14,14 +14,12 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ConcentrationMeter } from '../components/ConcentrationMeter';
 import { LatencyTheater } from '../components/LatencyTheater';
 import { MathValue } from '../components/MathValue';
 import { SimulatedBadge } from '../components/SimulatedBadge';
 import { StatusPill } from '../components/StatusPill';
 import { FLEET_CALLOUT_COMMON_CAUSE, FLEET_CALLOUT_SUM } from '../data/copy';
-import { HELIOS, WIZARD_AGENT, type SeedAgentSpec } from '../data/seed';
-import { currentShare } from '../lib/concentration';
+import { WIZARD_AGENT, type SeedAgentSpec } from '../data/seed';
 import { demoNow } from '../lib/demoClock';
 import { shortHash } from '../lib/hash';
 import { formatN, formatPct, formatUsd, usdToN, type MathBreakdown } from '../lib/money';
@@ -47,8 +45,6 @@ import {
 interface ImportState {
   specs: SeedAgentSpec[];
   index: number;
-  /** Name of the agent whose enrollment crossed the 40% threshold. */
-  crossedAt?: string;
   /** resetGeneration when the sweep started — a reset abandons the sweep. */
   generation: number;
 }
@@ -117,7 +113,7 @@ function DeEnrollMenu({
 export default function Fleet() {
   const navigate = useNavigate();
   const state = useStore();
-  const { agents, book } = state;
+  const { agents } = state;
   const usdPerN = state.priceFeed.usdPerN;
 
   const [importing, setImporting] = useState<ImportState | null>(null);
@@ -149,7 +145,6 @@ export default function Fleet() {
   const rows = enrollmentAgentRows(enrollments, agents);
 
   const totals = fleetTotals(state);
-  const heliosShare = currentShare(book, HELIOS);
 
   const totalsBreakdown: MathBreakdown = useMemo(() => {
     const live = rows.filter((r) => r.enrollment.terminatedAt === undefined);
@@ -195,11 +190,8 @@ export default function Fleet() {
     }
     const spec = importing.specs[importing.index];
     prepareImportedAgent(spec.id);
-    const outcome = enrollAgent(spec.id);
-    const crossedAt =
-      importing.crossedAt ?? (outcome.ok && outcome.loadingApplied ? spec.name : undefined);
-    // finished — keep the state (and the crossed toast) around
-    setImporting({ ...importing, index: importing.index + 1, crossedAt });
+    enrollAgent(spec.id);
+    setImporting({ ...importing, index: importing.index + 1 });
   };
 
   const sweepDone = importing !== null && importing.index >= importing.specs.length;
@@ -411,24 +403,6 @@ export default function Fleet() {
 
         {/* ------------------------------------------------ side rail */}
         <div className="flex flex-col gap-3.5">
-          <div className="rounded-card border border-line bg-panel p-4 shadow-card">
-            <ConcentrationMeter component={HELIOS} share={heliosShare} />
-            {importing?.crossedAt && (
-              <div
-                data-testid="concentration-crossed-toast"
-                className="mt-2.5 inline-flex rounded border border-warn-line bg-warn-bg px-2 py-1 text-2xs font-semibold text-warn"
-              >
-                Threshold crossed at {importing.crossedAt}. Subsequent
-                enrollments carry the +0.1% loading (5.8.2).
-              </div>
-            )}
-            <p className="mt-2 text-xs text-body">
-              Agents enrolled before a crossing keep their rate. The loading is
-              frozen into each enrollment when it is made and never changes
-              retroactively (5.8.2).
-            </p>
-          </div>
-
           <div className="rounded-card border border-line bg-panel p-4 shadow-card" data-testid="callout-sum">
             <div className="text-sm font-semibold text-ink">{FLEET_CALLOUT_SUM.title}</div>
             <p className="mt-1 text-xs text-muted">{FLEET_CALLOUT_SUM.body}</p>
