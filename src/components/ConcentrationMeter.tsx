@@ -1,12 +1,12 @@
 /**
  * ConcentrationMeter (REQ-7.7.2, GT-6): shared-component share of the
- * (simulated) programme book vs the 40% threshold. Labeled
- * "programme-wide, simulated". Frozen props — WP-3/4 consume.
+ * (simulated) programme book vs the 40% threshold. Frozen props — WP-3/4
+ * consume.
  */
-import { CONCENTRATION_METER_LABEL } from '../data/copy';
+import { SimulatedBadge } from './SimulatedBadge';
 
 export interface ConcentrationMeterProps {
-  /** Component label, e.g. "Helios v2.3". */
+  /** Component label, e.g. "IronClaw v2.3". */
   component: string;
   /** Current share of the book, 0..1. */
   share: number;
@@ -26,14 +26,22 @@ export function ConcentrationMeter({
 
   return (
     <div data-testid="concentration-meter" className={className}>
-      <div className="mb-1 flex items-baseline justify-between text-xs">
-        <span className="font-semibold text-ink">
-          {component}{' '}
-          <span className="font-normal text-faint">({CONCENTRATION_METER_LABEL})</span>
+      <div className="mb-0.5 flex items-center justify-between gap-3">
+        <span className="text-sm font-semibold text-ink">
+          {component} concentration
         </span>
-        <b className={`num ${over ? 'text-warn' : 'text-ink'}`} data-testid="share-readout">
+        <b
+          className={`num text-md ${over ? 'text-warn' : 'text-ink'}`}
+          data-testid="share-readout"
+        >
           {(share * 100).toFixed(1)}%
         </b>
+      </div>
+      <div className="mb-2 flex items-center gap-1.5">
+        <span className="text-xs text-muted">
+          Share of programme-wide insured caps
+        </span>
+        <SimulatedBadge />
       </div>
       <div className="relative h-2.5 overflow-hidden rounded-full bg-line-soft">
         <div
@@ -46,13 +54,16 @@ export function ConcentrationMeter({
           title={`${threshold * 100}% concentration threshold (5.8.2)`}
         />
       </div>
-      <div className="num mt-0.5 text-2xs text-faint">
-        {(threshold * 100).toFixed(0)}% threshold. Enrollments beyond this carry
-        a +0.1% loading.
-      </div>
+      <p className="mt-1.5 text-xs text-body">
+        Enrollments made while the share exceeds {(threshold * 100).toFixed(0)}%
+        carry a +0.1% loading.
+      </p>
       {over && (
-        <div className="mt-1 text-2xs font-semibold text-warn" data-testid="over-threshold">
-          Above threshold: new {component} enrollments carry the +0.1% loading
+        <div
+          className="mt-1.5 rounded-md border border-warn-line bg-warn-bg px-2.5 py-1.5 text-xs font-semibold text-warn"
+          data-testid="over-threshold"
+        >
+          Above threshold: new {component} enrollments carry the +0.1% loading.
         </div>
       )}
     </div>

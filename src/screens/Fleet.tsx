@@ -422,7 +422,7 @@ export default function Fleet() {
                 enrollments carry the +0.1% loading (5.8.2).
               </div>
             )}
-            <p className="mt-2 text-xs text-muted">
+            <p className="mt-2 text-xs text-body">
               Agents enrolled before a crossing keep their rate. The loading is
               frozen into each enrollment when it is made and never changes
               retroactively (5.8.2).
