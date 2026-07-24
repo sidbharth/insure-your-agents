@@ -12,12 +12,12 @@
  */
 import {
   createDefaultMandate,
-  DAY_MS,
   FLEET_IMPORT_ORDER,
   SEED_CAP_USD,
   WIZARD_AGENT,
   type SeedAgentSpec,
 } from '../../data/seed';
+import { YEAR_MS } from '../../lib/clocks';
 import { enroll as bookEnroll } from '../../lib/concentration';
 import { verificationCurrentAt } from '../../lib/conditions';
 import { demoNow } from '../../lib/demoClock';
@@ -33,8 +33,9 @@ import type {
   Tier2Control,
 } from '../../store/types';
 import { TIER1_GATES, TIER2_CONTROLS } from '../../store/types';
+import { newestMandate } from '../portfolio/helpers';
 
-export const YEAR_MS = 365 * DAY_MS;
+export { YEAR_MS };
 
 /** Book-component key for an agent — matches the seeded book's harness keys. */
 export function componentKey(agent: Agent): string {
@@ -43,8 +44,7 @@ export function componentKey(agent: Agent): string {
 
 /** Latest mandate version for an agent, if any. */
 export function latestMandate(state: RootState, agentId: string): Mandate | undefined {
-  const versions = state.mandates[agentId];
-  return versions && versions.length > 0 ? versions[versions.length - 1] : undefined;
+  return newestMandate(state.mandates[agentId]);
 }
 
 /** Premium base = the mandate's per-transaction cap (GT-3). */
@@ -90,6 +90,18 @@ export function latestEnrollmentsByAgent(state: RootState): Enrollment[] {
   const byAgent = new Map<string, Enrollment>();
   for (const e of state.enrollments) byAgent.set(e.agentId, e);
   return [...byAgent.values()];
+}
+
+/** Join enrollments to their agents, dropping any without a matching agent. */
+export function enrollmentAgentRows(
+  enrollments: Enrollment[],
+  agents: Agent[],
+): { enrollment: Enrollment; agent: Agent }[] {
+  return enrollments
+    .map((e) => ({ enrollment: e, agent: agents.find((a) => a.id === e.agentId) }))
+    .filter(
+      (r): r is { enrollment: Enrollment; agent: Agent } => r.agent !== undefined,
+    );
 }
 
 export interface FleetTotals {

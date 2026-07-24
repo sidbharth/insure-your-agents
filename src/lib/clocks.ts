@@ -18,6 +18,8 @@ import type { ClaimPhase, ClockState, DeadlineRow, Timestamp } from '../store/ty
 
 export const HOUR_MS = 3_600_000;
 export const DAY_MS = 24 * HOUR_MS;
+/** One policy year (365 days). */
+export const YEAR_MS = 365 * DAY_MS;
 
 export const NOTIFY_WINDOW_MS = 48 * HOUR_MS;
 export const NEAR_MISS_NOTIFY_WINDOW_MS = 7 * DAY_MS;

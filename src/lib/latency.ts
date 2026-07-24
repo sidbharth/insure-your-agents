@@ -30,9 +30,6 @@ export function setLatencyTestMode(on: boolean): void {
   zeroDelayMode = on;
 }
 
-export function isLatencyTestMode(): boolean {
-  return zeroDelayMode;
-}
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 

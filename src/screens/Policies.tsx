@@ -569,7 +569,7 @@ function PolicyRowCard({
               <>
                 {' '}·{' '}
                 <span className="font-semibold text-warn">
-                  +{loadingsLabel(row)} loading
+                  +{row.loadingsPct}% loading
                 </span>
               </>
             )}
@@ -770,9 +770,6 @@ function PolicyRowCard({
   );
 }
 
-function loadingsLabel(row: PolicyRow): string {
-  return `${row.loadingsPct}%`;
-}
 
 function DeEnrollConfirm({
   premiumUsd,

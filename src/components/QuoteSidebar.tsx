@@ -18,13 +18,6 @@ export interface QuoteSidebarProps {
   className?: string;
 }
 
-const GATE_LABELS: Record<string, string> = {
-  hashIdentity: 'registered hash identity',
-  transferCaps: 'transfer caps',
-  whitelist: 'whitelist enforcement',
-  actionLogging: 'action logging',
-};
-
 export function QuoteSidebar({ result, capUsd, className = '' }: QuoteSidebarProps) {
   const usdPerN = useStore((s) => s.priceFeed.usdPerN);
 
@@ -39,7 +32,7 @@ export function QuoteSidebar({ result, capUsd, className = '' }: QuoteSidebarPro
         <div className="text-2xs font-bold uppercase tracking-widest text-bad">Declined</div>
         <div className="mt-2 text-lg font-bold text-bad">DECLINED</div>
         <p className="mt-2 text-sm text-bad" data-testid="decline-reason">
-          {TIER1_DECLINE_COPY(GATE_LABELS[first] ?? first)}
+          {TIER1_DECLINE_COPY(first)}
         </p>
         <p className="mt-2 text-xs text-muted">
           Tier-1 controls are eligibility gates. Missing any one means declined —

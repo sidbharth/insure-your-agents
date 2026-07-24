@@ -28,7 +28,3 @@ export function demoNowDate(): Date {
   return new Date(demoNow());
 }
 
-/** Real wall-clock now — for the rare case that must ignore fast-forward. */
-export function realNow(): number {
-  return Date.now();
-}

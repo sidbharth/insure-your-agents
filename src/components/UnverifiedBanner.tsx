@@ -5,6 +5,7 @@
  */
 import { Link } from 'react-router-dom';
 import { UNVERIFIED_BANNER } from '../data/copy';
+import { verificationCurrentAt } from '../lib/conditions';
 import { demoNow } from '../lib/demoClock';
 import { useStore } from '../store';
 
@@ -15,10 +16,7 @@ export interface UnverifiedBannerProps {
 export function isOperatorVerifiedNow(
   history: { from: number; to?: number; verified: boolean }[],
 ): boolean {
-  const t = demoNow();
-  return history.some(
-    (iv) => iv.verified && iv.from <= t && (iv.to === undefined || t < iv.to),
-  );
+  return verificationCurrentAt(history, demoNow());
 }
 
 export function UnverifiedBanner({ className = '' }: UnverifiedBannerProps) {

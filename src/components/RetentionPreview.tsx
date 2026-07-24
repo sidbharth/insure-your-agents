@@ -3,6 +3,7 @@
  * not collected now, borne per event", with the two mandatory worked
  * examples computed at the displayed price. Frozen props — WP-3 consumes.
  */
+import { RETENTION_FLOOR_N, RETENTION_LOSS_PCT } from '../lib/claims';
 import { formatN, formatUsd } from '../lib/money';
 import { useStore } from '../store';
 
@@ -17,10 +18,10 @@ export function RetentionPreview({
   className = '',
 }: RetentionPreviewProps) {
   const usdPerN = useStore((s) => s.priceFeed.usdPerN);
-  const retentionFloorUsd = 500 * usdPerN;
+  const retentionFloorUsd = RETENTION_FLOOR_N * usdPerN;
 
   const examples = exampleLossesUsd.map((loss) => {
-    const pctUsd = 0.02 * loss;
+    const pctUsd = RETENTION_LOSS_PCT * loss;
     const borneUsd = Math.max(retentionFloorUsd, pctUsd);
     const isFloor = retentionFloorUsd >= pctUsd;
     return { loss, borneUsd, isFloor };
@@ -45,7 +46,7 @@ export function RetentionPreview({
           <li key={loss} className="num text-muted">
             e.g. a {formatUsd(loss)} loss → you bear{' '}
             <b className="text-ink">{formatUsd(borneUsd)}</b>{' '}
-            ({isFloor ? `${formatN(500)}` : '2%'})
+            ({isFloor ? `${formatN(RETENTION_FLOOR_N)}` : '2%'})
           </li>
         ))}
       </ul>

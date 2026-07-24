@@ -34,6 +34,7 @@ import {
   coverageBExcluded,
   duplicateWizardAgent,
   enrollAgent,
+  enrollmentAgentRows,
   enrollmentRatePct,
   fleetTotals,
   hasConcentrationLoading,
@@ -144,9 +145,7 @@ export default function Fleet() {
   }, []);
 
   const enrollments = latestEnrollmentsByAgent(state);
-  const rows = enrollments
-    .map((e) => ({ enrollment: e, agent: agents.find((a) => a.id === e.agentId) }))
-    .filter((r): r is { enrollment: Enrollment; agent: Agent } => r.agent !== undefined);
+  const rows = enrollmentAgentRows(enrollments, agents);
 
   const totals = fleetTotals(state);
   const heliosShare = currentShare(book, HELIOS);

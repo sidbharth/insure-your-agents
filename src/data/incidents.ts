@@ -14,6 +14,7 @@
  *   the incident's event time from the store's interval histories, so
  *   adjudication is always recomputed, never snapshotted (plan §5b, AC-13).
  */
+import { intervalCovers } from '../lib/conditions';
 import { demoNow } from '../lib/demoClock';
 import { formatUsd } from '../lib/money';
 import type { AdjudicationInput } from '../lib/claims';
@@ -398,13 +399,6 @@ export function buildIncident(
 // ---------------------------------------------------------------------------
 // Adjudication-input builder (event-time state from interval histories)
 // ---------------------------------------------------------------------------
-
-function intervalCovers(
-  intervals: { from: Timestamp; to?: Timestamp }[],
-  t: Timestamp,
-): boolean {
-  return intervals.some((iv) => iv.from <= t && (iv.to === undefined || t < iv.to));
-}
 
 /** Reconstruct the agent's tier-1/tier-2/suspension state at instant t. */
 export function agentEventStateAt(agent: Agent, t: Timestamp): AgentEventState {

@@ -37,14 +37,13 @@ import { SEED_PRINCIPAL_NAME } from '../data/seed';
 import { demoNow } from '../lib/demoClock';
 import { formatN, formatUsd, usdToN } from '../lib/money';
 import { executePayment, PaymentAbortedError } from '../lib/payments';
+import { DAY_MS } from '../lib/clocks';
 import { priceAgent, repriceDelta } from '../lib/pricing';
 import { useStore } from '../store';
 import type { ActionFamilies, Mandate as MandateType } from '../store/types';
 import { buildPricingInput, formatUtcStamp } from './wizard/format';
 import { getWizardAgentId } from './wizard/wizardAgent';
 import { WizardStepper } from './wizard/Stepper';
-
-const DAY_MS = 24 * 3_600_000;
 
 const ACTION_FAMILY_COPY: { key: keyof ActionFamilies; label: string; hint: string }[] = [
   { key: 'valueTransfers', label: 'Value transfers', hint: 'Send money to approved payees' },

@@ -16,7 +16,7 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LatencyTheater } from '../components/LatencyTheater';
 import { MathValue } from '../components/MathValue';
-import { PriceChipInline } from '../components/helpers';
+import { PriceChipInline, priceFeedMode } from '../components/helpers';
 import { RetentionPreview } from '../components/RetentionPreview';
 import { SimulatedBadge } from '../components/SimulatedBadge';
 import { StatusPill } from '../components/StatusPill';
@@ -45,12 +45,14 @@ import {
   type PaymentSessionView,
 } from '../lib/payments';
 import { useStore } from '../store';
-import type { Agent, Enrollment, RootState, Timestamp } from '../store/types';
+import type { Agent, Enrollment, RootState } from '../store/types';
 import { TIER1_GATES } from '../store/types';
+import { formatUtcStamp } from './wizard/format';
 import {
   activeEnrollments,
   capUsdFor,
   coverageBExcluded,
+  enrollmentAgentRows,
   enrollmentRatePct,
   hasConcentrationLoading,
   latestMandate,
@@ -78,12 +80,6 @@ export function buildPreflightView(
       })),
     paymentMethodSelected,
   };
-}
-
-function fmtTimestamp(ts: Timestamp): string {
-  const d = new Date(ts);
-  const p = (x: number) => String(x).padStart(2, '0');
-  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} · ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())} UTC`;
 }
 
 /** The Enrollment record — "this record is the policy schedule. No paper." */
@@ -124,11 +120,11 @@ function PolicySchedule({
       'Signatures',
       <span key="sig">
         Ownership challenge signed · mandate countersigned{' '}
-        {mandate?.countersigned ? fmtTimestamp(mandate.countersigned.at) : ''} <SimulatedBadge />
+        {mandate?.countersigned ? formatUtcStamp(mandate.countersigned.at) : ''} <SimulatedBadge />
       </span>,
     ],
-    ['Effective at', enrollment.effectiveAt ? fmtTimestamp(enrollment.effectiveAt) : '—'],
-    ['Renewal at', fmtTimestamp(enrollment.renewalAt)],
+    ['Effective at', enrollment.effectiveAt ? formatUtcStamp(enrollment.effectiveAt) : '—'],
+    ['Renewal at', formatUtcStamp(enrollment.renewalAt)],
   ];
   return (
     <div
@@ -181,9 +177,7 @@ export default function Pay() {
   // Only enrollments still awaiting their initial payment belong on Pay —
   // already-Active agents (effectiveAt stamped) must not be chargeable again.
   const enrollments = activeEnrollments(state).filter((e) => e.effectiveAt === 0);
-  const rows = enrollments
-    .map((e) => ({ enrollment: e, agent: state.agents.find((a) => a.id === e.agentId) }))
-    .filter((r): r is { enrollment: Enrollment; agent: Agent } => r.agent !== undefined);
+  const rows = enrollmentAgentRows(enrollments, state.agents);
 
   const totalUsd = enrollments.reduce((sum, e) => sum + e.premiumUsd, 0);
   const totalCaps = enrollments.reduce((sum, e) => sum + capUsdFor(state, e.agentId), 0);
@@ -203,7 +197,7 @@ export default function Pay() {
         : []),
       {
         label: 'N reference price',
-        amount: `1 N = $${usdPerN.toFixed(2)} (${feed.pinned ? 'pinned' : feed.stale ? 'stale' : 'live'} · ${formatClockTime(feed.fetchedAt)})`,
+        amount: `1 N = $${usdPerN.toFixed(2)} (${priceFeedMode(feed)} · ${formatClockTime(feed.fetchedAt)})`,
       },
     ],
     formula: `${formatUsd(dueTodayUsd)} ÷ $${usdPerN.toFixed(2)} = ${formatN(dueTodayN, { maxFractionDigits: 2 })} due today`,
@@ -311,7 +305,7 @@ export default function Pay() {
                 {shortHash(agent.configHash)}
               </div>
               <div className="num mt-1.5 text-2xs text-muted" data-testid="effective-line">
-                effective {fmtTimestamp(enrollment.effectiveAt)}
+                effective {formatUtcStamp(enrollment.effectiveAt)}
               </div>
               <button
                 className="mt-2 text-2xs font-semibold text-accent"

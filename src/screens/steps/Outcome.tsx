@@ -13,6 +13,7 @@
  */
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { priceFeedMode } from '../../components/helpers';
 import { MathValue } from '../../components/MathValue';
 import { SimulatedBadge } from '../../components/SimulatedBadge';
 import {
@@ -42,6 +43,7 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
   const enrollments = useStore((s) => s.enrollments);
   const operator = useStore((s) => s.operator);
   const priceFeed = useStore((s) => s.priceFeed);
+  const feedMode = priceFeedMode(priceFeed);
   const setClockState = useStore((s) => s.setClockState);
   const setAdjudication = useStore((s) => s.setAdjudication);
   const updateClaim = useStore((s) => s.updateClaim);
@@ -211,7 +213,7 @@ export default function Outcome({ claim, incident, onBack }: OutcomeProps) {
             <div className="num mt-1 text-right font-mono text-xs text-accent-ink" data-testid="outcome-payout-n">
               ≈ {formatN(math.payoutN, { maxFractionDigits: 0 })} at the day-of-payment
               rate · 1 N = ${math.rateUsed.toFixed(2)} ·{' '}
-              {priceFeed.pinned ? 'pinned' : priceFeed.stale ? 'last known' : 'live'} ·{' '}
+              {feedMode === 'stale' ? 'last known' : feedMode} ·{' '}
               {formatClockTime(priceFeed.fetchedAt)}
             </div>
           </div>

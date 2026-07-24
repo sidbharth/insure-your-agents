@@ -4,6 +4,7 @@
  * never from cached booleans — so presenter fast-forward and suspension
  * intervals are real state (plan §5b).
  */
+import { DAY_MS } from '../../lib/clocks';
 import { intervalCovers } from '../../lib/conditions';
 import type {
   Agent,
@@ -16,7 +17,7 @@ import type {
 } from '../../store/types';
 import { TIER1_GATES, TIER2_CONTROLS } from '../../store/types';
 
-export const DAY_MS = 24 * 3_600_000;
+export { DAY_MS };
 
 /** The open suspension interval covering `t`, if any (REQ-7.9.1). */
 export function openSuspension(

@@ -14,6 +14,7 @@
  */
 import { Link, useNavigate } from 'react-router-dom';
 import { CoverageCards, type CoverageCardState } from '../components/CoverageCards';
+import { LADDER_CEILING_PCT } from '../components/RateLadder';
 import { ExclusionWall } from '../components/ExclusionWall';
 import { PriceChipInline } from '../components/helpers';
 import { MathValue } from '../components/MathValue';
@@ -40,11 +41,10 @@ import type { RateLine } from '../store/types';
 import {
   capUsdFor,
   componentKey,
+  hasConcentrationLoading,
   latestMandate,
   pricingInputFor,
 } from './purchase/enroll';
-
-const LADDER_CEILING_PCT = 3.0;
 
 /** Horizontal ladder recap bar (quote mockup): slices to the 3.0% ceiling. */
 function LadderRecap({ ladder }: { ladder: RateLine[] }) {
@@ -92,7 +92,7 @@ export default function Quote() {
     (e) => e.agentId === agent.id && e.terminatedAt === undefined,
   );
   const concentrationLoading = enrollment
-    ? enrollment.loadings.some((l) => l.label.toLowerCase().includes('concentration'))
+    ? hasConcentrationLoading(enrollment)
     : loadingApplies(state.book, componentKey(agent), capUsd);
 
   const priced = priceAgent(pricingInputFor(state, agent, mandate, concentrationLoading));

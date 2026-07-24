@@ -4,11 +4,9 @@
  * never overwrite booleans (plan §5b).
  */
 import type { StateCreator } from 'zustand';
-import { createSeedState, DAY_MS } from '../data/seed';
+import { createSeedState } from '../data/seed';
+import { DAY_MS, YEAR_MS } from '../lib/clocks';
 import { demoNow } from '../lib/demoClock';
-
-/** One policy year, matching purchase/enroll.ts YEAR_MS (365 days). */
-const YEAR_MS = 365 * DAY_MS;
 import type {
   Agent,
   Interval,
@@ -279,7 +277,7 @@ export const createSessionSlice: StateCreator<RootState, [], [], SessionSlice> =
                   {
                     kind: 'installment' as const,
                     // Due >15 days before "now": already suspends cover.
-                    dueAt: at - 16 * 24 * 3_600_000,
+                    dueAt: at - 16 * DAY_MS,
                     amountUsd: e.premiumUsd / 4,
                     amountN: e.premiumUsd / 4 / e.conversionRateAtPayment,
                     rateUsed: e.conversionRateAtPayment,

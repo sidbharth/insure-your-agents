@@ -118,15 +118,6 @@ export const EXCLUSION_WALL: string[] = [
   "The Operator's own board-level fraud.",
 ];
 
-export const LIMITS_PICTURE = [
-  'Per event, coverages A–D pay up to 100% of the per-agent cap; E up to 50% of it; F up to 15% (with recovery/bounty costs capped at 10%).',
-  'Sublimits sit inside the per-event limit, not on top.',
-  'One aggregate across everything; a single incident touching several coverages pays once.',
-];
-
-export const RETENTION_PREVIEW_COPY =
-  'Per event you\'d bear the greater of 500 N or 2% of the loss — not collected now, borne per event.';
-
 // ---------------------------------------------------------------------------
 // Tier-2 surcharge chips + insurer's-why hovers (PRD §7.5)
 // ---------------------------------------------------------------------------
@@ -281,9 +272,6 @@ export const DENIAL_CONDITION_PRECEDENT = {
   forwardAction: 'Complete verification',
   clause: 'T3.4',
 };
-
-export const CONDITION_PRECEDENT_UNVERIFIED_EXPLANATION =
-  'No claim is payable for an event that occurred while verification was not current. Verifying now protects future events.';
 
 // ---------------------------------------------------------------------------
 // Fleet teaching callouts (PRD §7.7)

@@ -51,11 +51,6 @@ export function fmtUtcDayTime(ts: Timestamp): string {
   return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} · ${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())} UTC`;
 }
 
-/** "14 Aug 2026" */
-export function fmtUtcDate(ts: Timestamp): string {
-  const d = new Date(ts);
-  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-}
 
 /** "14 August 2026" */
 export function fmtUtcDateLong(ts: Timestamp): string {

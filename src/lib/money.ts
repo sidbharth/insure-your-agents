@@ -40,10 +40,6 @@ export function usdToN(usd: number, usdPerN: number): number {
   return usd / usdPerN;
 }
 
-/** Convert N to USD at an explicit rate. */
-export function nToUsd(n: number, usdPerN: number): number {
-  return n * usdPerN;
-}
 
 export interface FormatOptions {
   /** Max fraction digits (default 0 for USD, 0 for N when integral else 2). */

@@ -5,6 +5,7 @@
  */
 import { formatClockTime, formatRate } from '../lib/money';
 import { useStore } from '../store';
+import { priceFeedMode } from './helpers';
 
 export interface PriceChipProps {
   className?: string;
@@ -13,7 +14,7 @@ export interface PriceChipProps {
 export function PriceChip({ className = '' }: PriceChipProps) {
   const feed = useStore((s) => s.priceFeed);
 
-  const mode = feed.pinned ? 'pinned' : feed.stale ? 'stale' : 'live';
+  const mode = priceFeedMode(feed);
   const dotClass =
     mode === 'live'
       ? 'bg-[#35c56d] shadow-[0_0_0_3px_rgba(53,197,109,.18)]'

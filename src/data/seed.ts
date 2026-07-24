@@ -6,6 +6,7 @@
  * so `reset()` can restore the exact seed — including the seeded price
  * setting `pinned: false` (plan §6, AC-16).
  */
+import { DAY_MS, HOUR_MS } from '../lib/clocks';
 import { configHash } from '../lib/hash';
 import type {
   Agent,
@@ -35,8 +36,7 @@ import {
 /** Fixed seed epoch: 12 Jun 2026 09:00 UTC (dashboard mockup: "since 12 Jun 2026"). */
 export const SEED_EPOCH = Date.UTC(2026, 5, 12, 9, 0, 0);
 
-export const HOUR_MS = 3_600_000;
-export const DAY_MS = 24 * HOUR_MS;
+export { DAY_MS, HOUR_MS };
 
 /** Seed N price (Appendix B): $3.00, UNPINNED. */
 export const SEED_USD_PER_N = 3.0;

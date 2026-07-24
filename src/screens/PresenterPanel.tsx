@@ -10,13 +10,14 @@
  */
 import { useState } from 'react';
 import { SCENARIO_IDS, SCENARIOS } from '../data/incidents';
-import { HELIOS } from '../data/seed';
+import { createSeedBook, HELIOS } from '../data/seed';
 import { addBusinessDays, advance, DAY_MS } from '../lib/clocks';
 import { demoNow } from '../lib/demoClock';
 import { useStore } from '../store';
 import type { ScenarioId } from '../store/types';
 
-const SEED_HELIOS_EXTERNAL_USD = 2_090_000;
+const SEED_HELIOS_EXTERNAL_USD =
+  createSeedBook().components.find((c) => c.harness === HELIOS)?.externalCapsUsd ?? 0;
 const FORCED_HELIOS_EXTERNAL_USD = 3_400_000; // pushes the share above 40%
 const DROPPED_HELIOS_EXTERNAL_USD = 500_000; // drops the share below 40% (AC-6)
 
