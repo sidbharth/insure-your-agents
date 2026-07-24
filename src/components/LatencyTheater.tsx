@@ -24,15 +24,13 @@ export function LatencyTheater({
   className = '',
 }: LatencyTheaterProps) {
   const [completed, setCompleted] = useState(0);
-  const startedRef = useRef(false);
   const onDoneRef = useRef(onDone);
   onDoneRef.current = onDone;
 
   useEffect(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
     // Unmount cancellation: a theater torn down mid-run (navigation, reset)
-    // must never fire onDone or set state on an unmounted component.
+    // must never fire onDone or set state on an unmounted component. A
+    // StrictMode remount simply restarts the run from step zero.
     let cancelled = false;
     void runLatencyTheater(
       steps,
